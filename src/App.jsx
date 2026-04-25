@@ -1,921 +1,550 @@
 import React, { useState } from 'react';
-import {
-  Search, MapPin, Clock, TrendingUp, ShoppingCart, User, Menu, X,
-  Plus, Edit, Trash2, ChevronRight, Star, Package, Truck, Shield,
-  DollarSign, Filter, CheckCircle, AlertCircle, Users, FileText,
-  MessageSquare, Settings, BarChart3, Building2, ChevronDown, ArrowRight,
-  Leaf, Globe, Award, Bell, LogOut, Eye, Download, RefreshCw
-} from 'lucide-react';
+import { Search, List, Facebook, Twitter, Linkedin, ChevronDown, MapPin, Clock, Package } from 'lucide-react';
 
-// ─── DATA ─────────────────────────────────────────────────────────────────────
-const initialProducts = [
+// ─── TRANSLATIONS ──────────────────────────────────────────────────────────────
+const T = {
+  EN: {
+    nav: ['How it works', 'Compliance', 'About', 'Ask manager'],
+    signIn: 'SIGN IN', register: 'REGISTER NOW',
+    heroTitle: 'Access to Global Commodities Marketplace',
+    heroSub: 'Platform tailored to agro-commodity traders',
+    categories: 'CATEGORIES', buy: 'BUY', sell: 'SELL',
+    searchPlaceholder: 'What are you looking for?',
+    banner1Title: 'Access the global market', banner1Blue: 'for free',
+    banner1Desc: 'Join us and get free access for 6 months to buy and sell commodities from around the world.',
+    banner1Btn: 'REGISTER NOW',
+    banner2Title: 'Buy and sell commodities worldwide', banner2Btn: 'HOW IT WORKS',
+    featTitle: 'Why choose AGRIMARKET?',
+    features: [
+      { title: 'Global Commodities Access', desc: 'Search our product database for agricultural commodities being sold around the world!' },
+      { title: 'Enhanced Transparency', desc: 'All customers must go through our KYC compliance process to gain full access to the platform.' },
+      { title: 'Buy At Source', desc: 'Negotiate a better price directly with the producer.' },
+      { title: 'New Benchmark in Communication', desc: 'With our real-time messaging and contract management system, you can negotiate every step without a single phone call.' },
+      { title: 'Personal Relationship Manager', desc: 'All customers are assigned a personal relationship manager providing support with platform functionality.' },
+      { title: 'Expand Markets', desc: 'Find new buyers and sellers for your products and diversify your client base.' },
+    ],
+    recentTitle: 'Recently added products',
+    perTon: 'per ton', viewOffer: 'View offer',
+    ctaTitle: 'Access the global market', ctaBlue: 'for free',
+    ctaDesc: 'Join us and get free access for 6 months to buy and sell commodities from around the world.',
+    ctaBtn: 'REGISTER NOW',
+    footerSub: 'Subscribe to receive news first',
+    emailPlaceholder: 'Email for newsletters', subscribe: 'SUBSCRIBE',
+    menuLinks: ['Home', 'About', 'How it works', 'Compliance'],
+    legalLinks: ['Terms of Service', 'The Policy of Confidentiality', 'Support', 'FAQ'],
+    copyright: 'All rights reserved.',
+    filterAll: 'All', filterGrains: 'Grains', filterLegumes: 'Legumes',
+    filterOilseeds: 'Oilseeds', filterForages: 'Forages',
+    fixed: 'Fixed price', negotiable: 'Negotiable',
+    noProducts: 'No products found.',
+    language: 'LANGUAGE',
+  },
+  ES: {
+    nav: ['Cómo funciona', 'Cumplimiento', 'Nosotros', 'Hablar con gerente'],
+    signIn: 'INGRESAR', register: 'REGISTRARSE',
+    heroTitle: 'Acceso al Mercado Global de Commodities',
+    heroSub: 'Plataforma diseñada para operadores de agro-commodities',
+    categories: 'CATEGORÍAS', buy: 'COMPRAR', sell: 'VENDER',
+    searchPlaceholder: '¿Qué estás buscando?',
+    banner1Title: 'Accedé al mercado global', banner1Blue: 'gratis',
+    banner1Desc: 'Uníte y obtené 6 meses de acceso gratuito para comprar y vender commodities de todo el mundo.',
+    banner1Btn: 'REGISTRARSE',
+    banner2Title: 'Comprá y vendé commodities en todo el mundo', banner2Btn: 'CÓMO FUNCIONA',
+    featTitle: '¿Por qué elegir AGRIMARKET?',
+    features: [
+      { title: 'Acceso Global a Commodities', desc: 'Buscá en nuestra base de datos de commodities agrícolas que se comercializan en todo el mundo.' },
+      { title: 'Transparencia Total', desc: 'Todos los clientes deben pasar por nuestro proceso de cumplimiento KYC para obtener acceso completo a la plataforma.' },
+      { title: 'Comprá en la Fuente', desc: 'Negociá un mejor precio directamente con el productor.' },
+      { title: 'Nuevo Estándar de Comunicación', desc: 'Con nuestro sistema de mensajería en tiempo real y gestión de contratos, podés negociar cada paso sin una sola llamada.' },
+      { title: 'Gerente de Relaciones Personal', desc: 'Cada cliente tiene asignado un gerente de relaciones personal que brinda soporte con la funcionalidad de la plataforma.' },
+      { title: 'Expandí tus Mercados', desc: 'Encontrá nuevos compradores y vendedores para tus productos y diversificá tu base de clientes.' },
+    ],
+    recentTitle: 'Productos recientemente agregados',
+    perTon: 'por tonelada', viewOffer: 'Ver oferta',
+    ctaTitle: 'Accedé al mercado global', ctaBlue: 'gratis',
+    ctaDesc: 'Uníte y obtené 6 meses de acceso gratuito para comprar y vender commodities de todo el mundo.',
+    ctaBtn: 'REGISTRARSE',
+    footerSub: 'Suscribite para recibir novedades',
+    emailPlaceholder: 'Email para newsletters', subscribe: 'SUSCRIBIRSE',
+    menuLinks: ['Inicio', 'Nosotros', 'Cómo funciona', 'Cumplimiento'],
+    legalLinks: ['Términos de Servicio', 'Política de Confidencialidad', 'Soporte', 'FAQ'],
+    copyright: 'Todos los derechos reservados.',
+    filterAll: 'Todos', filterGrains: 'Cereales', filterLegumes: 'Legumbres',
+    filterOilseeds: 'Oleaginosas', filterForages: 'Forrajes',
+    fixed: 'Precio fijo', negotiable: 'Negociable',
+    noProducts: 'No se encontraron productos.',
+    language: 'IDIOMA',
+  },
+};
+
+// ─── PRODUCTS — usando URLs que sí cargan en producción ────────────────────────
+const products = [
   {
     id: 1,
-    name: 'Maíz Amarillo 100% Limpio',
-    category: 'Cereales',
-    price: 1100,
-    maxPrice: 1800,
-    unit: 'por tonelada',
-    image: 'https://images.unsplash.com/photo-1603086413587-0b938afa1726?w=800&h=600&fit=crop',
-    description: 'Maíz amarillo 100% limpio, apto para consumo y exportación.',
+    // Maíz amarillo
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/YellowCorn.jpg/640px-YellowCorn.jpg',
+    name: { EN: 'Yellow Corn 100% Clean', ES: 'Maíz Amarillo 100% Limpio' },
+    category: 'Grains',
+    price: '$1,100 - $1,800',
     location: 'Córdoba, Argentina',
     company: 'AgroSur S.A.',
     priceType: 'fixed',
-    stock: 1000,
-    volume: '50 - 1000 tn',
-    deliveryFrom: 'Inmediato',
-    origin: 'Argentina',
-    grade: 'Grado 1',
-    certification: 'No-GMO',
-    addedDate: new Date('2025-01-15'),
+    date: { EN: '2 days ago', ES: 'Hace 2 días' },
   },
   {
     id: 2,
-    name: 'Soja Premium',
-    category: 'Oleaginosas',
-    price: 450,
-    maxPrice: 520,
-    unit: 'por tonelada',
-    image: 'https://images.unsplash.com/photo-1599059813005-11265ba4b4ce?w=800&h=600&fit=crop',
-    description: 'Soja de primera calidad, alto contenido proteico.',
+    // Soja
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Soybean_sprouts.jpg/640px-Soybean_sprouts.jpg',
+    name: { EN: 'Premium Soya Beans', ES: 'Soja Premium' },
+    category: 'Legumes',
+    price: '$450 - $520',
     location: 'Santa Fe, Argentina',
     company: 'PampaSoja Ltda.',
     priceType: 'negotiable',
-    stock: 500,
-    volume: '20 - 500 tn',
-    deliveryFrom: 'Inmediato',
-    origin: 'Argentina',
-    grade: 'Grado A',
-    certification: 'Orgánica',
-    addedDate: new Date('2025-02-01'),
+    date: { EN: '5 days ago', ES: 'Hace 5 días' },
   },
   {
     id: 3,
-    name: 'Trigo Pan',
-    category: 'Cereales',
-    price: 320,
-    maxPrice: null,
-    unit: 'por tonelada',
-    image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800&h=600&fit=crop',
-    description: 'Trigo pan de excelente calidad molinera, bajo porcentaje de impurezas.',
+    // Trigo
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Wheat_harvest.jpg/640px-Wheat_harvest.jpg',
+    name: { EN: 'Wheat Pan Grade 2', ES: 'Trigo Pan Grado 2' },
+    category: 'Grains',
+    price: '$320',
     location: 'Buenos Aires, Argentina',
     company: 'CerealesBA S.R.L.',
     priceType: 'fixed',
-    stock: 2000,
-    volume: '100 - 2000 tn',
-    deliveryFrom: 'Cosecha 2025',
-    origin: 'Argentina',
-    grade: 'Grado 2',
-    certification: 'Convencional',
-    addedDate: new Date('2025-01-20'),
+    date: { EN: '1 week ago', ES: 'Hace 1 semana' },
   },
   {
     id: 4,
-    name: 'Girasol Alto Oleico',
-    category: 'Oleaginosas',
-    price: 290,
-    maxPrice: 340,
-    unit: 'por tonelada',
-    image: 'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=800&h=600&fit=crop',
-    description: 'Girasol alto oleico certificado, ideal para aceites premium.',
+    // Girasol
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Sunflower_sky_backdrop.jpg/640px-Sunflower_sky_backdrop.jpg',
+    name: { EN: 'High Oleic Sunflower', ES: 'Girasol Alto Oleico' },
+    category: 'Oilseeds',
+    price: '$290 - $340',
     location: 'La Pampa, Argentina',
     company: 'PampaOil S.A.',
     priceType: 'negotiable',
-    stock: 800,
-    volume: '50 - 800 tn',
-    deliveryFrom: 'Marzo 2025',
-    origin: 'Argentina',
-    grade: 'Alto Oleico',
-    certification: 'Non-GMO',
-    addedDate: new Date('2025-02-10'),
+    date: { EN: '3 days ago', ES: 'Hace 3 días' },
   },
   {
     id: 5,
-    name: 'Cebada Cervecera',
-    category: 'Cereales',
-    price: 280,
-    maxPrice: null,
-    unit: 'por tonelada',
-    image: 'https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=800&h=600&fit=crop',
-    description: 'Cebada cervecera de alta calidad maltera, contenido proteico controlado.',
+    // Cebada
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Barley_au_naturel.jpg/640px-Barley_au_naturel.jpg',
+    name: { EN: 'Malting Barley', ES: 'Cebada Maltera' },
+    category: 'Grains',
+    price: '$280',
     location: 'Río Negro, Argentina',
     company: 'PatagoniaMalt S.A.',
     priceType: 'fixed',
-    stock: 600,
-    volume: '30 - 600 tn',
-    deliveryFrom: 'Junio 2025',
-    origin: 'Argentina',
-    grade: 'Maltera',
-    certification: 'Convencional',
-    addedDate: new Date('2025-01-28'),
+    date: { EN: '6 days ago', ES: 'Hace 6 días' },
   },
   {
     id: 6,
-    name: 'Sorgo Granífero',
-    category: 'Cereales',
-    price: 210,
-    maxPrice: 250,
-    unit: 'por tonelada',
-    image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&h=600&fit=crop',
-    description: 'Sorgo granífero seco, excelente para alimentación animal.',
+    // Sorgo
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Sorghum_Mature.jpg/640px-Sorghum_Mature.jpg',
+    name: { EN: 'Feed Sorghum', ES: 'Sorgo Forrajero' },
+    category: 'Forages',
+    price: '$210 - $250',
     location: 'Santiago del Estero, Argentina',
     company: 'NOA Granos S.R.L.',
     priceType: 'negotiable',
-    stock: 1500,
-    volume: '100 - 1500 tn',
-    deliveryFrom: 'Inmediato',
-    origin: 'Argentina',
-    grade: 'Grado 2',
-    certification: 'Convencional',
-    addedDate: new Date('2025-02-05'),
+    date: { EN: '1 day ago', ES: 'Hace 1 día' },
+  },
+  {
+    id: 7,
+    // Arroz
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/White_rice.jpg/640px-White_rice.jpg',
+    name: { EN: 'White Rice Premium', ES: 'Arroz Blanco Premium' },
+    category: 'Grains',
+    price: '$550 - $620',
+    location: 'Corrientes, Argentina',
+    company: 'Arrocera del Norte S.A.',
+    priceType: 'fixed',
+    date: { EN: '4 days ago', ES: 'Hace 4 días' },
+  },
+  {
+    id: 8,
+    // Soja orgánica / campo
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Soy_beal_Flickr.jpg/640px-Soy_beal_Flickr.jpg',
+    name: { EN: 'Organic Soybeans', ES: 'Soja Orgánica Certificada' },
+    category: 'Legumes',
+    price: '$490 - $560',
+    location: 'Entre Ríos, Argentina',
+    company: 'OrganicPampa S.A.',
+    priceType: 'negotiable',
+    date: { EN: '2 days ago', ES: 'Hace 2 días' },
   },
 ];
 
-const categories = ['Todos', 'Cereales', 'Oleaginosas', 'Legumbres', 'Forrajes'];
-const regions = ['Todas las Regiones', 'Córdoba', 'Santa Fe', 'Buenos Aires', 'La Pampa', 'Río Negro', 'Santiago del Estero'];
+// Imágenes de banners — Wikipedia Commons (sin CORS, sin restricciones)
+const BANNER_CORN     = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/YellowCorn.jpg/800px-YellowCorn.jpg';
+const BANNER_HARVEST  = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Wheat_harvest.jpg/1200px-Wheat_harvest.jpg';
+const BANNER_FIELDS   = 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Sunflower_sky_backdrop.jpg/1200px-Sunflower_sky_backdrop.jpg';
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
-const usdToArs = 1250; // tipo de cambio de referencia
-
-const formatPrice = (price, currency) => {
-  if (currency === 'ARS') {
-    return `$${(price * usdToArs).toLocaleString('es-AR')}`;
-  }
-  return `USD ${price.toLocaleString('en-US')}`;
+// ─── FEATURE ICONS ─────────────────────────────────────────────────────────────
+const FeatureIcon = ({ type }) => {
+  const c = '#4A90D9';
+  const p = { width: 40, height: 40, viewBox: '0 0 40 40' };
+  const icons = {
+    list:    <svg {...p}><rect x="14" y="10" width="16" height="2.5" rx="1.25" fill={c}/><rect x="14" y="18" width="16" height="2.5" rx="1.25" fill={c}/><rect x="14" y="26" width="16" height="2.5" rx="1.25" fill={c}/><rect x="8" y="9.5" width="4" height="4" rx="1" fill={c} opacity="0.5"/><rect x="8" y="17.5" width="4" height="4" rx="1" fill={c} opacity="0.5"/><rect x="8" y="25.5" width="4" height="4" rx="1" fill={c} opacity="0.5"/></svg>,
+    shield:  <svg {...p}><path d="M20 6 L32 11 L32 22 C32 29 20 35 20 35 C20 35 8 29 8 22 L8 11 Z" stroke={c} strokeWidth="2" fill="none"/><path d="M14 20 L18 24 L26 16" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    dollar:  <svg {...p}><circle cx="20" cy="20" r="13" stroke={c} strokeWidth="2" fill="none"/><text x="20" y="26" textAnchor="middle" fill={c} fontSize="16" fontWeight="bold">$</text></svg>,
+    message: <svg {...p}><rect x="6" y="9" width="28" height="18" rx="3" stroke={c} strokeWidth="2" fill="none"/><path d="M6 18 L34 18" stroke={c} strokeWidth="1.5"/><circle cx="13" cy="24" r="2" fill={c} opacity="0.6"/><rect x="17" y="23" width="10" height="2" rx="1" fill={c} opacity="0.4"/><path d="M14 27 L10 33" stroke={c} strokeWidth="1.5" strokeLinecap="round"/></svg>,
+    user:    <svg {...p}><circle cx="20" cy="14" r="7" stroke={c} strokeWidth="2" fill="none"/><path d="M7 36 C7 28 33 28 33 36" stroke={c} strokeWidth="2" fill="none" strokeLinecap="round"/></svg>,
+    chart:   <svg {...p}><polyline points="6,32 14,22 20,26 28,14 34,18" stroke={c} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/><polyline points="28,14 34,14 34,20" stroke={c} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  };
+  return icons[type] || null;
 };
+const iconTypes = ['list', 'shield', 'dollar', 'message', 'user', 'chart'];
 
-// ─── LOGO ─────────────────────────────────────────────────────────────────────
-const Logo = () => (
-  <div className="flex items-center gap-3">
-    <div className="relative w-10 h-10">
-      <svg viewBox="0 0 100 100" className="w-full h-full">
-        <path d="M50 10 L40 30 L50 50 L60 30 Z" fill="#9FD356" />
-        <path d="M40 30 L30 45 L40 60 L50 50 Z" fill="#6BBF3B" />
-        <path d="M60 30 L70 45 L60 60 L50 50 Z" fill="#4A9D2A" />
-        <path d="M50 50 C50 50, 30 75, 30 85 Q30 95, 50 95 Q70 95, 70 85 C70 75, 50 50, 50 50" fill="#6BBF3B" />
-      </svg>
-    </div>
-    <div>
-      <h1 className="text-2xl font-bold text-white tracking-tight">AGRIMARKET</h1>
-      <p className="text-xs text-white opacity-80">Plataforma de Comercio Agrícola</p>
-    </div>
-  </div>
-);
-
-// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+// ─── MAIN ──────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [products, setProducts] = useState(initialProducts);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Todos');
-  const [selectedRegion, setSelectedRegion] = useState('Todas las Regiones');
-  const [currency, setCurrency] = useState('USD');
-  const [currentPage, setCurrentPage] = useState('home');
-  const [viewProduct, setViewProduct] = useState(null);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
-  const [paymentProduct, setPaymentProduct] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState('');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [adminForm, setAdminForm] = useState({
-    name: '', category: 'Cereales', price: '', maxPrice: '',
-    unit: 'por tonelada', description: '', location: '', company: '',
-    stock: '', volume: '', origin: 'Argentina', grade: '', certification: '',
-    image: '', priceType: 'fixed'
-  });
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [notification, setNotification] = useState(null);
+  const [lang, setLang]           = useState('EN');
+  const [activeTab, setActiveTab] = useState('BUY');
+  const [search, setSearch]       = useState('');
+  const [category, setCategory]   = useState('All');
+  const [email, setEmail]         = useState('');
+  const [langOpen, setLangOpen]   = useState(false);
 
-  // ── Helpers ──
-  const showNotification = (msg, type = 'success') => {
-    setNotification({ msg, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
+  const t    = T[lang];
+  const blue = '#4A90D9';
+  const grad = 'linear-gradient(100deg,#5B8FDB 0%,#4DBFD9 100%)';
 
-  const filteredProducts = products.filter(p => {
-    const matchSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.company.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchCategory = selectedCategory === 'Todos' || p.category === selectedCategory;
-    const matchRegion = selectedRegion === 'Todas las Regiones' || p.location.includes(selectedRegion);
-    return matchSearch && matchCategory && matchRegion;
+  const filters = [
+    { key: 'All',      label: t.filterAll },
+    { key: 'Grains',   label: t.filterGrains },
+    { key: 'Legumes',  label: t.filterLegumes },
+    { key: 'Oilseeds', label: t.filterOilseeds },
+    { key: 'Forages',  label: t.filterForages },
+  ];
+
+  const filtered = products.filter(p => {
+    const q = search.toLowerCase();
+    const matchSearch = !search ||
+      p.name[lang].toLowerCase().includes(q) ||
+      p.company.toLowerCase().includes(q) ||
+      p.location.toLowerCase().includes(q);
+    return matchSearch && (category === 'All' || p.category === category);
   });
 
-  // ── Admin CRUD ──
-  const handleSaveProduct = () => {
-    if (!adminForm.name || !adminForm.price) {
-      showNotification('Completá al menos nombre y precio.', 'error');
-      return;
-    }
-    if (editingProduct) {
-      setProducts(products.map(p =>
-        p.id === editingProduct.id
-          ? { ...p, ...adminForm, price: parseFloat(adminForm.price), maxPrice: adminForm.maxPrice ? parseFloat(adminForm.maxPrice) : null, addedDate: p.addedDate }
-          : p
-      ));
-      showNotification('Producto actualizado correctamente.');
-    } else {
-      const newProduct = {
-        ...adminForm,
-        id: Date.now(),
-        price: parseFloat(adminForm.price),
-        maxPrice: adminForm.maxPrice ? parseFloat(adminForm.maxPrice) : null,
-        addedDate: new Date(),
-      };
-      setProducts([...products, newProduct]);
-      showNotification('Producto publicado correctamente.');
-    }
-    setAdminForm({ name: '', category: 'Cereales', price: '', maxPrice: '', unit: 'por tonelada', description: '', location: '', company: '', stock: '', volume: '', origin: 'Argentina', grade: '', certification: '', image: '', priceType: 'fixed' });
-    setEditingProduct(null);
-  };
+  return (
+    <div style={{ fontFamily: "'Roboto','Helvetica Neue',Arial,sans-serif", minHeight: '100vh', background: '#fff', color: '#222' }}>
 
-  const handleEditProduct = (product) => {
-    setEditingProduct(product);
-    setAdminForm({ ...product, price: product.price.toString(), maxPrice: product.maxPrice ? product.maxPrice.toString() : '' });
-  };
+      {/* ══ HEADER ══════════════════════════════════════════════════════════════ */}
+      <header style={{ background: grad, position: 'sticky', top: 0, zIndex: 50, boxShadow: '0 2px 12px rgba(0,0,0,0.12)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 28px', display: 'flex', alignItems: 'center', height: 64, gap: 32 }}>
 
-  const handleDeleteProduct = (id) => {
-    setProducts(products.filter(p => p.id !== id));
-    showNotification('Producto eliminado.', 'error');
-  };
+          {/* Logo */}
+          <div style={{ color: '#fff', fontWeight: 800, fontSize: 19, letterSpacing: 4, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 9 }}>
+            <svg width="26" height="26" viewBox="0 0 100 100">
+              <path d="M50 10 L40 30 L50 50 L60 30 Z" fill="#9FD356"/>
+              <path d="M40 30 L30 45 L40 60 L50 50 Z" fill="#6BBF3B"/>
+              <path d="M60 30 L70 45 L60 60 L50 50 Z" fill="#4A9D2A"/>
+              <path d="M50 50 C50 50,30 75,30 85 Q30 95,50 95 Q70 95,70 85 C70 75,50 50,50 50" fill="#6BBF3B"/>
+            </svg>
+            AGRIMARKET
+          </div>
 
-  const handleBuyNow = (product, method) => {
-    setPaymentProduct(product);
-    setPaymentMethod(method);
-    setShowPayment(true);
-  };
-
-  const handleLogin = () => {
-    if (loginForm.email && loginForm.password) {
-      setIsLoggedIn(true);
-      setShowLoginModal(false);
-      showNotification('Sesión iniciada correctamente.');
-    } else {
-      showNotification('Completá email y contraseña.', 'error');
-    }
-  };
-
-  // ═══════════════════════════════════════════════════════════════════
-  // HEADER
-  // ═══════════════════════════════════════════════════════════════════
-  const Header = () => (
-    <header className="bg-gradient-to-r from-blue-600 to-cyan-500 shadow-lg sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
-          <button onClick={() => setCurrentPage('home')} className="focus:outline-none">
-            <Logo />
-          </button>
-
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-6">
-            <button onClick={() => setCurrentPage('home')} className="text-white font-medium hover:opacity-80 transition">Inicio</button>
-            <button onClick={() => setCurrentPage('products')} className="text-white font-medium hover:opacity-80 transition">Productos</button>
-            <button onClick={() => setCurrentPage('howItWorks')} className="text-white font-medium hover:opacity-80 transition">¿Cómo funciona?</button>
-            <button onClick={() => setCurrentPage('about')} className="text-white font-medium hover:opacity-80 transition">Nosotros</button>
+          {/* Nav */}
+          <nav style={{ display: 'flex', gap: 28, flex: 1 }}>
+            {t.nav.map(l => (
+              <a key={l} href="#" style={{ color: 'rgba(255,255,255,0.9)', fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap' }}>{l}</a>
+            ))}
           </nav>
 
-          <div className="hidden md:flex items-center gap-3">
-            {/* Currency Toggle */}
-            <div className="flex bg-white/20 rounded-full p-1">
-              {['USD', 'ARS'].map(c => (
-                <button
-                  key={c}
-                  onClick={() => setCurrency(c)}
-                  className={`px-3 py-1 rounded-full text-sm font-bold transition ${currency === c ? 'bg-white text-blue-600' : 'text-white'}`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
+          {/* Auth + Lang */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
+            <a href="#" style={{ color: '#fff', fontSize: 13, fontWeight: 700, textDecoration: 'none', letterSpacing: 1 }}>{t.signIn}</a>
+            <a href="#" style={{ color: '#fff', fontSize: 12, fontWeight: 700, textDecoration: 'none', letterSpacing: 1, border: '2px solid rgba(255,255,255,0.85)', borderRadius: 4, padding: '7px 14px', whiteSpace: 'nowrap' }}>
+              {t.register}
+            </a>
 
-            {isLoggedIn ? (
-              <div className="flex items-center gap-2">
-                <button onClick={() => setShowAdminPanel(true)} className="bg-white text-blue-600 px-4 py-2 rounded-full text-sm font-bold hover:bg-blue-50 transition">
-                  Panel Admin
-                </button>
-                <button onClick={() => { setIsLoggedIn(false); showNotification('Sesión cerrada.'); }} className="text-white hover:opacity-80">
-                  <LogOut size={20} />
-                </button>
-              </div>
-            ) : (
-              <button onClick={() => setShowLoginModal(true)} className="bg-white text-blue-600 px-4 py-2 rounded-full text-sm font-bold hover:bg-blue-50 transition">
-                Ingresar
+            {/* Language dropdown */}
+            <div style={{ position: 'relative' }}>
+              <button onClick={() => setLangOpen(!langOpen)}
+                style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 4, color: '#fff', fontSize: 13, fontWeight: 700, padding: '6px 11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                {lang} <ChevronDown size={12} />
               </button>
-            )}
-          </div>
-
-          {/* Mobile menu toggle */}
-          <button className="md:hidden text-white" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
-          </button>
-        </div>
-
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden mt-3 pb-3 border-t border-white/20 pt-3 flex flex-col gap-3">
-            {['home', 'products', 'howItWorks', 'about'].map(page => (
-              <button key={page} onClick={() => { setCurrentPage(page); setMobileMenuOpen(false); }} className="text-white text-left font-medium">
-                {page === 'home' ? 'Inicio' : page === 'products' ? 'Productos' : page === 'howItWorks' ? '¿Cómo funciona?' : 'Nosotros'}
-              </button>
-            ))}
-            <div className="flex gap-2 mt-2">
-              {['USD', 'ARS'].map(c => (
-                <button key={c} onClick={() => setCurrency(c)} className={`px-3 py-1 rounded-full text-sm font-bold border ${currency === c ? 'bg-white text-blue-600' : 'text-white border-white/50'}`}>{c}</button>
-              ))}
-            </div>
-            {!isLoggedIn && (
-              <button onClick={() => { setShowLoginModal(true); setMobileMenuOpen(false); }} className="bg-white text-blue-600 px-4 py-2 rounded-full text-sm font-bold w-fit">
-                Ingresar
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-    </header>
-  );
-
-  // ═══════════════════════════════════════════════════════════════════
-  // HOME PAGE
-  // ═══════════════════════════════════════════════════════════════════
-  const HomePage = () => (
-    <div>
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-500 text-white py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
-            El mercado de <span className="text-green-300">granos y cereales</span> de Argentina
-          </h2>
-          <p className="text-lg md:text-xl opacity-90 mb-8">
-            Conectamos productores, acopiadores y compradores en una plataforma segura y transparente.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button onClick={() => setCurrentPage('products')} className="bg-green-400 hover:bg-green-300 text-green-900 font-bold px-8 py-3 rounded-full text-lg transition flex items-center gap-2 justify-center">
-              Ver Productos <ArrowRight size={20} />
-            </button>
-            <button onClick={() => setShowLoginModal(true)} className="bg-white/20 hover:bg-white/30 border border-white text-white font-bold px-8 py-3 rounded-full text-lg transition">
-              Publicar Producto
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="bg-white py-12 px-4 border-b">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {[
-            { label: 'Productos publicados', value: products.length, icon: Package, color: 'blue' },
-            { label: 'Empresas registradas', value: '120+', icon: Building2, color: 'green' },
-            { label: 'Toneladas operadas', value: '50.000+', icon: TrendingUp, color: 'cyan' },
-            { label: 'Provincias activas', value: '18', icon: MapPin, color: 'blue' },
-          ].map((stat, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <div className={`w-14 h-14 rounded-full bg-${stat.color}-100 flex items-center justify-center mb-3`}>
-                <stat.icon size={26} className={`text-${stat.color}-600`} />
-              </div>
-              <p className="text-3xl font-extrabold text-gray-800">{stat.value}</p>
-              <p className="text-gray-500 text-sm mt-1">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section className="py-12 px-4 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-2xl font-bold text-gray-800">Productos Destacados</h3>
-            <button onClick={() => setCurrentPage('products')} className="text-blue-600 font-semibold flex items-center gap-1 hover:underline">
-              Ver todos <ChevronRight size={18} />
-            </button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.slice(0, 3).map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How it works CTA */}
-      <section className="bg-gradient-to-r from-green-500 to-cyan-500 py-14 px-4 text-white text-center">
-        <h3 className="text-3xl font-bold mb-3">¿Sos productor o acopiador?</h3>
-        <p className="text-lg opacity-90 mb-6">Publicá tus productos gratis y llegá a compradores de todo el país.</p>
-        <button onClick={() => isLoggedIn ? setShowAdminPanel(true) : setShowLoginModal(true)} className="bg-white text-green-700 font-bold px-8 py-3 rounded-full text-lg hover:bg-green-50 transition">
-          Empezar ahora →
-        </button>
-      </section>
-    </div>
-  );
-
-  // ═══════════════════════════════════════════════════════════════════
-  // PRODUCT CARD
-  // ═══════════════════════════════════════════════════════════════════
-  const ProductCard = ({ product }) => (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow border border-gray-100 flex flex-col">
-      <div className="relative h-48 overflow-hidden">
-        {product.image ? (
-          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center">
-            <Leaf size={48} className="text-green-400" />
-          </div>
-        )}
-        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur text-xs font-bold text-blue-700 px-3 py-1 rounded-full shadow">
-          {product.category}
-        </span>
-        <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full shadow ${product.priceType === 'fixed' ? 'bg-green-500 text-white' : 'bg-yellow-400 text-yellow-900'}`}>
-          {product.priceType === 'fixed' ? 'Precio fijo' : 'Negociable'}
-        </span>
-      </div>
-      <div className="p-5 flex flex-col flex-1">
-        <h3 className="font-bold text-gray-800 text-lg mb-1">{product.name}</h3>
-        <p className="text-gray-500 text-sm mb-3 flex items-center gap-1">
-          <MapPin size={13} /> {product.location}
-        </p>
-        <p className="text-blue-600 font-extrabold text-xl mb-1">
-          {formatPrice(product.price, currency)}
-          {product.maxPrice ? ` - ${formatPrice(product.maxPrice, currency)}` : ''}
-        </p>
-        <p className="text-gray-400 text-xs mb-4">{product.unit} • Stock: {product.stock} tn</p>
-        <div className="mt-auto flex gap-2">
-          <button
-            onClick={() => { setViewProduct(product); setCurrentPage('productDetail'); }}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl transition text-sm"
-          >
-            Ver detalle
-          </button>
-          <button
-            onClick={() => handleBuyNow(product, 'MercadoPago')}
-            className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-xl transition text-sm"
-          >
-            Comprar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  // ═══════════════════════════════════════════════════════════════════
-  // PRODUCTS PAGE
-  // ═══════════════════════════════════════════════════════════════════
-  const ProductsPage = () => (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">Marketplace</h2>
-
-      {/* Filters */}
-      <div className="bg-white rounded-2xl shadow p-4 mb-8 flex flex-wrap gap-4 items-center">
-        <div className="flex-1 min-w-[200px] relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Buscar producto o empresa..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm"
-          />
-        </div>
-        <select value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
-          {categories.map(c => <option key={c}>{c}</option>)}
-        </select>
-        <select value={selectedRegion} onChange={e => setSelectedRegion(e.target.value)} className="border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
-          {regions.map(r => <option key={r}>{r}</option>)}
-        </select>
-        <span className="text-gray-500 text-sm">{filteredProducts.length} resultado{filteredProducts.length !== 1 ? 's' : ''}</span>
-      </div>
-
-      {filteredProducts.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <Package size={48} className="mx-auto mb-4 opacity-40" />
-          <p className="text-lg">No se encontraron productos.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
-  // ═══════════════════════════════════════════════════════════════════
-  // PRODUCT DETAIL
-  // ═══════════════════════════════════════════════════════════════════
-  const ProductDetailPage = () => {
-    if (!viewProduct) return null;
-    return (
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        <button onClick={() => setCurrentPage('products')} className="flex items-center gap-2 text-blue-600 font-semibold mb-6 hover:underline">
-          ← Volver al marketplace
-        </button>
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <div className="md:flex">
-            <div className="md:w-1/2">
-              {viewProduct.image ? (
-                <img src={viewProduct.image} alt={viewProduct.name} className="w-full h-72 md:h-full object-cover" />
-              ) : (
-                <div className="w-full h-72 bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center">
-                  <Leaf size={64} className="text-green-400" />
-                </div>
+              {langOpen && (
+                <>
+                  <div onClick={() => setLangOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 90 }} />
+                  <div style={{ position: 'absolute', right: 0, top: 42, background: '#fff', borderRadius: 6, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', overflow: 'hidden', zIndex: 100, minWidth: 130 }}>
+                    {['EN', 'ES'].map(l => (
+                      <button key={l} onClick={() => { setLang(l); setLangOpen(false); setCategory('All'); }}
+                        style={{ display: 'block', width: '100%', padding: '11px 16px', border: 'none', background: lang === l ? '#eff6ff' : '#fff', color: lang === l ? blue : '#333', fontWeight: lang === l ? 700 : 400, fontSize: 14, cursor: 'pointer', textAlign: 'left' }}>
+                        {l === 'EN' ? '🇬🇧 English' : '🇦🇷 Español'}
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
-            <div className="md:w-1/2 p-8 flex flex-col gap-4">
-              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full w-fit">{viewProduct.category}</span>
-              <h2 className="text-2xl font-extrabold text-gray-800">{viewProduct.name}</h2>
-              <p className="text-3xl font-extrabold text-blue-600">
-                {formatPrice(viewProduct.price, currency)}
-                {viewProduct.maxPrice ? ` - ${formatPrice(viewProduct.maxPrice, currency)}` : ''}
-              </p>
-              <p className="text-gray-500 text-sm">{viewProduct.unit}</p>
-
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                {[
-                  { label: 'Empresa', value: viewProduct.company },
-                  { label: 'Ubicación', value: viewProduct.location },
-                  { label: 'Origen', value: viewProduct.origin },
-                  { label: 'Grado', value: viewProduct.grade },
-                  { label: 'Certificación', value: viewProduct.certification },
-                  { label: 'Stock', value: `${viewProduct.stock} tn` },
-                  { label: 'Volumen mín/máx', value: viewProduct.volume },
-                  { label: 'Disponibilidad', value: viewProduct.deliveryFrom },
-                ].map(({ label, value }) => (
-                  <div key={label}>
-                    <p className="text-gray-400 font-medium">{label}</p>
-                    <p className="text-gray-700 font-semibold">{value}</p>
-                  </div>
-                ))}
-              </div>
-
-              <p className="text-gray-600 text-sm mt-2">{viewProduct.description}</p>
-
-              <div className="flex gap-3 mt-4">
-                <button onClick={() => handleBuyNow(viewProduct, 'MercadoPago')} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
-                  <ShoppingCart size={18} /> Pagar con MercadoPago
-                </button>
-                <button onClick={() => handleBuyNow(viewProduct, 'Transferencia')} className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition">
-                  Transferencia Bancaria
-                </button>
-              </div>
-            </div>
           </div>
         </div>
-      </div>
-    );
-  };
+      </header>
 
-  // ═══════════════════════════════════════════════════════════════════
-  // HOW IT WORKS PAGE
-  // ═══════════════════════════════════════════════════════════════════
-  const HowItWorksPage = () => (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <h2 className="text-3xl font-bold text-gray-800 text-center mb-2">¿Cómo funciona AGRIMARKET?</h2>
-      <p className="text-gray-500 text-center mb-12">Un proceso simple, transparente y seguro.</p>
-      <div className="space-y-8">
-        {[
-          { step: '01', title: 'Registrate', desc: 'Creá tu cuenta como productor, acopiador o comprador. Es gratis y lleva menos de 2 minutos.', icon: User },
-          { step: '02', title: 'Publicá o buscá', desc: 'Los vendedores publican sus productos con precio, origen y condiciones. Los compradores buscan con filtros por categoría y región.', icon: Search },
-          { step: '03', title: 'Conectate y negociá', desc: 'Contactá directamente al vendedor o comprá al precio publicado. Podés negociar condiciones por mensaje interno.', icon: MessageSquare },
-          { step: '04', title: 'Pagá de forma segura', desc: 'Usá MercadoPago para pagos online o coordiná una transferencia bancaria. La operación queda registrada.', icon: Shield },
-          { step: '05', title: 'Recibí tu mercadería', desc: 'El vendedor coordina la logística. Podés calificar la operación y dejar reseña.', icon: Truck },
-        ].map(({ step, title, desc, icon: Icon }) => (
-          <div key={step} className="flex gap-6 items-start bg-white rounded-2xl shadow p-6 border border-gray-100">
-            <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl flex items-center justify-center shadow">
-              <Icon size={26} className="text-white" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-blue-400 mb-1">PASO {step}</p>
-              <h3 className="text-lg font-bold text-gray-800 mb-1">{title}</h3>
-              <p className="text-gray-500 text-sm">{desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  // ═══════════════════════════════════════════════════════════════════
-  // ABOUT PAGE
-  // ═══════════════════════════════════════════════════════════════════
-  const AboutPage = () => (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <div className="text-center mb-12">
-        <Logo />
-        <p className="mt-4 text-gray-500 text-lg max-w-xl mx-auto">
-          Somos una plataforma argentina especializada en el comercio de granos, cereales y oleaginosas, conectando a todos los actores de la cadena agroindustrial.
+      {/* ══ HERO ═════════════════════════════════════════════════════════════════ */}
+      <section style={{ background: grad, padding: '88px 24px 108px', textAlign: 'center' }}>
+        <h1 style={{ color: '#fff', fontSize: 'clamp(22px,3.2vw,44px)', fontWeight: 300, margin: '0 auto 16px', lineHeight: 1.3, maxWidth: 680 }}>
+          {t.heroTitle}
+        </h1>
+        <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: 16, marginBottom: 50, fontWeight: 300 }}>
+          {t.heroSub}
         </p>
-      </div>
-      <div className="grid md:grid-cols-3 gap-6 mb-12">
-        {[
-          { icon: Globe, title: 'Presencia Nacional', desc: 'Operamos en las principales regiones productoras de Argentina.' },
-          { icon: Award, title: 'Transparencia', desc: 'Precios públicos, operaciones registradas y calificaciones verificadas.' },
-          { icon: Shield, title: 'Seguridad', desc: 'Pagos protegidos a través de MercadoPago y transferencias bancarias auditadas.' },
-        ].map(({ icon: Icon, title, desc }) => (
-          <div key={title} className="bg-white rounded-2xl shadow p-6 text-center border border-gray-100">
-            <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Icon size={26} className="text-white" />
-            </div>
-            <h3 className="font-bold text-gray-800 mb-2">{title}</h3>
-            <p className="text-gray-500 text-sm">{desc}</p>
-          </div>
-        ))}
-      </div>
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl p-8 text-white text-center">
-        <h3 className="text-2xl font-bold mb-2">¿Querés ser parte de AGRIMARKET?</h3>
-        <p className="opacity-90 mb-6">Registrate gratis y empezá a operar hoy mismo.</p>
-        <button onClick={() => setShowLoginModal(true)} className="bg-white text-blue-700 font-bold px-8 py-3 rounded-full text-lg hover:bg-blue-50 transition">
-          Crear cuenta gratis
-        </button>
-      </div>
-    </div>
-  );
 
-  // ═══════════════════════════════════════════════════════════════════
-  // ADMIN PANEL
-  // ═══════════════════════════════════════════════════════════════════
-  const AdminPanel = () => (
-    <div className="fixed inset-0 bg-gray-900 z-50 overflow-y-auto">
-      <div className="min-h-screen">
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-500 p-6">
-          <div className="flex justify-between items-center max-w-7xl mx-auto">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Panel de Administración</h2>
-              <p className="text-white/70 text-sm">Gestión de productos y operaciones</p>
-            </div>
-            <button onClick={() => setShowAdminPanel(false)} className="p-2 bg-white rounded-xl hover:bg-gray-100">
-              <X size={22} />
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, maxWidth: 880, margin: '0 auto', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.45)', borderRadius: 6, color: '#fff', fontWeight: 700, fontSize: 13, letterSpacing: 1.5, padding: '0 20px', height: 52, cursor: 'pointer', flexShrink: 0 }}>
+            <List size={16} /> {t.categories}
+          </button>
+
+          <div style={{ display: 'flex', flex: 1, minWidth: 280, background: '#fff', borderRadius: 6, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.14)', height: 52 }}>
+            {[{ key: 'BUY', label: t.buy }, { key: 'SELL', label: t.sell }].map(tab => (
+              <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+                style={{ background: activeTab === tab.key ? blue : 'transparent', color: activeTab === tab.key ? '#fff' : '#999', border: 'none', fontWeight: 700, fontSize: 13, padding: '0 18px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                {tab.label}
+              </button>
+            ))}
+            <input type="text" placeholder={t.searchPlaceholder} value={search} onChange={e => setSearch(e.target.value)}
+              style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: '#555', padding: '0 12px', background: 'transparent' }} />
+            <button style={{ background: 'none', border: 'none', paddingRight: 16, cursor: 'pointer', color: blue }}>
+              <Search size={20} />
             </button>
           </div>
         </div>
+      </section>
 
-        <div className="max-w-7xl mx-auto p-6">
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {[
-              { label: 'Productos', value: products.length, icon: Package, color: 'blue' },
-              { label: 'Categorías', value: new Set(products.map(p => p.category)).size, icon: Filter, color: 'green' },
-              { label: 'Stock total (tn)', value: products.reduce((a, b) => a + (b.stock || 0), 0).toLocaleString(), icon: TrendingUp, color: 'cyan' },
-              { label: 'Empresas', value: new Set(products.map(p => p.company)).size, icon: Building2, color: 'purple' },
-            ].map(({ label, value, icon: Icon, color }) => (
-              <div key={label} className="bg-white rounded-2xl shadow p-5 flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl bg-${color}-100 flex items-center justify-center`}>
-                  <Icon size={22} className={`text-${color}-600`} />
-                </div>
+      {/* ══ TWO-PANEL BANNER ═════════════════════════════════════════════════════ */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+
+        {/* LEFT — imagen maíz + texto */}
+        <div style={{ display: 'flex', alignItems: 'stretch', background: '#fff', minHeight: 300, overflow: 'hidden' }}>
+          <div style={{ width: '44%', flexShrink: 0 }}>
+            <img
+              src={BANNER_CORN}
+              alt="Corn"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              onError={e => { e.target.style.display = 'none'; }}
+            />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '44px 44px' }}>
+            <h2 style={{ fontSize: 25, fontWeight: 400, color: '#1a1a2e', marginBottom: 6, lineHeight: 1.3 }}>{t.banner1Title}</h2>
+            <div style={{ color: blue, fontSize: 27, fontWeight: 700, marginBottom: 18 }}>{t.banner1Blue}</div>
+            <p style={{ color: '#666', fontSize: 14, lineHeight: 1.8, marginBottom: 28, maxWidth: 300 }}>{t.banner1Desc}</p>
+            <a href="#" style={{ display: 'inline-block', background: blue, color: '#fff', fontWeight: 700, fontSize: 12, letterSpacing: 1.5, padding: '13px 26px', borderRadius: 4, textDecoration: 'none', width: 'fit-content' }}>
+              {t.banner1Btn}
+            </a>
+          </div>
+        </div>
+
+        {/* RIGHT — imagen cosecha con overlay oscuro */}
+        <div style={{ position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', padding: '44px 56px', minHeight: 300 }}>
+          <img
+            src={BANNER_HARVEST}
+            alt="Harvest"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            onError={e => { e.target.parentNode.style.background = '#1a2a3a'; }}
+          />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,rgba(10,20,40,0.75) 0%,rgba(10,35,65,0.60) 100%)' }} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h2 style={{ color: '#fff', fontSize: 28, fontWeight: 400, lineHeight: 1.4, marginBottom: 32, maxWidth: 320 }}>{t.banner2Title}</h2>
+            <a href="#" style={{ display: 'inline-block', color: '#fff', fontWeight: 700, fontSize: 12, letterSpacing: 1.5, padding: '12px 26px', border: '2px solid #fff', borderRadius: 4, textDecoration: 'none' }}>
+              {t.banner2Btn}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* ══ 6 FEATURES ═══════════════════════════════════════════════════════════ */}
+      <section style={{ background: '#fafbfc', padding: '72px 40px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <h2 style={{ textAlign: 'center', fontSize: 27, fontWeight: 300, color: '#1a1a2e', marginBottom: 56 }}>{t.featTitle}</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '52px 56px' }}>
+            {t.features.map(({ title, desc }, i) => (
+              <div key={i} style={{ display: 'flex', gap: 18, alignItems: 'flex-start' }}>
+                <div style={{ flexShrink: 0 }}><FeatureIcon type={iconTypes[i]} /></div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-800">{value}</p>
-                  <p className="text-gray-400 text-xs">{label}</p>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', marginBottom: 9, lineHeight: 1.35 }}>{title}</h3>
+                  <p style={{ fontSize: 13, color: '#777', lineHeight: 1.75, margin: 0 }}>{desc}</p>
                 </div>
               </div>
             ))}
           </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Form */}
-            <div className="bg-white rounded-2xl shadow p-6">
-              <h3 className="font-bold text-gray-800 text-lg mb-4">
-                {editingProduct ? '✏️ Editar Producto' : '➕ Nuevo Producto'}
-              </h3>
-              <div className="space-y-3">
-                {[
-                  { label: 'Nombre del producto', key: 'name', type: 'text' },
-                  { label: 'Empresa/Productor', key: 'company', type: 'text' },
-                  { label: 'Ubicación', key: 'location', type: 'text' },
-                  { label: 'Precio USD (mín)', key: 'price', type: 'number' },
-                  { label: 'Precio USD (máx, opcional)', key: 'maxPrice', type: 'number' },
-                  { label: 'Stock (toneladas)', key: 'stock', type: 'number' },
-                  { label: 'Volumen mín/máx', key: 'volume', type: 'text' },
-                  { label: 'Grado / Calidad', key: 'grade', type: 'text' },
-                  { label: 'Certificación', key: 'certification', type: 'text' },
-                  { label: 'URL de imagen', key: 'image', type: 'text' },
-                ].map(({ label, key, type }) => (
-                  <div key={key}>
-                    <label className="text-xs font-semibold text-gray-500 block mb-1">{label}</label>
-                    <input
-                      type={type}
-                      value={adminForm[key]}
-                      onChange={e => setAdminForm({ ...adminForm, [key]: e.target.value })}
-                      className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                    />
-                  </div>
-                ))}
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 block mb-1">Categoría</label>
-                  <select value={adminForm.category} onChange={e => setAdminForm({ ...adminForm, category: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
-                    {categories.filter(c => c !== 'Todos').map(c => <option key={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 block mb-1">Tipo de precio</label>
-                  <select value={adminForm.priceType} onChange={e => setAdminForm({ ...adminForm, priceType: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
-                    <option value="fixed">Precio fijo</option>
-                    <option value="negotiable">Negociable</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 block mb-1">Descripción</label>
-                  <textarea
-                    value={adminForm.description}
-                    onChange={e => setAdminForm({ ...adminForm, description: e.target.value })}
-                    rows={3}
-                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                  />
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button onClick={handleSaveProduct} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl transition">
-                    {editingProduct ? 'Actualizar' : 'Publicar'}
-                  </button>
-                  {editingProduct && (
-                    <button onClick={() => { setEditingProduct(null); setAdminForm({ name: '', category: 'Cereales', price: '', maxPrice: '', unit: 'por tonelada', description: '', location: '', company: '', stock: '', volume: '', origin: 'Argentina', grade: '', certification: '', image: '', priceType: 'fixed' }); }} className="px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded-xl transition">
-                      Cancelar
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Products List */}
-            <div className="bg-white rounded-2xl shadow p-6">
-              <h3 className="font-bold text-gray-800 text-lg mb-4">Productos publicados ({products.length})</h3>
-              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-                {products.map(product => (
-                  <div key={product.id} className="flex items-center gap-3 p-3 border rounded-xl hover:bg-gray-50 transition">
-                    <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                      {product.image ? (
-                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center"><Leaf size={20} className="text-green-400" /></div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-800 text-sm truncate">{product.name}</p>
-                      <p className="text-blue-600 text-xs font-bold">
-                        {formatPrice(product.price, currency)}{product.maxPrice ? ` - ${formatPrice(product.maxPrice, currency)}` : ''}
-                      </p>
-                      <p className="text-gray-400 text-xs">{product.location}</p>
-                    </div>
-                    <div className="flex gap-1 flex-shrink-0">
-                      <button onClick={() => handleEditProduct(product)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
-                        <Edit size={16} />
-                      </button>
-                      <button onClick={() => handleDeleteProduct(product.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  );
+      </section>
 
-  // ═══════════════════════════════════════════════════════════════════
-  // PAYMENT MODAL
-  // ═══════════════════════════════════════════════════════════════════
-  const PaymentModal = () => {
-    if (!showPayment || !paymentProduct) return null;
-    return (
-      <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-gray-800">Confirmar compra</h3>
-            <button onClick={() => setShowPayment(false)} className="text-gray-400 hover:text-gray-600">
-              <X size={22} />
-            </button>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 mb-6">
-            <p className="font-bold text-gray-800">{paymentProduct.name}</p>
-            <p className="text-blue-600 font-extrabold text-xl mt-1">
-              {formatPrice(paymentProduct.price, currency)}
-              {paymentProduct.maxPrice ? ` - ${formatPrice(paymentProduct.maxPrice, currency)}` : ''}
-            </p>
-            <p className="text-gray-500 text-sm">{paymentProduct.unit}</p>
-          </div>
-          <p className="text-sm text-gray-600 mb-4">Método seleccionado: <strong className="text-blue-600">{paymentMethod}</strong></p>
+      {/* ══ PRODUCTS GRID ════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '56px 40px 80px', background: '#fff' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
 
-          {paymentMethod === 'MercadoPago' ? (
-            <div className="space-y-3">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-700">
-                <p className="font-bold mb-1">💳 MercadoPago</p>
-                <p>Serás redirigido a la plataforma de pago seguro de MercadoPago para completar la transacción.</p>
-              </div>
-              <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition">
-                Pagar con MercadoPago →
-              </button>
+          {/* Header + filters */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
+            <h2 style={{ fontSize: 27, fontWeight: 300, color: '#1a1a2e', margin: 0 }}>{t.recentTitle}</h2>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {filters.map(f => (
+                <button key={f.key} onClick={() => setCategory(f.key)}
+                  style={{ padding: '7px 16px', borderRadius: 20, border: '1.5px solid', cursor: 'pointer', fontWeight: 600, fontSize: 12,
+                    borderColor: category === f.key ? blue : '#e0e0e0',
+                    background: category === f.key ? '#eff6ff' : '#fff',
+                    color: category === f.key ? blue : '#888' }}>
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Grid */}
+          {filtered.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 0', color: '#ccc' }}>
+              <Package size={48} style={{ margin: '0 auto 16px', display: 'block', opacity: 0.3 }} />
+              <p style={{ fontSize: 16 }}>{t.noProducts}</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700">
-                <p className="font-bold mb-2">🏦 Transferencia Bancaria</p>
-                <p><strong>Banco:</strong> Banco Galicia</p>
-                <p><strong>CBU:</strong> 0070999820000001234567</p>
-                <p><strong>Alias:</strong> AGRIMARKET.VENTAS</p>
-                <p><strong>Titular:</strong> AGRIMARKET S.A.</p>
-                <p><strong>CUIT:</strong> 30-12345678-9</p>
-              </div>
-              <button onClick={() => { setShowPayment(false); showNotification('¡Datos bancarios copiados! Completá la transferencia.'); }} className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition">
-                Copiar datos y confirmar
-              </button>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(255px,1fr))', gap: 22 }}>
+              {filtered.map(p => (
+                <div key={p.id}
+                  style={{ borderRadius: 8, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.08)', border: '1px solid #eee', background: '#fff', cursor: 'pointer', transition: 'transform 0.18s, box-shadow 0.18s' }}
+                  onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.14)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                  {/* Image */}
+                  <div style={{ position: 'relative', height: 180, overflow: 'hidden', background: '#e8f0e8' }}>
+                    <img
+                      src={p.image}
+                      alt={p.name[lang]}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      onError={e => {
+                        e.target.style.display = 'none';
+                        e.target.parentNode.style.display = 'flex';
+                        e.target.parentNode.style.alignItems = 'center';
+                        e.target.parentNode.style.justifyContent = 'center';
+                        e.target.parentNode.innerHTML = `<span style="font-size:48px;">🌾</span>`;
+                      }}
+                    />
+                    <span style={{ position: 'absolute', top: 10, left: 10, borderRadius: 4, padding: '3px 9px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.93)', color: blue }}>
+                      {filters.find(f => f.key === p.category)?.label || p.category}
+                    </span>
+                    <span style={{ position: 'absolute', top: 10, right: 10, borderRadius: 4, padding: '3px 9px', fontSize: 11, fontWeight: 700,
+                      background: p.priceType === 'fixed' ? 'rgba(220,252,231,0.95)' : 'rgba(254,249,195,0.95)',
+                      color: p.priceType === 'fixed' ? '#15803d' : '#854d0e' }}>
+                      {p.priceType === 'fixed' ? t.fixed : t.negotiable}
+                    </span>
+                  </div>
+
+                  {/* Info */}
+                  <div style={{ padding: '16px 18px 18px' }}>
+                    <h3 style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e', marginBottom: 6, lineHeight: 1.3 }}>{p.name[lang]}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#888', fontSize: 12, marginBottom: 3 }}>
+                      <MapPin size={12} /> {p.location}
+                    </div>
+                    <div style={{ color: '#bbb', fontSize: 11, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Clock size={11} /> {p.date[lang]} &nbsp;·&nbsp; {p.company}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        <div style={{ color: blue, fontWeight: 800, fontSize: 17 }}>{p.price}</div>
+                        <div style={{ color: '#ccc', fontSize: 11 }}>{t.perTon}</div>
+                      </div>
+                      <a href="#" style={{ background: blue, color: '#fff', textDecoration: 'none', fontSize: 12, fontWeight: 700, padding: '9px 15px', borderRadius: 4 }}>
+                        {t.viewOffer} →
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
-
-          <button onClick={() => { setShowPayment(false); setPaymentMethod(paymentMethod === 'MercadoPago' ? 'Transferencia' : 'MercadoPago'); setTimeout(() => setShowPayment(true), 100); }} className="w-full mt-3 text-gray-500 hover:text-gray-700 text-sm underline">
-            Cambiar a {paymentMethod === 'MercadoPago' ? 'Transferencia Bancaria' : 'MercadoPago'}
-          </button>
         </div>
-      </div>
-    );
-  };
+      </section>
 
-  // ═══════════════════════════════════════════════════════════════════
-  // LOGIN MODAL
-  // ═══════════════════════════════════════════════════════════════════
-  const LoginModal = () => (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-gray-800">Ingresar a AGRIMARKET</h3>
-          <button onClick={() => setShowLoginModal(false)} className="text-gray-400 hover:text-gray-600"><X size={22} /></button>
+      {/* ══ PRE-FOOTER CTA BANNER ════════════════════════════════════════════════ */}
+      <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: 290, background: '#f5f7fa' }}>
+        <div style={{ overflow: 'hidden' }}>
+          <img
+            src={BANNER_FIELDS}
+            alt="Fields"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', minHeight: 280 }}
+            onError={e => { e.target.parentNode.style.background = '#c8e6c9'; }}
+          />
         </div>
-        <div className="space-y-4">
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 60px' }}>
+          <h2 style={{ fontSize: 27, fontWeight: 400, color: '#1a1a2e', marginBottom: 8, lineHeight: 1.3 }}>{t.ctaTitle}</h2>
+          <div style={{ color: blue, fontSize: 29, fontWeight: 700, marginBottom: 20 }}>{t.ctaBlue}</div>
+          <p style={{ color: '#666', fontSize: 14, lineHeight: 1.8, marginBottom: 30, maxWidth: 360 }}>{t.ctaDesc}</p>
+          <a href="#" style={{ display: 'inline-block', background: blue, color: '#fff', fontWeight: 700, fontSize: 12, letterSpacing: 1.5, padding: '14px 28px', borderRadius: 4, textDecoration: 'none', width: 'fit-content' }}>
+            {t.ctaBtn}
+          </a>
+        </div>
+      </section>
+
+      {/* ══ FOOTER ═══════════════════════════════════════════════════════════════ */}
+      <footer style={{ background: '#f5f7fa', borderTop: '1px solid #e5e8ed', padding: '52px 40px 32px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 40, marginBottom: 36 }}>
+
+          {/* Newsletter */}
           <div>
-            <label className="text-sm font-semibold text-gray-600 block mb-1">Email</label>
-            <input type="email" value={loginForm.email} onChange={e => setLoginForm({ ...loginForm, email: e.target.value })} placeholder="tu@email.com" className="w-full border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+            <p style={{ fontSize: 15, color: '#333', marginBottom: 16 }}>{t.footerSub}</p>
+            <div style={{ display: 'flex', maxWidth: 380, marginBottom: 24 }}>
+              <input type="email" placeholder={t.emailPlaceholder} value={email} onChange={e => setEmail(e.target.value)}
+                style={{ flex: 1, border: '1px solid #ddd', borderRight: 'none', borderRadius: '4px 0 0 4px', padding: '10px 14px', fontSize: 14, outline: 'none', color: '#555' }} />
+              <button style={{ background: blue, color: '#fff', border: 'none', borderRadius: '0 4px 4px 0', padding: '10px 16px', fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
+                {t.subscribe}
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {[{ I: Facebook, bg: '#1877F2' }, { I: Twitter, bg: '#1DA1F2' }, { I: Linkedin, bg: '#0A66C2' }].map(({ I, bg }, i) => (
+                <a key={i} href="#" style={{ width: 38, height: 38, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', textDecoration: 'none' }}>
+                  <I size={17} />
+                </a>
+              ))}
+            </div>
           </div>
-          <div>
-            <label className="text-sm font-semibold text-gray-600 block mb-1">Contraseña</label>
-            <input type="password" value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })} placeholder="••••••••" className="w-full border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
-          </div>
-          <button onClick={handleLogin} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition mt-2">
-            Ingresar
-          </button>
-          <p className="text-center text-xs text-gray-400">Demo: cualquier email y contraseña funciona.</p>
-        </div>
-      </div>
-    </div>
-  );
 
-  // ═══════════════════════════════════════════════════════════════════
-  // FOOTER
-  // ═══════════════════════════════════════════════════════════════════
-  const Footer = () => (
-    <footer className="bg-gray-800 text-white py-10 px-4 mt-auto">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
-        <div>
-          <Logo />
-          <p className="text-gray-400 text-sm mt-3">Plataforma de comercio agrícola para Argentina. Conectamos productores y compradores en todo el país.</p>
-        </div>
-        <div>
-          <h4 className="font-bold mb-3 text-gray-200">Links</h4>
-          <div className="space-y-2 text-gray-400 text-sm">
-            {[['Inicio', 'home'], ['Productos', 'products'], ['¿Cómo funciona?', 'howItWorks'], ['Nosotros', 'about']].map(([label, page]) => (
-              <button key={page} onClick={() => setCurrentPage(page)} className="block hover:text-white transition">{label}</button>
+          {/* Menu */}
+          <div>
+            {t.menuLinks.map(item => (
+              <div key={item} style={{ marginBottom: 14 }}>
+                <a href="#" style={{ color: '#333', textDecoration: 'none', fontSize: 15, fontWeight: 500 }}>{item}</a>
+              </div>
+            ))}
+          </div>
+
+          {/* Language */}
+          <div>
+            <div style={{ marginBottom: 14, fontSize: 12, color: '#aaa', fontWeight: 700, letterSpacing: 1 }}>{t.language}</div>
+            {['EN', 'ES'].map(l => (
+              <div key={l} style={{ marginBottom: 12 }}>
+                <button onClick={() => { setLang(l); setCategory('All'); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: lang === l ? blue : '#666', fontWeight: lang === l ? 700 : 400, padding: 0, textAlign: 'left' }}>
+                  {l === 'EN' ? '🇬🇧 English' : '🇦🇷 Español'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Legal */}
+          <div>
+            {t.legalLinks.map(item => (
+              <div key={item} style={{ marginBottom: 14 }}>
+                <a href="#" style={{ color: '#666', textDecoration: 'none', fontSize: 14 }}>{item}</a>
+              </div>
             ))}
           </div>
         </div>
-        <div>
-          <h4 className="font-bold mb-3 text-gray-200">Contacto</h4>
-          <div className="text-gray-400 text-sm space-y-1">
-            <p>info@agrimarket.com.ar</p>
-            <p>+54 9 11 1234-5678</p>
-            <p>Buenos Aires, Argentina</p>
-            <p className="mt-3 text-xs text-gray-500">© {new Date().getFullYear()} AGRIMARKET. Todos los derechos reservados.</p>
-          </div>
+
+        <div style={{ borderTop: '1px solid #e0e3e8', paddingTop: 22, textAlign: 'center', color: '#bbb', fontSize: 13 }}>
+          © {new Date().getFullYear()} AGRIMARKET. {t.copyright}
         </div>
-      </div>
-    </footer>
-  );
+      </footer>
 
-  // ═══════════════════════════════════════════════════════════════════
-  // RENDER
-  // ═══════════════════════════════════════════════════════════════════
-  return (
-    <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
-      {/* Notification */}
-      {notification && (
-        <div className={`fixed top-4 right-4 z-[60] flex items-center gap-3 px-5 py-3 rounded-2xl shadow-lg text-white font-semibold text-sm transition-all ${notification.type === 'error' ? 'bg-red-500' : 'bg-green-500'}`}>
-          {notification.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle size={18} />}
-          {notification.msg}
-        </div>
-      )}
-
-      <Header />
-
-      <main className="flex-1">
-        {currentPage === 'home' && <HomePage />}
-        {currentPage === 'products' && <ProductsPage />}
-        {currentPage === 'productDetail' && <ProductDetailPage />}
-        {currentPage === 'howItWorks' && <HowItWorksPage />}
-        {currentPage === 'about' && <AboutPage />}
-      </main>
-
-      <Footer />
-
-      {showAdminPanel && <AdminPanel />}
-      {showPayment && <PaymentModal />}
-      {showLoginModal && <LoginModal />}
+      <style>{`
+        * { box-sizing: border-box; }
+        a { transition: opacity 0.15s; }
+        a:hover { opacity: 0.8; }
+        @media (max-width: 900px) {
+          nav { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }
