@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from './context/AuthContext';
 
-// Pages
-import App                from './App.jsx';
+// Public
+import App                 from './App.jsx';
 import { Login, Register } from './pages/auth/Auth.jsx';
-import Onboarding         from './pages/auth/Onboarding.jsx';
+import Onboarding          from './pages/auth/Onboarding.jsx';
 
 // Seller
 import SellerLayout    from './pages/seller/SellerLayout.jsx';
@@ -12,7 +12,15 @@ import SellerDashboard from './pages/seller/SellerDashboard.jsx';
 import SellerProducts  from './pages/seller/SellerProducts.jsx';
 import NewProduct      from './pages/seller/NewProduct.jsx';
 
-// ── Placeholder components (Paso 2, 3, 4...) ──────────────────────────────────
+// Admin
+import AdminLayout    from './pages/admin/AdminLayout.jsx';
+import AdminDashboard from './pages/admin/AdminDashboard.jsx';
+import AdminUsers     from './pages/admin/AdminUsers.jsx';
+import AdminListings  from './pages/admin/AdminListings.jsx';
+import AdminContracts from './pages/admin/AdminContracts.jsx';
+import AdminMessages  from './pages/admin/AdminMessages.jsx';
+import AdminBlog      from './pages/admin/AdminBlog.jsx';
+
 function ComingSoon({ title, lang }) {
   return (
     <div style={{ textAlign: 'center', padding: '80px 20px', color: '#aaa' }}>
@@ -25,23 +33,17 @@ function ComingSoon({ title, lang }) {
   );
 }
 
-// ─── ROUTER ───────────────────────────────────────────────────────────────────
 export default function AppRouter() {
-  const { user, lang } = useAuth();
+  const { lang } = useAuth();
   const [route, setRoute] = useState('/');
 
-  const navigate = (to) => {
-    setRoute(to);
-    window.scrollTo(0, 0);
-  };
+  const navigate = (to) => { setRoute(to); window.scrollTo(0, 0); };
 
-  // ── Public routes ────────────────────────────────────────────────────────
-  if (route === '/')         return <App onNavigate={navigate} />;
-  if (route === '/login')    return <Login onNavigate={navigate} />;
-  if (route === '/register') return <Register onNavigate={navigate} />;
+  if (route === '/')           return <App onNavigate={navigate} />;
+  if (route === '/login')      return <Login onNavigate={navigate} />;
+  if (route === '/register')   return <Register onNavigate={navigate} />;
   if (route === '/onboarding') return <Onboarding onNavigate={navigate} />;
 
-  // ── Seller routes ────────────────────────────────────────────────────────
   if (route.startsWith('/seller')) {
     const page = () => {
       if (route === '/seller/dashboard')    return <SellerDashboard onNavigate={navigate} />;
@@ -61,30 +63,34 @@ export default function AppRouter() {
     );
   }
 
-  // ── Buyer routes (Paso 3) ────────────────────────────────────────────────
+  if (route.startsWith('/admin')) {
+    const page = () => {
+      if (route === '/admin/dashboard') return <AdminDashboard onNavigate={navigate} />;
+      if (route === '/admin/users')     return <AdminUsers />;
+      if (route === '/admin/listings')  return <AdminListings />;
+      if (route === '/admin/contracts') return <AdminContracts />;
+      if (route === '/admin/messages')  return <AdminMessages />;
+      if (route === '/admin/blog')      return <AdminBlog />;
+      if (route === '/admin/staff')     return <ComingSoon title="Gestión de staff" lang={lang} />;
+      return <AdminDashboard onNavigate={navigate} />;
+    };
+    return (
+      <AdminLayout currentRoute={route} onNavigate={navigate} messageBadge={2}>
+        {page()}
+      </AdminLayout>
+    );
+  }
+
   if (route.startsWith('/buyer')) {
     return (
-      <div style={{ padding: 40, textAlign: 'center' }}>
-        <ComingSoon title="Portal Comprador — Paso 3" lang={lang} />
-        <button onClick={() => navigate('/')} style={{ marginTop: 20, padding: '10px 24px', background: '#4A90D9', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer', fontWeight: 700 }}>
+      <div style={{ minHeight: '100vh', background: '#f5f7fa', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <ComingSoon title="Portal Comprador — Próximo paso" lang={lang} />
+        <button onClick={() => navigate('/')} style={{ padding: '10px 24px', background: '#4A90D9', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer', fontWeight: 700 }}>
           ← {lang === 'ES' ? 'Inicio' : 'Home'}
         </button>
       </div>
     );
   }
 
-  // ── Admin routes (Paso 4) ────────────────────────────────────────────────
-  if (route.startsWith('/admin')) {
-    return (
-      <div style={{ padding: 40, textAlign: 'center' }}>
-        <ComingSoon title="Panel Admin — Paso 4" lang={lang} />
-        <button onClick={() => navigate('/')} style={{ marginTop: 20, padding: '10px 24px', background: '#4A90D9', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer', fontWeight: 700 }}>
-          ← {lang === 'ES' ? 'Inicio' : 'Home'}
-        </button>
-      </div>
-    );
-  }
-
-  // Fallback
   return <App onNavigate={navigate} />;
 }
