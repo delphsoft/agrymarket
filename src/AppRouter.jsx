@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import { useAuth } from './context/AuthContext';
 
-// Public
 import App                 from './App.jsx';
 import { Login, Register } from './pages/auth/Auth.jsx';
 import Onboarding          from './pages/auth/Onboarding.jsx';
 
-// Seller
 import SellerLayout    from './pages/seller/SellerLayout.jsx';
 import SellerDashboard from './pages/seller/SellerDashboard.jsx';
 import SellerProducts  from './pages/seller/SellerProducts.jsx';
 import NewProduct      from './pages/seller/NewProduct.jsx';
+import SellerMessages  from './pages/seller/SellerMessages.jsx';
+import SellerContracts from './pages/seller/SellerContracts.jsx';
 
-// Admin
 import AdminLayout    from './pages/admin/AdminLayout.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import AdminUsers     from './pages/admin/AdminUsers.jsx';
@@ -20,6 +19,10 @@ import AdminListings  from './pages/admin/AdminListings.jsx';
 import AdminContracts from './pages/admin/AdminContracts.jsx';
 import AdminMessages  from './pages/admin/AdminMessages.jsx';
 import AdminBlog      from './pages/admin/AdminBlog.jsx';
+
+import BuyerLayout  from './pages/buyer/BuyerLayout.jsx';
+import BuyerSearch  from './pages/buyer/BuyerSearch.jsx';
+import { BuyerDashboard, BuyerMessages, BuyerContracts } from './pages/buyer/BuyerPages.jsx';
 
 function ComingSoon({ title, lang }) {
   return (
@@ -36,7 +39,6 @@ function ComingSoon({ title, lang }) {
 export default function AppRouter() {
   const { lang } = useAuth();
   const [route, setRoute] = useState('/');
-
   const navigate = (to) => { setRoute(to); window.scrollTo(0, 0); };
 
   if (route === '/')           return <App onNavigate={navigate} />;
@@ -50,10 +52,10 @@ export default function AppRouter() {
       if (route === '/seller/products')     return <SellerProducts onNavigate={navigate} />;
       if (route === '/seller/products/new') return <NewProduct onNavigate={navigate} />;
       if (route.includes('/edit'))          return <NewProduct onNavigate={navigate} editMode />;
-      if (route === '/seller/messages')     return <ComingSoon title="Mensajería" lang={lang} />;
-      if (route === '/seller/contracts')    return <ComingSoon title="Contratos" lang={lang} />;
-      if (route === '/seller/tenders')      return <ComingSoon title="Licitaciones" lang={lang} />;
-      if (route === '/seller/profile')      return <ComingSoon title="Perfil & KYC" lang={lang} />;
+      if (route === '/seller/messages')     return <SellerMessages />;
+      if (route === '/seller/contracts')    return <SellerContracts />;
+      if (route === '/seller/tenders')      return <ComingSoon title="Licitaciones — Fase 3" lang={lang} />;
+      if (route === '/seller/profile')      return <ComingSoon title="Perfil & KYC — Fase 3" lang={lang} />;
       return <SellerDashboard onNavigate={navigate} />;
     };
     return (
@@ -82,13 +84,19 @@ export default function AppRouter() {
   }
 
   if (route.startsWith('/buyer')) {
+    const page = () => {
+      if (route === '/buyer/dashboard') return <BuyerDashboard onNavigate={navigate} />;
+      if (route === '/buyer/search')    return <BuyerSearch onNavigate={navigate} />;
+      if (route === '/buyer/messages')  return <BuyerMessages />;
+      if (route === '/buyer/contracts') return <BuyerContracts />;
+      if (route === '/buyer/tenders')   return <ComingSoon title="Licitaciones — Fase 3" lang={lang} />;
+      if (route === '/buyer/profile')   return <ComingSoon title="Perfil & KYC — Fase 3" lang={lang} />;
+      return <BuyerDashboard onNavigate={navigate} />;
+    };
     return (
-      <div style={{ minHeight: '100vh', background: '#f5f7fa', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-        <ComingSoon title="Portal Comprador — Próximo paso" lang={lang} />
-        <button onClick={() => navigate('/')} style={{ padding: '10px 24px', background: '#4A90D9', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer', fontWeight: 700 }}>
-          ← {lang === 'ES' ? 'Inicio' : 'Home'}
-        </button>
-      </div>
+      <BuyerLayout currentRoute={route} onNavigate={navigate} messageBadge={1}>
+        {page()}
+      </BuyerLayout>
     );
   }
 
