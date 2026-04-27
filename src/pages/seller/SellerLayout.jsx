@@ -1,7 +1,7 @@
 import React from 'react';
-import AuthHeader from '../components/AuthHeader';
-import { useAuth } from '../context/AuthContext';
-import { T } from '../translations';
+import AuthHeader from '../../components/AuthHeader';
+import { useAuth } from '../../context/AuthContext';
+import { T } from '../../translations';
 import {
   BarChart3, Package, MessageSquare, FileText, Gavel, User, Plus
 } from 'lucide-react';
