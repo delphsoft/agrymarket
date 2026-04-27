@@ -11,6 +11,8 @@ import SellerProducts  from './pages/seller/SellerProducts.jsx';
 import NewProduct      from './pages/seller/NewProduct.jsx';
 import SellerMessages  from './pages/seller/SellerMessages.jsx';
 import SellerContracts from './pages/seller/SellerContracts.jsx';
+import SellerTenders   from './pages/seller/SellerTenders.jsx';
+import SellerProfile   from './pages/seller/SellerProfile.jsx';
 
 import AdminLayout    from './pages/admin/AdminLayout.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
@@ -22,6 +24,8 @@ import AdminBlog      from './pages/admin/AdminBlog.jsx';
 
 import BuyerLayout  from './pages/buyer/BuyerLayout.jsx';
 import BuyerSearch  from './pages/buyer/BuyerSearch.jsx';
+import BuyerTenders from './pages/buyer/BuyerTenders.jsx';
+import BuyerProfile from './pages/buyer/BuyerProfile.jsx';
 import { BuyerDashboard, BuyerMessages, BuyerContracts } from './pages/buyer/BuyerPages.jsx';
 
 function ComingSoon({ title, lang }) {
@@ -30,7 +34,7 @@ function ComingSoon({ title, lang }) {
       <div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div>
       <h2 style={{ color: '#1a1a2e', fontWeight: 700, fontSize: 20, marginBottom: 8 }}>{title}</h2>
       <p style={{ margin: 0 }}>
-        {lang === 'ES' ? 'Este módulo se construye en el próximo paso.' : 'This module is built in the next step.'}
+        {lang === 'ES' ? 'Próximamente.' : 'Coming soon.'}
       </p>
     </div>
   );
@@ -54,8 +58,8 @@ export default function AppRouter() {
       if (route.includes('/edit'))          return <NewProduct onNavigate={navigate} editMode />;
       if (route === '/seller/messages')     return <SellerMessages />;
       if (route === '/seller/contracts')    return <SellerContracts />;
-      if (route === '/seller/tenders')      return <ComingSoon title="Licitaciones — Fase 3" lang={lang} />;
-      if (route === '/seller/profile')      return <ComingSoon title="Perfil & KYC — Fase 3" lang={lang} />;
+      if (route === '/seller/tenders')      return <SellerTenders />;
+      if (route === '/seller/profile')      return <SellerProfile />;
       return <SellerDashboard onNavigate={navigate} />;
     };
     return (
@@ -73,7 +77,7 @@ export default function AppRouter() {
       if (route === '/admin/contracts') return <AdminContracts />;
       if (route === '/admin/messages')  return <AdminMessages />;
       if (route === '/admin/blog')      return <AdminBlog />;
-      if (route === '/admin/staff')     return <ComingSoon title="Gestión de staff" lang={lang} />;
+      if (route === '/admin/staff')     return <ComingSoon title="Staff management" lang={lang} />;
       return <AdminDashboard onNavigate={navigate} />;
     };
     return (
@@ -89,8 +93,8 @@ export default function AppRouter() {
       if (route === '/buyer/search')    return <BuyerSearch onNavigate={navigate} />;
       if (route === '/buyer/messages')  return <BuyerMessages />;
       if (route === '/buyer/contracts') return <BuyerContracts />;
-      if (route === '/buyer/tenders')   return <ComingSoon title="Licitaciones — Fase 3" lang={lang} />;
-      if (route === '/buyer/profile')   return <ComingSoon title="Perfil & KYC — Fase 3" lang={lang} />;
+      if (route === '/buyer/tenders')   return <BuyerTenders />;
+      if (route === '/buyer/profile')   return <BuyerProfile />;
       return <BuyerDashboard onNavigate={navigate} />;
     };
     return (

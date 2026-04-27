@@ -5,6 +5,7 @@ import {
   PenSquare, Gavel
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from './NotificationBell';
 import { T } from '../translations';
 
 const BLUE  = '#4A90D9';
@@ -319,6 +320,9 @@ export default function AuthHeader({ currentRoute, onNavigate, messageBadge = 0 
               + {t.addProduct}
             </button>
           )}
+
+          {/* Notifications */}
+          <NotificationBell role={role || 'seller'} lang={lang} onNavigate={handleNavigate} />
 
           {/* Language */}
           <div style={{ position: 'relative' }}>
