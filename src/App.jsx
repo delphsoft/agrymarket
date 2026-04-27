@@ -194,7 +194,7 @@ const FeatureIcon = ({ type }) => {
 const iconTypes = ['list', 'shield', 'dollar', 'message', 'user', 'chart'];
 
 // ─── MAIN ──────────────────────────────────────────────────────────────────────
-export default function App() {
+export default function App({ onNavigate = () => {} }) {
   const [lang, setLang]           = useState('ES'); // ← ESPAÑOL por defecto
   const [activeTab, setActiveTab] = useState('COMPRAR');
   const [search, setSearch]       = useState('');
@@ -255,10 +255,10 @@ export default function App() {
           </nav>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
-            <a href="#" style={{ color: '#fff', fontSize: 13, fontWeight: 700, textDecoration: 'none', letterSpacing: 1 }}>{t.signIn}</a>
-            <a href="#" style={{ color: '#fff', fontSize: 12, fontWeight: 700, textDecoration: 'none', letterSpacing: 1, border: '2px solid rgba(255,255,255,0.85)', borderRadius: 4, padding: '7px 14px', whiteSpace: 'nowrap' }}>
+            <button onClick={() => onNavigate('/login')} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: 1, cursor: 'pointer', padding: 0 }}>{t.signIn}</button>
+            <button onClick={() => onNavigate('/register')} style={{ color: '#fff', fontSize: 12, fontWeight: 700, letterSpacing: 1, border: '2px solid rgba(255,255,255,0.85)', borderRadius: 4, padding: '7px 14px', whiteSpace: 'nowrap', background: 'transparent', cursor: 'pointer' }}>
               {t.register}
-            </a>
+            </button>
 
             {/* Language dropdown */}
             <div style={{ position: 'relative' }}>
