@@ -1,59 +1,159 @@
-/* AgriMarket — demo banner (shared component)
-   Usage: <script src="demo-banner.js"></script>
-   Injects a sticky demo banner at the top of any page. */
-(function() {
+/* AgriAlternative — floating demo navigator
+   Replaces the sticky banner with a discreet corner pill.
+   Click the pill → popover with page links. Click outside → closes. */
+(function () {
   const PAGES = [
-    { label: 'Landing',    url: 'index.html' },
-    { label: 'Buyer',      url: 'buyer.html' },
-    { label: 'Seller',     url: 'seller.html' },
-    { label: 'Admin',      url: 'admin.html' },
-    { label: 'Compliance', url: 'compliance-passport.html' },
-    { label: 'Market Intel', url: 'market-intelligence.html' },
-    { label: 'Search',     url: 'search-results.html' },
-    { label: 'Region',     url: 'region.html?region=cordoba' }
+    { label: 'Landing',      url: 'index.html',                  icon: '🏠' },
+    { label: 'Buyer',        url: 'buyer.html',                  icon: '🛒' },
+    { label: 'Seller',       url: 'seller.html',                 icon: '📦' },
+    { label: 'Admin',        url: 'admin.html',                  icon: '⚙️' },
+    { label: 'Compliance',   url: 'compliance-passport.html',    icon: '🛂' },
+    { label: 'Market Intel', url: 'market-intelligence.html',    icon: '📊' },
+    { label: 'Search',       url: 'search-results.html',         icon: '🔍' },
+    { label: 'Region',       url: 'region.html?region=cordoba',  icon: '📍' }
   ];
 
   const current = location.pathname.split('/').pop() || 'index.html';
 
+  /* ── styles ────────────────────────────────────────────────── */
   const style = document.createElement('style');
   style.textContent = `
-    .demo-banner {
-      background: #0f1729; color: rgba(255,255,255,0.88);
-      font-family: 'Roboto', sans-serif; font-size: 12px;
-      display: flex; align-items: center; gap: 12px;
-      padding: 0 20px; height: 36px; flex-wrap: nowrap; overflow-x: auto;
-      position: sticky; top: 0; z-index: 9000;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      scrollbar-width: none;
+    #dm-pill {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: #0f1729;
+      color: #00d2d2;
+      border: 1px solid rgba(0,210,210,0.35);
+      border-radius: 999px;
+      padding: 8px 16px 8px 12px;
+      font-family: 'Roboto', system-ui, sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+      user-select: none;
+      transition: box-shadow 0.2s, transform 0.15s;
     }
-    .demo-banner::-webkit-scrollbar { display: none; }
-    .demo-banner .db-label {
-      font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
-      text-transform: uppercase; color: #00d2d2; white-space: nowrap; flex-shrink: 0;
+    #dm-pill:hover {
+      box-shadow: 0 6px 32px rgba(0,210,210,0.25);
+      transform: translateY(-1px);
     }
-    .demo-banner .db-sep { width: 1px; background: rgba(255,255,255,0.15); height: 16px; flex-shrink: 0; }
-    .demo-banner a.db-link {
-      color: rgba(255,255,255,0.75); text-decoration: none; white-space: nowrap;
-      padding: 4px 10px; border-radius: 4px; font-weight: 500; transition: all 0.15s;
+    #dm-pill .dm-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #00d2d2;
+      box-shadow: 0 0 6px #00d2d2;
+      flex-shrink: 0;
     }
-    .demo-banner a.db-link:hover { color: #fff; background: rgba(255,255,255,0.1); }
-    .demo-banner a.db-link.active {
-      background: rgba(37,99,235,0.8); color: #fff; font-weight: 600;
+
+    #dm-popover {
+      position: fixed;
+      bottom: 68px;
+      right: 24px;
+      z-index: 99998;
+      background: #0f1729;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 10px 8px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.6);
+      min-width: 200px;
+      transform-origin: bottom right;
+      transform: scale(0.92) translateY(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), opacity 0.15s;
+    }
+    #dm-popover.open {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+    #dm-popover .dm-heading {
+      font-family: 'Roboto', system-ui, sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      padding: 4px 10px 8px;
+    }
+    #dm-popover a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-family: 'Roboto', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.78);
+      text-decoration: none;
+      transition: background 0.12s, color 0.12s;
+    }
+    #dm-popover a:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+    #dm-popover a.active {
+      background: rgba(37,99,235,0.55);
+      color: #fff;
+      font-weight: 600;
+    }
+    #dm-popover a .dm-icon {
+      width: 22px;
+      text-align: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    #dm-popover .dm-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.07);
+      margin: 6px 10px;
     }
   `;
   document.head.appendChild(style);
 
-  const bar = document.createElement('div');
-  bar.className = 'demo-banner';
-  bar.innerHTML = `
-    <span class="db-label">Demo</span>
-    <div class="db-sep"></div>
-    ${PAGES.map(p => {
+  /* ── pill ───────────────────────────────────────────────────── */
+  const pill = document.createElement('div');
+  pill.id = 'dm-pill';
+  pill.innerHTML = `<span class="dm-dot"></span>Demo`;
+
+  /* ── popover ────────────────────────────────────────────────── */
+  const pop = document.createElement('div');
+  pop.id = 'dm-popover';
+  pop.innerHTML = `
+    <div class="dm-heading">Navigate demo</div>
+    ${PAGES.map((p, i) => {
       const pageName = p.url.split('?')[0];
       const isActive = current === pageName || (current === '' && pageName === 'index.html');
-      return `<a class="db-link${isActive ? ' active' : ''}" href="${p.url}">${p.label}</a>`;
+      const divider  = (i === 3) ? '<div class="dm-divider"></div>' : '';
+      return `${divider}<a href="${p.url}" class="${isActive ? 'active' : ''}">
+        <span class="dm-icon">${p.icon}</span>${p.label}
+      </a>`;
     }).join('')}
   `;
 
-  document.body.insertBefore(bar, document.body.firstChild);
+  document.body.appendChild(pop);
+  document.body.appendChild(pill);
+
+  /* ── toggle logic ───────────────────────────────────────────── */
+  pill.addEventListener('click', function (e) {
+    e.stopPropagation();
+    pop.classList.toggle('open');
+  });
+
+  document.addEventListener('click', function () {
+    pop.classList.remove('open');
+  });
+
+  pop.addEventListener('click', function (e) {
+    e.stopPropagation();
+  });
 })();
