@@ -92,6 +92,28 @@
   }
   .tab.active { background: var(--accent); color: #fff; }
   .tab:not(.active):hover { color: var(--accent); }
+  /* ---- live search drop ---- */
+  .search-drop {
+    display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+    background: #fff; border-radius: 8px; overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.22); z-index: 850;
+  }
+  .sd-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 16px; cursor: pointer; border-bottom: 1px solid #f0f4f8;
+    transition: background 0.1s;
+  }
+  .sd-item:hover { background: #f8faff; }
+  .sd-icon { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
+  .sd-name { font-size: 13px; font-weight: 600; color: #1e293b; }
+  .sd-meta { font-size: 11px; color: #8b95a8; margin-top: 2px; }
+  .sd-empty { padding: 14px 16px; font-size: 13px; color: #8b95a8; text-align: center; }
+  .sd-footer {
+    padding: 11px 16px; font-size: 13px; color: var(--accent);
+    cursor: pointer; background: #f8faff; text-align: center; font-weight: 500;
+  }
+  .sd-footer:hover { background: #eef2ff; }
+
   .search-inner input {
     flex: 1; border: none; outline: none; padding: 0 16px;
     font-size: 14px; color: #555; font-family: inherit;
@@ -735,9 +757,9 @@
     <span class="nav-lang" onclick="toggleLangMenu(event)" id="navLangBtn" style="position:relative;">
       <span data-lang-display>EN</span>
       <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg>
-      <div id="langMenu" style="display:none;position:absolute;top:100%;right:0;margin-top:8px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.15);border-radius:4px;overflow:hidden;min-width:130px;z-index:1500;">
-        <div data-lang-pick="en" onclick="setLang('en');closeLangMenu();event.stopPropagation();" style="padding:10px 16px;color:#333;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;">🇬🇧 English</div>
-        <div data-lang-pick="es" onclick="setLang('es');closeLangMenu();event.stopPropagation();" style="padding:10px 16px;color:#333;font-size:13px;cursor:pointer;">🇪🇸 Español</div>
+      <div id="langMenu" style="display:none;position:absolute;top:100%;right:0;margin-top:8px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.15);border-radius:4px;overflow:hidden;min-width:140px;z-index:2000;">
+        <button data-lang-pick="en" onclick="setLang('en');closeLangMenu();event.stopPropagation();" style="display:block;width:100%;text-align:left;padding:11px 16px;color:#333;font-size:13px;cursor:pointer;border:none;border-bottom:1px solid #f0f0f0;background:#fff;font-family:inherit;">🇬🇧 English</button>
+        <button data-lang-pick="es" onclick="setLang('es');closeLangMenu();event.stopPropagation();" style="display:block;width:100%;text-align:left;padding:11px 16px;color:#333;font-size:13px;cursor:pointer;border:none;background:#fff;font-family:inherit;">🇪🇸 Español</button>
       </div>
     </span>
   </div>
@@ -789,14 +811,17 @@
         <span data-i18n="cat_browse_all">Browse all categories</span>
       </div>
     </div>
+    <div id="searchDrop" class="search-drop"></div>
     <div class="search-inner">
       <div class="buy-sell-tabs">
         <button class="tab tab-buy active" id="tab-buy" onclick="setTab('buy')" data-i18n="hero_buy">BUY</button>
         <button class="tab tab-sell" id="tab-sell" onclick="setTab('sell')" data-i18n="hero_sell">SELL</button>
       </div>
       <input type="text" id="heroSearch" placeholder="What are you looking for?" data-i18n-placeholder="hero_search_placeholder"
-        onkeydown="if(event.key==='Enter')doSearch()">
-      <button class="search-btn" onclick="doSearch()">
+        onkeydown="if(event.key==='Enter'){doSearch();closeDrop();}"
+        oninput="liveSearch(this.value)"
+        autocomplete="off">
+      <button class="search-btn" onclick="doSearch();closeDrop()">
         <svg viewBox="0 0 20 20" fill="none" stroke="#2563EB" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5L18 18"/></svg>
       </button>
     </div>
@@ -1189,6 +1214,86 @@ function doSearch() {
   if (!q && !tab) return;
   window.location.href = 'search-results.html?q=' + encodeURIComponent(q) + '&mode=' + tab;
 }
+
+function closeDrop() {
+  const d = document.getElementById('searchDrop');
+  if (d) d.style.display = 'none';
+}
+
+function clearSearch() {
+  document.getElementById('heroSearch').value = '';
+  closeDrop();
+  currentCategory = 'all';
+  renderChips();
+  renderListings();
+}
+
+const catEmoji2 = { soybeans:'🌱', corn:'🌽', wheat:'🌾', 'sunflower-oil':'🌻', 'soy-meal-oil':'🫘', peanuts:'🥜', sorghum:'🌾', beef:'🥩', wine:'🍷', other:'🌿' };
+
+function liveSearch(val) {
+  const drop = document.getElementById('searchDrop');
+  const q = val.trim().toLowerCase();
+
+  if (!q || q.length < 2) {
+    drop.style.display = 'none';
+    currentCategory = 'all';
+    renderChips();
+    renderListings();
+    return;
+  }
+
+  /* filter from full LISTINGS pool */
+  const matched = LISTINGS.filter(l =>
+    l.title.toLowerCase().includes(q) ||
+    l.category.toLowerCase().includes(q) ||
+    (l.province && l.province.toLowerCase().includes(q)) ||
+    (l.seller  && l.seller.toLowerCase().includes(q))
+  );
+
+  /* update featured grid live */
+  const grid  = document.getElementById('listing-grid');
+  const empty = document.getElementById('listing-empty');
+  const meta  = document.getElementById('listing-meta');
+
+  if (!matched.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    meta.innerHTML = `<div class="lm-left">No results for <strong>"${val.trim()}"</strong> — <a href="#" onclick="clearSearch();return false;" style="color:var(--accent)">clear</a></div>`;
+  } else {
+    empty.style.display = 'none';
+    const show = matched.slice(0, 9);
+    meta.innerHTML = `<div class="lm-left"><strong>${matched.length}</strong> result${matched.length===1?'':'s'} for "<strong>${val.trim()}</strong>"</div><div class="lm-right"><a href="#" onclick="clearSearch();return false;" style="color:var(--accent)">Clear</a></div>`;
+    grid.innerHTML = show.map(p => listingCardHTML(p)).join('');
+    grid.querySelectorAll('.listing').forEach((card, i) => {
+      card.addEventListener('click', e => {
+        if (e.target.closest('.listing-fav')) return;
+        openPD(show[i].id);
+      });
+    });
+  }
+
+  /* suggestions dropdown */
+  const top = matched.slice(0, 6);
+  if (!top.length) {
+    drop.innerHTML = `<div class="sd-empty">No products found for "${val.trim()}"</div>`;
+  } else {
+    drop.innerHTML = top.map(p => `
+      <div class="sd-item" onclick="document.getElementById('heroSearch').value=this.dataset.title;liveSearch(this.dataset.title);closeDrop();" data-title="${p.title.replace(/"/g,'&quot;')}">
+        <span class="sd-icon">${catEmoji2[p.category]||'📦'}</span>
+        <div>
+          <div class="sd-name">${p.title}</div>
+          <div class="sd-meta">${p.province} · ${p.price} ${p.priceUnit||''}</div>
+        </div>
+      </div>`).join('') +
+      `<div class="sd-footer" onclick="doSearch()">See all results for "<strong>${val.trim()}</strong>" →</div>`;
+  }
+  drop.style.display = 'block';
+}
+
+/* close drop on outside click */
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-bar')) closeDrop();
+});
 
 /* -------- FEATURED LISTINGS — dynamic, reads from window.LISTINGS -------- */
 let currentCategory = 'all';
