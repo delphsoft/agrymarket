@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriMarket — Seller Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="alt-dash.css">
+<script src="i18n.js"></script>
+<script src="lang-widget.js"></script>
+<style>
+  /* Page-specific tweaks */
+  .add-product-modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none;
+    align-items: center; justify-content: center; z-index: 1000;
+  }
+  .add-product-modal-bg.show { display: flex; }
+  .add-product-modal {
+    background: #fff; width: 600px; max-width: 90vw; padding: 32px;
+    border-radius: 4px; max-height: 90vh; overflow-y: auto;
+  }
+  .add-product-modal h2 { font-size: 22px; font-weight: 400; margin-bottom: 24px; }
+  .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+</style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="ui-polish.css">
+  <script src="security.js"></script>
+</head>
+<body>
+<script src="demo-banner.js"></script>
+
+
+
+<!-- Top Nav -->
+<nav class="gnav">
+  <a href="index.html" class="gnav-logo">AgriMarket</a>
+  <div class="gnav-links">
+    <div class="gnav-link active" onclick="showView('products')">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6">
+        <rect x="2" y="3" width="4" height="4" rx="0.5"/>
+        <rect x="2" y="11" width="4" height="4" rx="0.5"/>
+        <line x1="8" y1="5" x2="16" y2="5"/>
+        <line x1="8" y1="13" x2="16" y2="13"/>
+      </svg>
+      <span data-i18n="dash_my_products">My products</span>
+      <svg class="caret" viewBox="0 0 8 8"><path d="M1 2l3 3 3-3" fill="none" stroke="white" stroke-width="1.5"/></svg>
+    </div>
+    <div class="gnav-link" onclick="showView('messages')">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6">
+        <path d="M2 3h14v10H6l-4 3z"/>
+      </svg>
+      <span data-i18n="dash_messages">Messages</span>
+      <span class="badge">3</span>
+    </div>
+    <div class="gnav-link" onclick="showView('contracts')">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6">
+        <rect x="3" y="2" width="12" height="14" rx="1"/>
+        <line x1="6" y1="6" x2="12" y2="6"/>
+        <line x1="6" y1="9" x2="12" y2="9"/>
+        <line x1="6" y1="12" x2="10" y2="12"/>
+      </svg>
+      <span data-i18n="dash_contracts">Contracts</span>
+    </div>
+    <div class="gnav-link" onclick="showView('profile')">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6">
+        <circle cx="9" cy="6" r="3"/>
+        <path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/>
+      </svg>
+      <span data-i18n="dash_profile">Profile</span>
+      <svg class="caret" viewBox="0 0 8 8"><path d="M1 2l3 3 3-3" fill="none" stroke="white" stroke-width="1.5"/></svg>
+    </div>
+    <div class="gnav-link">
+      <span data-i18n="nav_ask">Ask manager</span>
+      <svg class="caret" viewBox="0 0 8 8"><path d="M1 2l3 3 3-3" fill="none" stroke="white" stroke-width="1.5"/></svg>
+    </div>
+  </div>
+  <div class="gnav-right">
+    <button class="gnav-btn-outline" onclick="openAddProduct()" data-i18n="dash_add_product">+ Add Product</button>
+    <span data-lang-widget="dark"></span>
+  </div>
+</nav>
+
+<!-- =================== MY PRODUCTS VIEW (alternative layout) =================== -->
+<div id="view-products" class="view">
+  <div class="alt-shell">
+    <div class="alt-wrap">
+
+      <!-- PAGE HEAD -->
+      <div class="alt-page-head">
+        <div>
+          <h1 class="alt-h1" data-i18n="dash_my_products">My products</h1>
+          <div class="sub" data-i18n="seller_perf_sub">12 active listings · 47 inquiries in the last 7 days · 5 contracts in flight</div>
+        </div>
+        <div class="alt-head-actions">
+          <select class="form-field" style="padding: 8px 12px; border: 1px solid var(--border); font-size: 13px; border-radius: 4px;">
+            <option>All listings</option>
+            <option>Sell offers</option>
+            <option>Buy offers</option>
+            <option>Expiring soon</option>
+          </select>
+          <button class="btn-outline" style="padding: 8px 16px;">Boost campaign</button>
+          <button class="btn-primary" onclick="openAddProduct()" data-i18n="dash_add_product">+ Add Product</button>
+        </div>
+      </div>
+
+      <!-- KPIs with sparklines -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="lbl">Active listings</div>
+          <div class="val">12</div>
+          <div class="delta up">▲ +2 this week</div>
+          <svg class="spark spark-area" viewBox="0 0 60 24" preserveAspectRatio="none">
+            <path class="area" d="M0,18 L8,16 L16,17 L24,14 L32,12 L40,13 L48,10 L56,8 L60,6 L60,24 L0,24 Z"/>
+            <path d="M0,18 L8,16 L16,17 L24,14 L32,12 L40,13 L48,10 L56,8 L60,6"/>
+          </svg>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Inquiries (7d)</div>
+          <div class="val">47</div>
+          <div class="delta up">▲ +9 vs. last week</div>
+          <svg class="spark spark-area" viewBox="0 0 60 24" preserveAspectRatio="none">
+            <path class="area" d="M0,14 L8,10 L16,12 L24,8 L32,6 L40,9 L48,5 L56,7 L60,3 L60,24 L0,24 Z"/>
+            <path d="M0,14 L8,10 L16,12 L24,8 L32,6 L40,9 L48,5 L56,7 L60,3"/>
+          </svg>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Open contracts</div>
+          <div class="val">5</div>
+          <div class="delta neutral">3 awaiting signature</div>
+          <svg class="spark spark-area flat" viewBox="0 0 60 24" preserveAspectRatio="none">
+            <path class="area" d="M0,12 L8,11 L16,13 L24,12 L32,11 L40,12 L48,10 L56,11 L60,10 L60,24 L0,24 Z"/>
+            <path d="M0,12 L8,11 L16,13 L24,12 L32,11 L40,12 L48,10 L56,11 L60,10"/>
+          </svg>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Volume sold YTD</div>
+          <div class="val">28.5K<span style="font-size:14px;color:var(--text-muted);font-weight:500;"> MT</span></div>
+          <div class="delta up">▲ +18% YoY</div>
+          <svg class="spark spark-area" viewBox="0 0 60 24" preserveAspectRatio="none">
+            <path class="area" d="M0,20 L8,18 L16,16 L24,14 L32,12 L40,10 L48,7 L56,5 L60,4 L60,24 L0,24 Z"/>
+            <path d="M0,20 L8,18 L16,16 L24,14 L32,12 L40,10 L48,7 L56,5 L60,4"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="stream-toolbar">
+        <div class="stream-tabs">
+          <button class="stream-tab active">All<span class="num">12</span></button>
+          <button class="stream-tab">Active<span class="num">9</span></button>
+          <button class="stream-tab">Expiring<span class="num">2</span></button>
+          <button class="stream-tab">Paused<span class="num">1</span></button>
+        </div>
+        <div class="stream-meta">
+          <span>Last refreshed 2 min ago</span>
+          <select>
+            <option>Sort: Most inquiries</option>
+            <option>Sort: Recently updated</option>
+            <option>Sort: Highest volume</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- LISTING ROWS -->
+      <div class="listing-rows" id="seller-rows"><!-- injected --></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- =================== MESSAGES VIEW =================== -->
+<div id="view-messages" class="view" style="display: none;">
+  <div class="chat-layout">
+    <aside class="chat-sidebar">
+      <div class="chat-tabs">
+        <div class="chat-tab" onclick="switchChatTab(this,0)">Messages</div>
+        <div class="chat-tab active" onclick="switchChatTab(this,1)">Clients</div>
+      </div>
+
+      <div class="chat-client-card">
+        <div class="avatar">AI</div>
+        <div class="name">AgriMarket Inc.</div>
+        <svg class="caret" width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="#777" stroke-width="1.5"/></svg>
+      </div>
+
+      <div class="chat-conversation-head">
+        <span>Conversations</span>
+        <svg width="10" height="6" viewBox="0 0 10 6"><path d="M1 4l4-3 4 3" fill="none" stroke="#555" stroke-width="1.5"/></svg>
+      </div>
+      <div class="chat-conv-item" style="background: #f5f7fa;">
+        <div>
+          <div>General</div>
+          <div class="conv-meta">Latest: Approved certificate of incorporation</div>
+        </div>
+        <div class="time">15:30</div>
+      </div>
+      <div class="chat-conv-item">
+        <div>
+          <div>Verification</div>
+          <div class="conv-meta">3 documents reviewed</div>
+        </div>
+        <div class="time">15 May</div>
+      </div>
+
+      <div class="chat-conversation-head" style="margin-top: 8px;">
+        <span>Other clients</span>
+        <svg width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="#555" stroke-width="1.5"/></svg>
+      </div>
+      <div class="chat-conv-item">
+        <div>
+          <div>Adecoagro S.A.</div>
+          <div class="conv-meta"><span class="badge-sm badge-signed">SIGNED</span> Contract #253 · Wheat 1200 MT</div>
+        </div>
+        <div class="time">14:46</div>
+      </div>
+      <div class="chat-conv-item">
+        <div>
+          <div>Golden Harvest Trading</div>
+          <div class="conv-meta">Corn 4000 MT · $186/MT</div>
+        </div>
+        <div class="time">12:18</div>
+      </div>
+      <div class="chat-conv-item">
+        <div>
+          <div>Impex Express SA</div>
+          <div class="conv-meta"><span class="badge-sm badge-terminated">TERMINATED</span> Barley · 1000 MT</div>
+        </div>
+        <div class="time">08 May</div>
+      </div>
+    </aside>
+
+    <div class="chat-main">
+      <div class="chat-header">
+        <div class="avatar">TM</div>
+        <div class="who">
+          <div class="who-name">Teodor Morena</div>
+          <div class="who-company">AgriMarket Inc. · Compliance Manager</div>
+        </div>
+        <div class="actions">
+          <button class="btn-outline">View Files</button>
+        </div>
+      </div>
+
+      <div class="chat-body">
+        <div class="chat-date">MAY 15, 2026</div>
+
+        <div class="chat-msg">
+          <div class="avatar" style="background: #c5d4ed; color: var(--accent);">EB</div>
+          <div class="bubble-wrap">
+            <div class="author">Eric Braustak</div>
+            <div class="bubble">
+              Sent for approval: Certificate of Incorporation
+              <br><span class="file">📎 1295962_certificate.png</span>
+            </div>
+            <div class="time">11:54</div>
+          </div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="avatar">TM</div>
+          <div class="bubble-wrap">
+            <div class="author">Teodor Morena</div>
+            <div class="bubble">
+              Approved: Certificate of Incorporation
+              <br><span class="file">📎 1295962_certificate.png</span>
+            </div>
+            <div class="time">11:54</div>
+          </div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="avatar">TM</div>
+          <div class="bubble-wrap">
+            <div class="author">Teodor Morena</div>
+            <div class="bubble">Welcome aboard! Your KYC verification is complete. You can now list products and engage with buyers globally.</div>
+            <div class="time">15:30</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input">
+        <input type="text" placeholder="Type message here...">
+        <span class="attach">📎</span>
+        <button class="send">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== CONTRACTS VIEW =================== -->
+<div id="view-contracts" class="view" style="display: none;">
+  <div class="page-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+      <h1 class="page-title">Contracts</h1>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-outline">Export CSV</button>
+        <button class="btn-primary">New Contract</button>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 24px; margin-bottom: 20px; border-bottom: 1px solid var(--border);">
+      <div class="tab-btn active" style="border-bottom: 2px solid var(--accent); color: var(--accent); padding: 12px 0;">All (7)</div>
+      <div class="tab-btn" style="padding: 12px 0;">New (3)</div>
+      <div class="tab-btn" style="padding: 12px 0;">In Progress (2)</div>
+      <div class="tab-btn" style="padding: 12px 0;">Signed (3)</div>
+      <div class="tab-btn" style="padding: 12px 0;">Settled (1)</div>
+      <div class="tab-btn" style="padding: 12px 0;">Terminated (1)</div>
+    </div>
+
+    <div class="table-wrap" style="border: 1px solid var(--border);">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Volume, MT <span class="sort">⇅</span></th>
+            <th>Price, MT <span class="sort">⇅</span></th>
+            <th>Status <span class="sort">⇅</span></th>
+            <th>Partner</th>
+            <th>Period <span class="sort">⇅</span></th>
+            <th>Shipment Destination</th>
+            <th>Basis</th>
+            <th>Country</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>268</td>
+            <td class="cell-product cell-link">Wheat Flour <small>Updated: 30.03.2026</small></td>
+            <td>2000</td>
+            <td>210 USD</td>
+            <td><span class="status status-signed">Signed</span></td>
+            <td class="cell-link">Minerva Global Ltd.</td>
+            <td>30/03/2026 – 25/04/2026</td>
+            <td>Odesa, Ukraine</td>
+            <td>FOB (Container)</td>
+            <td>Ukraine</td>
+          </tr>
+          <tr>
+            <td>266</td>
+            <td class="cell-product cell-link">Wheat <small>Updated: 20.02.2026</small></td>
+            <td>1500</td>
+            <td>200 USD</td>
+            <td><span class="status status-settled">Settled</span></td>
+            <td class="cell-link">Minerva Global Ltd.</td>
+            <td>20/02/2026 – 28/02/2026</td>
+            <td>Istanbul, Turkey</td>
+            <td>FOB (Bulk)</td>
+            <td>Ukraine</td>
+          </tr>
+          <tr>
+            <td>265</td>
+            <td class="cell-product cell-link">Wheat <small>Updated: 20.02.2026</small></td>
+            <td>1000</td>
+            <td>210 USD</td>
+            <td><span class="status status-new">New</span></td>
+            <td class="cell-link">Minerva Global Ltd.</td>
+            <td>20/02/2026 – 01/03/2026</td>
+            <td>Istanbul, Turkey</td>
+            <td>CIF (Container)</td>
+            <td>Ukraine</td>
+          </tr>
+          <tr>
+            <td>264</td>
+            <td class="cell-product cell-link">Wheat <small>Updated: 19.02.2026</small></td>
+            <td>2000</td>
+            <td>201 USD</td>
+            <td><span class="status status-new">New</span></td>
+            <td class="cell-link">Minerva Global Ltd.</td>
+            <td>19/02/2026 – 28/02/2026</td>
+            <td>Kharkiv Oblast, Ukraine</td>
+            <td>CIF (Train)</td>
+            <td>Ukraine</td>
+          </tr>
+          <tr>
+            <td>262</td>
+            <td class="cell-product cell-link">Black Beans <small>Updated: 06.02.2026</small></td>
+            <td>2000</td>
+            <td>211 USD</td>
+            <td><span class="status status-new">New</span></td>
+            <td class="cell-link">Minerva Global Ltd.</td>
+            <td>06/02/2026 – 28/02/2026</td>
+            <td>Port Neville, Canada</td>
+            <td>FOB (Container)</td>
+            <td>Canada</td>
+          </tr>
+          <tr>
+            <td>259</td>
+            <td class="cell-product cell-link">Black Beans <small>Updated: 22.01.2026</small></td>
+            <td>5000</td>
+            <td>215 USD</td>
+            <td><span class="status status-signed">Signed</span></td>
+            <td class="cell-link">Minerva Global Ltd.</td>
+            <td>22/01/2026 – 31/01/2026</td>
+            <td>Port Alberni, Canada</td>
+            <td>FOB (Container)</td>
+            <td>Canada</td>
+          </tr>
+          <tr>
+            <td>248</td>
+            <td class="cell-product cell-link">Barley <small>Updated: 08.03.2026</small></td>
+            <td>1000</td>
+            <td>168 USD</td>
+            <td><span class="status status-terminated">Terminated</span></td>
+            <td class="cell-link">Adecoagro S.A.</td>
+            <td>20/03/2026</td>
+            <td>Port Saint Joe, FL, USA</td>
+            <td>FAS (Container)</td>
+            <td>United States</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =================== PROFILE VIEW =================== -->
+<div id="view-profile" class="view" style="display: none;">
+  <div class="page-content" style="max-width: 960px;">
+    <h1 class="page-title">Profile</h1>
+
+    <div class="profile-card">
+      <div class="profile-row">
+        <div class="profile-avatar">EB</div>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+            <div>
+              <h2 style="font-size: 22px; font-weight: 500;">Eric Braustak</h2>
+              <p style="color: var(--text-light); font-size: 14px; margin-top: 4px;">Senior Trader · Minerva Global Limited</p>
+            </div>
+            <span class="verif verif-yes">✓ Verified Seller</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 12px;">Member since March 2024 · KYC complete · 28 successful trades</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <h3 style="font-size: 16px; font-weight: 500; margin-bottom: 20px;">Personal Information</h3>
+      <div class="profile-form">
+        <div class="form-field"><label>First name</label><input value="Eric"></div>
+        <div class="form-field"><label>Last name</label><input value="Braustak"></div>
+        <div class="form-field"><label>Email</label><input value="eric.b@minerva-global.com"></div>
+        <div class="form-field"><label>Phone</label><input value="+380 44 123 4567"></div>
+        <div class="form-field"><label>Position</label><input value="Senior Trader"></div>
+        <div class="form-field"><label>Language</label><select><option>English</option><option>Russian</option><option>Spanish</option></select></div>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <h3 style="font-size: 16px; font-weight: 500; margin-bottom: 20px;" data-i18n="seller_company_info">Company Information</h3>
+      <div class="profile-form">
+        <div class="form-field"><label>Company name</label><input value="Minerva Global Limited"></div>
+        <div class="form-field"><label>Country</label><input value="Ukraine"></div>
+        <div class="form-field"><label>Tax ID</label><input value="UA-93847583"></div>
+        <div class="form-field"><label>Year founded</label><input value="2011"></div>
+        <div class="form-field" style="grid-column: span 2;"><label>Address</label><input value="vul. Khreshchatyk 25, Kyiv, 01001, Ukraine"></div>
+        <div class="form-field" style="grid-column: span 2;"><label>About</label><textarea rows="3">Leading grain exporter focused on wheat, corn, and barley from Ukraine and the Black Sea region.</textarea></div>
+      </div>
+      <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: flex-end;">
+        <button class="btn-outline">Cancel</button>
+        <button class="btn-primary">Save Changes</button>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <h3 style="font-size: 16px; font-weight: 500; margin-bottom: 20px;" data-i18n="seller_verif_docs">Verification Documents</h3>
+      <div style="display: grid; gap: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f5f7fa; border-radius: 4px;">
+          <div>
+            <div style="font-weight: 500; font-size: 14px;">Certificate of Incorporation</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Uploaded 15 May 2026</div>
+          </div>
+          <span class="verif verif-yes">✓ Approved</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f5f7fa; border-radius: 4px;">
+          <div>
+            <div style="font-weight: 500; font-size: 14px;">Tax Registration</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Uploaded 14 May 2026</div>
+          </div>
+          <span class="verif verif-yes">✓ Approved</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f5f7fa; border-radius: 4px;">
+          <div>
+            <div style="font-weight: 500; font-size: 14px;">Bank Confirmation Letter</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Uploaded 13 May 2026</div>
+          </div>
+          <span class="verif verif-pending">⏳ Under Review</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== ADD PRODUCT MODAL =================== -->
+<div class="add-product-modal-bg" id="addProductModal">
+  <div class="add-product-modal">
+    <h2 data-i18n="seller_add_listing_title">Add new product listing</h2>
+    <div class="modal-grid">
+      <div class="form-field" style="grid-column: span 2;"><label data-i18n="seller_prod_name">Product name</label><input data-i18n-placeholder="seller_prod_name_ph" placeholder="e.g. Winter Wheat, Grade #2"></div>
+      <div class="form-field"><label data-i18n="seller_type">Type</label><select><option data-i18n="act_view">Sell</option><option data-i18n="dash_browse">Buy</option></select></div>
+      <div class="form-field"><label data-i18n="seller_category">Category</label><select><option data-i18n="cat_grains">Grains</option><option data-i18n="cat_oilseeds">Oilseeds</option><option data-i18n="cat_peanuts">Pulses</option><option data-i18n="cat_oils">Oils</option></select></div>
+      <div class="form-field"><label data-i18n="seller_country_origin">Country of origin</label><select><option>Ukraine</option><option>USA</option><option>Canada</option><option>Brazil</option></select></div>
+      <div class="form-field"><label data-i18n="seller_vol_range">Volume range (MT/month)</label><input placeholder="e.g. 1000 - 3000"></div>
+      <div class="form-field"><label data-i18n="seller_price_min">Price min (USD/MT)</label><input placeholder="180"></div>
+      <div class="form-field"><label data-i18n="seller_price_max">Price max (USD/MT)</label><input placeholder="200"></div>
+      <div class="form-field" style="grid-column: span 2;"><label data-i18n="seller_terms">Delivery terms</label><input value="CFR, FOB, CIF" placeholder="Incoterms"></div>
+      <div class="form-field" style="grid-column: span 2;"><label data-i18n="seller_specs">Specifications</label><textarea rows="3" data-i18n-placeholder="seller_specs_ph" placeholder="Protein %, moisture %, etc."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeAddProduct()">Cancel</button>
+      <button class="btn-primary" onclick="saveProduct()">Publish Listing</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+  document.getElementById('view-' + name).style.display = 'block';
+  document.querySelectorAll('.gnav-link').forEach(l => l.classList.remove('active'));
+  event && event.currentTarget && event.currentTarget.classList.add('active');
+}
+function switchChatTab(el, idx) {
+  el.parentElement.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+function openAddProduct() { document.getElementById('addProductModal').classList.add('show'); }
+function closeAddProduct() { document.getElementById('addProductModal').classList.remove('show'); }
+document.getElementById('addProductModal').addEventListener('click', (e) => {
+  if (e.target.id === 'addProductModal') closeAddProduct();
+});
+
+/* =================== ADD PRODUCT — localStorage persistence =================== */
+function _esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function saveProduct() {
+  const modal = document.getElementById('addProductModal');
+  const get = sel => (modal.querySelector(sel)||{}).value || '';
+  const data = {
+    id: 'P' + Date.now(),
+    name:     get('input:nth-of-type(1)') || 'New Listing',
+    type:     get('select:nth-of-type(1)'),
+    category: get('select:nth-of-type(2)'),
+    country:  get('select:nth-of-type(3)'),
+    volume:   get('input:nth-of-type(2)'),
+    priceMin: get('input:nth-of-type(3)'),
+    priceMax: get('input:nth-of-type(4)'),
+    terms:    get('input:nth-of-type(5)'),
+    specs:    (modal.querySelector('textarea')||{}).value || '',
+    addedDate: new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}),
+    views: 0,
+    inquiries: 0
+  };
+  const existing = JSON.parse(localStorage.getItem('agri_seller_products') || '[]');
+  existing.unshift(data);
+  localStorage.setItem('agri_seller_products', JSON.stringify(existing));
+  closeAddProduct();
+  renderLocalProducts();
+  showSellerToast('✓ Listing published successfully!');
+  // reset form
+  modal.querySelectorAll('input, textarea').forEach(el => { if(el.type !== 'submit') el.value = ''; });
+}
+
+function deleteLocalProduct(id) {
+  const products = JSON.parse(localStorage.getItem('agri_seller_products') || '[]');
+  localStorage.setItem('agri_seller_products', JSON.stringify(products.filter(p => p.id !== id)));
+  renderLocalProducts();
+}
+
+function renderLocalProducts() {
+  const products = JSON.parse(localStorage.getItem('agri_seller_products') || '[]');
+  const container = document.getElementById('seller-rows');
+  if (!container) return;
+  // remove previously injected local rows
+  container.querySelectorAll('.ls-local-row').forEach(el => el.remove());
+  if (!products.length) return;
+  const html = products.map(p => `
+    <div class="ls-local-row" style="display:grid;grid-template-columns:1fr auto auto auto auto;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid var(--border);animation:fadein 0.3s ease;">
+      <div>
+        <div style="font-weight:600;font-size:14px;color:var(--ink);">${_esc(p.name)}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${_esc(p.type)} · ${_esc(p.category)} · ${_esc(p.country)}</div>
+      </div>
+      <div style="font-size:13px;font-weight:500;color:var(--ink);">$${_esc(p.priceMin)}–$${_esc(p.priceMax)}<small style="color:var(--text-muted);font-weight:400;"> USD/MT</small></div>
+      <div style="font-size:12px;color:var(--text-light);">${_esc(p.volume)} MT/mo</div>
+      <span class="status status-new" style="font-size:10px;">Active</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span style="font-size:11px;color:var(--text-muted);">Added ${_esc(p.addedDate)}</span>
+        <button onclick="deleteLocalProduct('${_esc(p.id)}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;line-height:1;padding:0 4px;" title="Remove listing">×</button>
+      </div>
+    </div>`).join('');
+  container.insertAdjacentHTML('afterbegin', html);
+}
+
+function showSellerToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 24px;border-radius:4px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(()=>t.remove(),400); }, 2600);
+}
+
+document.addEventListener('DOMContentLoaded', renderLocalProducts);
+</script>
+
+<!-- =================== PRODUCT DETAIL DRAWER =================== -->
+<div class="drawer-bg" id="drawerBg" onclick="closeDrawer()"></div>
+<div class="drawer" id="productDrawer">
+  <div class="drawer-head">
+    <h2 id="d-title">Product</h2>
+    <button class="close" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="drawer-body">
+    <div class="detail-hero">
+      <span class="type-pill" id="d-type">Sell offer</span>
+      <h1 id="d-name">Product name</h1>
+      <div class="sub" id="d-sub">Origin · Updated</div>
+      <div class="price-tag">
+        <div class="price" id="d-price">$0 <small>/ MT</small></div>
+      </div>
+    </div>
+
+    <div class="detail-meta-row">
+      <span><strong id="d-inquiries">0</strong> inquiries</span>
+      <span><strong id="d-views">0</strong> views</span>
+      <span>Listing ID: <strong id="d-id">—</strong></span>
+    </div>
+
+    <div class="detail-specs">
+      <div class="detail-spec"><div class="label">Volume</div><div class="value" id="d-volume">—</div></div>
+      <div class="detail-spec"><div class="label">Delivery</div><div class="value" id="d-delivery">—</div></div>
+      <div class="detail-spec"><div class="label">Country</div><div class="value" id="d-country">—</div></div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Product specifications</h3>
+      <div class="spec-grid">
+        <div class="spec-row"><span class="k">Protein content</span><span class="v">12.5% min</span></div>
+        <div class="spec-row"><span class="k">Moisture</span><span class="v">14% max</span></div>
+        <div class="spec-row"><span class="k">Foreign matter</span><span class="v">2% max</span></div>
+        <div class="spec-row"><span class="k">Broken kernels</span><span class="v">5% max</span></div>
+        <div class="spec-row"><span class="k">Test weight</span><span class="v">78 kg/hl</span></div>
+        <div class="spec-row"><span class="k">Falling number</span><span class="v">250 sec min</span></div>
+        <div class="spec-row"><span class="k">Packaging</span><span class="v">Bulk / 50 kg bags</span></div>
+        <div class="spec-row"><span class="k">Crop year</span><span class="v">2025–2026</span></div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Description</h3>
+      <p id="d-description">Premium-grade product sourced from certified farms. Quality-controlled at origin and shipped under standard international Incoterms. Phytosanitary, weight, and quality certificates issued by accredited third-party inspection at loading.</p>
+    </div>
+
+    <div class="detail-section">
+      <h3>Available basis (Incoterms)</h3>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <span class="pill-tab active">FOB</span>
+        <span class="pill-tab" style="background:#f0f0f0;color:#666;">CIF</span>
+        <span class="pill-tab" style="background:#f0f0f0;color:#666;">CFR</span>
+        <span class="pill-tab" style="background:#f0f0f0;color:#666;">EXW</span>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Listed by</h3>
+      <div class="seller-card">
+        <div class="avatar">MG</div>
+        <div class="info">
+          <div class="name">Minerva Global Limited <span class="verif verif-yes" style="margin-left:6px;">✓ Verified</span></div>
+          <div class="meta">Ukraine · Senior Trader: Eric Braustak · Member since 2024</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-actions">
+      <button class="btn-outline" onclick="closeDrawer()">Edit listing</button>
+      <button class="btn-primary">View inquiries</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Auto-wire product detail clicks on all product cells in My Products
+const productData = {
+  default: { type: 'Sell offer', name: 'Product', sub: '', price: '—', volume: '—', delivery: '—', country: '—', inquiries: 0, views: 0, id: '—' }
+};
+function openProduct(opts) {
+  const d = Object.assign({}, productData.default, opts || {});
+  document.getElementById('d-title').textContent = d.name;
+  document.getElementById('d-type').textContent = d.type;
+  document.getElementById('d-name').textContent = d.name;
+  document.getElementById('d-sub').textContent = d.sub;
+  document.getElementById('d-price').innerHTML = d.price + ' <small>/ MT</small>';
+  document.getElementById('d-volume').textContent = d.volume;
+  document.getElementById('d-delivery').textContent = d.delivery;
+  document.getElementById('d-country').textContent = d.country;
+  document.getElementById('d-inquiries').textContent = d.inquiries;
+  document.getElementById('d-views').textContent = d.views || Math.floor(20 + Math.random() * 200);
+  document.getElementById('d-id').textContent = d.id;
+  document.getElementById('drawerBg').classList.add('show');
+  document.getElementById('productDrawer').classList.add('show');
+}
+function closeDrawer() {
+  document.getElementById('drawerBg').classList.remove('show');
+  document.getElementById('productDrawer').classList.remove('show');
+}
+// Wire product cells in tables
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('#view-products table.data tbody tr').forEach(row => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length < 7) return;
+    const name = cells[0].querySelector('.cell-link')?.firstChild?.textContent?.trim() || cells[0].textContent.trim();
+    row.style.cursor = 'pointer';
+    cells[0].addEventListener('click', (e) => {
+      e.stopPropagation();
+      const link = cells[0].querySelector('.cell-link');
+      const productName = link ? link.firstChild.textContent.trim() : cells[0].textContent.trim();
+      openProduct({
+        type: 'Sell offer',
+        name: productName,
+        sub: cells[2].textContent + ' · Updated ' + cells[7].textContent,
+        price: '$' + cells[3].textContent.replace(/USD\/MT|\/ MT/g, '').trim(),
+        volume: cells[4].textContent,
+        delivery: cells[5].textContent || '—',
+        country: cells[2].textContent,
+        inquiries: cells[6].textContent,
+        id: '#' + Math.floor(1000 + Math.random() * 9000)
+      });
+    });
+  });
+
+  // Wire contracts table to open contract detail
+  document.querySelectorAll('#view-contracts table.data tbody tr').forEach(row => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length < 7) return;
+    cells[1].style.cursor = 'pointer';
+    cells[1].addEventListener('click', () => {
+      const name = cells[1].querySelector('.cell-link')?.firstChild?.textContent?.trim();
+      openProduct({
+        type: 'Contract #' + cells[0].textContent,
+        name: name,
+        sub: 'Partner: ' + cells[5].textContent + ' · ' + cells[6].textContent,
+        price: cells[3].textContent,
+        volume: cells[2].textContent + ' MT',
+        delivery: cells[8].textContent,
+        country: cells[9].textContent,
+        inquiries: 0,
+        id: '#' + cells[0].textContent
+      });
+    });
+  });
+});
+
+function showView(name, event) {
+  document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+  document.getElementById('view-' + name).style.display = 'block';
+  document.querySelectorAll('.gnav-link').forEach(l => l.classList.remove('active'));
+  event && event.currentTarget && event.currentTarget.classList.add('active');
+}
+function switchChatTab(el, idx) {
+  el.parentElement.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+function openAddProduct() { document.getElementById('addProductModal').classList.add('show'); }
+function closeAddProduct() { document.getElementById('addProductModal').classList.remove('show'); }
+document.getElementById('addProductModal').addEventListener('click', (e) => {
+  if (e.target.id === 'addProductModal') closeAddProduct();
+});
+
+/* ---- ALT MY PRODUCTS: listing rows renderer ---- */
+(function(){
+  const rows = [
+    { emo:'🌾', name:'Wheat Flour',   sub:'Premium grade · 50kg bags',     flag:'🇺🇦', country:'UKRAINE',  type:'SELL',  price:'$200 – $300', vol:'2,000 – 3,000 MT/mo', basis:'FOB · CIF', views:1284, inq:8, conv:'6%',  status:'active', updated:'30 Mar' },
+    { emo:'🌽', name:'Yellow Corn',   sub:'Grade #2 USDA',                  flag:'🇺🇦', country:'UKRAINE',  type:'SELL',  price:'$178 – $187', vol:'1,000 – 3,000 MT/mo', basis:'CFR',       views:2410, inq:12, conv:'9%', status:'active', updated:'21 Mar' },
+    { emo:'🌾', name:'Wheat',         sub:'Winter, 12% protein',            flag:'🇺🇦', country:'UKRAINE',  type:'SELL',  price:'$180 – $188', vol:'1,000 – 1,500 MT/mo', basis:'CFR · DAT', views:892,  inq:5, conv:'4%',  status:'active', updated:'20 Mar' },
+    { emo:'🌾', name:'Wheat',         sub:'Spring grade · milling',         flag:'🇺🇦', country:'UKRAINE',  type:'SELL',  price:'$185',         vol:'100 – 4,000 MT/mo',   basis:'CFR · CIF', views:540,  inq:3, conv:'2%',  status:'expiring', updated:'19 Mar' },
+    { emo:'🛢️', name:'Soy Bean Oil',  sub:'Refined, food grade',            flag:'🇻🇳', country:'VIETNAM',  type:'SELL',  price:'$820 – $1,000',vol:'20 – 500 MT/mo',     basis:'EXW · FOB', views:312,  inq:2, conv:'3%',  status:'paused',   updated:'07 Mar' },
+    { emo:'🫘', name:'Chickpeas',     sub:'Kabuli type · 8mm',              flag:'🇨🇦', country:'CANADA',   type:'SELL',  price:'$550 – $720', vol:'300 – 6,000 MT/mo',   basis:'FOB · FCA', views:1980, inq:14, conv:'12%', status:'active', updated:'07 Mar' },
+    { emo:'🫘', name:'Black Beans',   sub:'Premium export grade',           flag:'🇨🇦', country:'CANADA',   type:'SELL',  price:'$620 – $850', vol:'200 – 7,000 MT/mo',   basis:'EXW · FOB', views:680,  inq:3, conv:'3%',  status:'active', updated:'07 Mar' }
+  ];
+  const el = document.getElementById('seller-rows');
+  if (!el) return;
+  el.innerHTML = rows.map(r => `
+    <article class="lrow">
+      <div class="lrow-prod">
+        <div class="prod-emo">${r.emo}</div>
+        <div>
+          <div class="pn">${r.name}</div>
+          <div class="ps"><span class="flag">${r.flag}</span> ${r.country} · ${r.sub}</div>
+        </div>
+      </div>
+      <div class="lrow-meta">
+        <div class="k">Price</div>
+        <div class="v price">${r.price}</div>
+        <div class="k" style="margin-top:4px;">Volume</div>
+        <div class="v">${r.vol}</div>
+      </div>
+      <div class="lrow-meta">
+        <div class="k">Basis</div>
+        <div class="v">${r.basis}</div>
+        <div class="k" style="margin-top:4px;">Updated</div>
+        <div class="v" style="font-weight:400;color:var(--text-light);">${r.updated} · 2026</div>
+      </div>
+      <div class="lrow-perf">
+        <div class="p"><div class="n">${r.views.toLocaleString()}</div><div class="l">Views</div></div>
+        <div class="p"><div class="n">${r.inq}</div><div class="l">Inquiries</div></div>
+        <div class="p"><div class="n">${r.conv}</div><div class="l">Conv.</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+        <span class="lrow-status ${r.status}">${r.status === 'active' ? 'Active' : r.status === 'paused' ? 'Paused' : 'Expiring 5d'}</span>
+        <div class="lrow-acts">
+          <button class="boost">↑ Boost</button>
+          <button>Edit</button>
+          <button class="icon" title="More">⋯</button>
+        </div>
+      </div>
+    </article>
+  `).join('');
+})();
+
+</script>
+
+<script src="ui-micro.js"></script>
+</body>
+</html>

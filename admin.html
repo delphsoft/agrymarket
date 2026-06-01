@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriMarket — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="alt-dash.css">
+<script src="i18n.js"></script>
+<script src="lang-widget.js"></script>
+<style>
+  body { background: #fff; }
+  .admin-content { padding: 28px 32px; }
+  .filter-row { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
+  .filter-row input, .filter-row select {
+    padding: 8px 12px; border: 1px solid var(--border); font-size: 13px;
+    font-family: inherit; outline: none;
+  }
+  .filter-row input { min-width: 240px; }
+  .filter-row .spacer { flex: 1; }
+  .pill-tab {
+    padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer;
+    border-radius: 16px; background: #f0f0f0; color: #666;
+  }
+  .pill-tab.active { background: var(--accent); color: #fff; }
+  .breadcrumb-light {
+    background: var(--bg-light); padding: 12px 32px; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  .breadcrumb-light a { color: var(--accent); text-decoration: none; }
+  .breadcrumb-light span { color: #aaa; margin: 0 8px; }
+</style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="ui-polish.css">
+  <script src="security.js"></script>
+</head>
+<body>
+<script src="demo-banner.js"></script>
+
+
+
+<!-- Top Nav (light) -->
+<nav class="lnav">
+  <a href="index.html" class="lnav-logo">AgriMarket</a>
+  <div class="lnav-links">
+    <a class="lnav-link" onclick="showView('customers', event)" data-i18n="admin_customers">Customers</a>
+    <a class="lnav-link active" onclick="showView('listings', event)"><span data-i18n="admin_listings">Listings</span> <span class="badge">274</span></a>
+    <a class="lnav-link" onclick="showView('contracts', event)" data-i18n="dash_contracts">Contracts</a>
+    <a class="lnav-link" onclick="showView('messages', event)"><span data-i18n="dash_messages">Messages</span> <span class="badge">39</span></a>
+    <a class="lnav-link" onclick="showView('compliance', event)" data-i18n="admin_compliance">Compliance</a>
+    <a class="lnav-link" onclick="showView('support', event)" data-i18n="admin_support">Support</a>
+  </div>
+  <div class="lnav-right">
+    <span data-lang-widget="light"></span>
+    <span style="display: flex; align-items: center; gap: 8px;">
+      <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">GW</span>
+      <strong>George Walthood</strong>
+    </span>
+    <a>Logout</a>
+  </div>
+</nav>
+
+<!-- =================== ADMIN SHELL with SIDEBAR =================== -->
+<div class="admin-shell">
+  <aside class="admin-side">
+    <div class="admin-side-section" data-i18n="admin_section_ops">Operations</div>
+    <div class="admin-side-item" onclick="showView('dashboard', event)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5"/><rect x="9" y="2" width="5" height="5"/><rect x="2" y="9" width="5" height="5"/><rect x="9" y="9" width="5" height="5"/></svg>
+      <span data-i18n="admin_dashboard">Dashboard</span>
+    </div>
+    <div class="admin-side-item" onclick="showView('customers', event)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="6" r="2.5"/><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>
+      <span data-i18n="admin_users">Manage Users</span>
+    </div>
+    <div class="admin-side-item" onclick="showView('companies', event)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11"/><line x1="5" y1="6" x2="7" y2="6"/><line x1="9" y1="6" x2="11" y2="6"/><line x1="5" y1="9" x2="7" y2="9"/><line x1="9" y1="9" x2="11" y2="9"/></svg>
+      <span data-i18n="admin_companies">Manage Companies</span>
+    </div>
+    <div class="admin-side-item active" onclick="showView('listings', event)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="3" height="3"/><rect x="2" y="10" width="3" height="3"/><line x1="7" y1="4.5" x2="14" y2="4.5"/><line x1="7" y1="11.5" x2="14" y2="11.5"/></svg>
+      <span data-i18n="admin_products">Manage Products</span>
+    </div>
+    <div class="admin-side-item" onclick="showView('tenders', event)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l6-2 6 2v6c0 3-3 5-6 5s-6-2-6-5z"/></svg>
+      <span data-i18n="admin_tenders">Manage Tenders</span>
+    </div>
+    <div class="admin-side-item" onclick="showView('contracts', event)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2" width="10" height="12"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="11" y2="8"/></svg>
+      <span data-i18n="admin_admin_contracts">Manage Contracts</span>
+    </div>
+
+    <div class="admin-side-section" data-i18n="admin_section_comm">Communications</div>
+    <div class="admin-side-item" onclick="showView('messages', event)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12v8H5l-3 3z"/></svg>
+      <span data-i18n="admin_messaging">Messaging</span>
+    </div>
+    <div class="admin-side-item" onclick="showView('support', event)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M6 6c0-1 1-2 2-2s2 1 2 2c0 1-2 1-2 2"/><circle cx="8" cy="11.5" r="0.5" fill="currentColor"/></svg>
+      <span data-i18n="admin_support">Support Tickets</span>
+    </div>
+    <div class="admin-side-item" onclick="showView('compliance', event)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2l5 2v4c0 3-2 5-5 6-3-1-5-3-5-6V4z"/><path d="M6 8l2 2 3-3"/></svg>
+      <span data-i18n="admin_compliance">Compliance</span>
+    </div>
+
+    <div class="admin-side-section" data-i18n="admin_section_team">Team</div>
+    <div class="admin-side-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="5" cy="6" r="2"/><circle cx="11" cy="6" r="2"/><path d="M1 14c0-2 1.7-3.5 4-3.5s4 1.5 4 3.5M7 14c0-2 1.7-3.5 4-3.5s4 1.5 4 3.5"/></svg>
+      <span data-i18n="admin_sales">Sales Managers</span>
+    </div>
+    <div class="admin-side-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="6" r="2.5"/><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>
+      <span data-i18n="admin_admins">Admins</span>
+    </div>
+  </aside>
+
+  <main>
+    <!-- =================== DASHBOARD =================== -->
+    <div id="view-dashboard" class="view" style="display: none;">
+      <div class="breadcrumb-light">
+        <a>Home</a> <span>/</span> Dashboard
+      </div>
+      <div class="admin-content">
+        <h1 class="page-title">Dashboard</h1>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="label">Total companies</div>
+            <div class="value">486</div>
+            <div class="delta">+12 this month</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Active listings</div>
+            <div class="value">274</div>
+            <div class="delta">+34 this week</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Open contracts</div>
+            <div class="value">52</div>
+            <div class="delta">8 settled this week</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Pending KYC</div>
+            <div class="value">17</div>
+            <div class="delta down">Needs attention</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+          <div style="background: #fff; border: 1px solid var(--border); padding: 24px;">
+            <h3 style="font-size: 16px; font-weight: 500; margin-bottom: 16px;">Recent activity</h3>
+            <div style="display: grid; gap: 12px;">
+              <div style="display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-light); font-size: 13px;">
+                <span style="color: var(--green); font-weight: 600;">✓</span>
+                <div style="flex: 1;"><strong>Minerva Global Ltd.</strong> completed KYC verification</div>
+                <span style="color: var(--text-muted);">2h ago</span>
+              </div>
+              <div style="display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-light); font-size: 13px;">
+                <span style="color: var(--accent); font-weight: 600;">⬢</span>
+                <div style="flex: 1;">New contract <strong>#269</strong> signed — Wheat Flour 2000 MT</div>
+                <span style="color: var(--text-muted);">3h ago</span>
+              </div>
+              <div style="display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-light); font-size: 13px;">
+                <span style="color: var(--orange); font-weight: 600;">!</span>
+                <div style="flex: 1;">Support ticket #482 escalated — payment dispute</div>
+                <span style="color: var(--text-muted);">5h ago</span>
+              </div>
+              <div style="display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-light); font-size: 13px;">
+                <span style="color: var(--accent); font-weight: 600;">+</span>
+                <div style="flex: 1;"><strong>Anderson Grain Group</strong> added 5 new listings</div>
+                <span style="color: var(--text-muted);">6h ago</span>
+              </div>
+              <div style="display: flex; gap: 12px; padding: 10px 0; font-size: 13px;">
+                <span style="color: var(--red); font-weight: 600;">×</span>
+                <div style="flex: 1;">Contract <strong>#248</strong> terminated — Adecoagro S.A.</div>
+                <span style="color: var(--text-muted);">1d ago</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: #fff; border: 1px solid var(--border); padding: 24px;">
+            <h3 style="font-size: 16px; font-weight: 500; margin-bottom: 16px;">Top countries by volume</h3>
+            <div style="display: grid; gap: 14px;">
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;"><span>Ukraine</span><strong>32%</strong></div>
+                <div style="height: 6px; background: var(--bg-light);"><div style="width: 32%; height: 100%; background: var(--accent);"></div></div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;"><span>USA</span><strong>24%</strong></div>
+                <div style="height: 6px; background: var(--bg-light);"><div style="width: 24%; height: 100%; background: var(--accent);"></div></div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;"><span>Canada</span><strong>18%</strong></div>
+                <div style="height: 6px; background: var(--bg-light);"><div style="width: 18%; height: 100%; background: var(--accent);"></div></div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;"><span>Argentina</span><strong>12%</strong></div>
+                <div style="height: 6px; background: var(--bg-light);"><div style="width: 12%; height: 100%; background: var(--accent);"></div></div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;"><span>Brazil</span><strong>8%</strong></div>
+                <div style="height: 6px; background: var(--bg-light);"><div style="width: 8%; height: 100%; background: var(--accent);"></div></div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;"><span>Other</span><strong>6%</strong></div>
+                <div style="height: 6px; background: var(--bg-light);"><div style="width: 6%; height: 100%; background: var(--accent);"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== LISTINGS (alternative moderation queue) =================== -->
+    <div id="view-listings" class="view">
+      <div class="breadcrumb-light">
+        <a>Home</a> <span>/</span> Listings
+      </div>
+      <div class="admin-content">
+        <div style="display: flex; justify-content: space-between; align-items: end; margin-bottom: 22px;">
+          <div>
+            <h1 class="alt-h1" style="margin: 0;">Moderation queue</h1>
+            <div style="font-size: 13px; color: var(--text-light); margin-top: 4px;">274 listings · 12 awaiting review · 3 flagged in last 24h</div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-outline" style="padding: 8px 16px;">Translations</button>
+            <button class="btn-outline" style="padding: 8px 16px;">Export CSV</button>
+            <button class="btn-primary" style="padding: 10px 22px;">+ New listing</button>
+          </div>
+        </div>
+
+        <!-- STATUS TILES (filter as you click) -->
+        <div class="adm-tiles">
+          <div class="adm-tile active" data-status="all">
+            <div class="ln"><span class="dot" style="background:#94a3b8;"></span>All listings</div>
+            <div class="lv">274</div>
+            <div class="ld">Across 64 countries</div>
+          </div>
+          <div class="adm-tile" data-status="review">
+            <div class="ln"><span class="dot" style="background:#f59e0b;"></span>Awaiting review</div>
+            <div class="lv">12</div>
+            <div class="ld">Oldest waiting 4h 22m</div>
+          </div>
+          <div class="adm-tile" data-status="active">
+            <div class="ln"><span class="dot" style="background:#1eb980;"></span>Active</div>
+            <div class="lv">248</div>
+            <div class="ld">90% of total volume</div>
+          </div>
+          <div class="adm-tile" data-status="flagged">
+            <div class="ln"><span class="dot" style="background:#ef4444;"></span>Flagged</div>
+            <div class="lv">3</div>
+            <div class="ld">2 high-priority</div>
+          </div>
+        </div>
+
+        <!-- FILTER TOOLBAR -->
+        <div class="adm-toolbar">
+          <div class="adm-search">
+            <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="5"/><line x1="12" y1="12" x2="16" y2="16"/></svg>
+            <input placeholder="Search product, company, listing ID…">
+          </div>
+          <select><option>All types</option><option>Sell</option><option>Buy</option></select>
+          <select><option>All countries</option><option>Ukraine</option><option>USA</option><option>Canada</option><option>Brazil</option></select>
+          <select><option>All languages</option><option>English</option><option>Russian</option><option>Spanish</option></select>
+          <div class="seg">
+            <button class="active">List</button>
+            <button>Grid</button>
+            <button>Compact</button>
+          </div>
+        </div>
+
+        <!-- QUEUE -->
+        <div class="queue">
+          <div class="qhead">
+            <div></div>
+            <div>Type</div>
+            <div>Product</div>
+            <div>Company</div>
+            <div>Price (USD/MT)</div>
+            <div>Volume</div>
+            <div>Status</div>
+            <div style="text-align:right;">Actions</div>
+          </div>
+          <div id="admin-queue"><!-- injected --></div>
+          <div class="qpag">
+            <div>Showing 1–11 of 274 listings · filtered by <strong style="color:var(--ink);">All</strong></div>
+            <div class="pages">
+              <button>‹ Prev</button>
+              <button class="active">1</button>
+              <button>2</button>
+              <button>3</button>
+              <button>…</button>
+              <button>25</button>
+              <button>Next ›</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== CUSTOMERS =================== -->
+    <div id="view-customers" class="view" style="display: none;">
+      <div class="breadcrumb-light"><a>Home</a> <span>/</span> Manage Users</div>
+      <div class="admin-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h1 class="page-title" style="margin: 0;">Manage Users</h1>
+          <button class="btn-primary">+ Invite User</button>
+        </div>
+
+        <div class="filter-row">
+          <input placeholder="Search by name, email, company...">
+          <select><option>All roles</option><option>Buyer</option><option>Seller</option><option>Manager</option></select>
+          <select><option>All statuses</option><option>Active</option><option>Pending KYC</option><option>Suspended</option></select>
+          <div class="spacer"></div>
+          <button class="btn-outline">Export</button>
+        </div>
+
+        <div class="table-wrap" style="border: 1px solid var(--border);">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Company</th>
+                <th>Country</th>
+                <th>Role</th>
+                <th>KYC</th>
+                <th>Last active</th>
+                <th>Joined</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Eric Braustak</strong><br><small style="color: var(--text-muted);">eric.b@minerva-global.com</small></td>
+                <td class="cell-link">Minerva Global Limited</td>
+                <td>Ukraine</td>
+                <td>Seller</td>
+                <td><span class="verif verif-yes">✓ Approved</span></td>
+                <td>2h ago</td>
+                <td>14 Mar 2024</td>
+                <td><a class="cell-link">View</a></td>
+              </tr>
+              <tr>
+                <td><strong>Juan Ortega</strong><br><small style="color: var(--text-muted);">j.ortega@adecoagro.com</small></td>
+                <td class="cell-link">Adecoagro S.A.</td>
+                <td>Argentina</td>
+                <td>Buyer</td>
+                <td><span class="verif verif-yes">✓ Approved</span></td>
+                <td>15m ago</td>
+                <td>22 Jan 2025</td>
+                <td><a class="cell-link">View</a></td>
+              </tr>
+              <tr>
+                <td><strong>David Ellis</strong><br><small style="color: var(--text-muted);">david@andersongrain.com</small></td>
+                <td class="cell-link">Anderson Grain Group</td>
+                <td>United States</td>
+                <td>Seller</td>
+                <td><span class="verif verif-yes">✓ Approved</span></td>
+                <td>1d ago</td>
+                <td>06 Mar 2024</td>
+                <td><a class="cell-link">View</a></td>
+              </tr>
+              <tr>
+                <td><strong>Priya Khanna</strong><br><small style="color: var(--text-muted);">priya@promac.in</small></td>
+                <td class="cell-link">Promac Food Products Ltd.</td>
+                <td>India</td>
+                <td>Seller</td>
+                <td><span class="verif verif-pending">⏳ Under Review</span></td>
+                <td>3h ago</td>
+                <td>10 May 2026</td>
+                <td><a class="cell-link">Review</a></td>
+              </tr>
+              <tr>
+                <td><strong>Lucia Mendez</strong><br><small style="color: var(--text-muted);">lucia@oleocampo.es</small></td>
+                <td class="cell-link">Oleocampo S.C.A</td>
+                <td>Spain</td>
+                <td>Buyer</td>
+                <td><span class="verif verif-yes">✓ Approved</span></td>
+                <td>5h ago</td>
+                <td>11 Feb 2025</td>
+                <td><a class="cell-link">View</a></td>
+              </tr>
+              <tr>
+                <td><strong>Raj Patel</strong><br><small style="color: var(--text-muted);">raj@andrott.ca</small></td>
+                <td class="cell-link">Andrott Overseas Ltd.</td>
+                <td>Canada</td>
+                <td>Seller</td>
+                <td><span class="verif verif-yes">✓ Approved</span></td>
+                <td>2d ago</td>
+                <td>15 Jul 2024</td>
+                <td><a class="cell-link">View</a></td>
+              </tr>
+              <tr>
+                <td><strong>Marcus Stein</strong><br><small style="color: var(--text-muted);">m.stein@goldenharvest.au</small></td>
+                <td class="cell-link">Golden Harvest Trading</td>
+                <td>Australia</td>
+                <td>Buyer</td>
+                <td><span class="verif verif-no">✕ Rejected</span></td>
+                <td>3d ago</td>
+                <td>08 May 2026</td>
+                <td><a class="cell-link">Review</a></td>
+              </tr>
+              <tr>
+                <td><strong>Teodor Morena</strong><br><small style="color: var(--text-muted);">tm@agrimarket.com</small></td>
+                <td class="cell-link">AgriMarket Inc.</td>
+                <td>United States</td>
+                <td>Compliance Manager</td>
+                <td><span class="verif verif-yes">✓ Staff</span></td>
+                <td>Online</td>
+                <td>02 Jan 2024</td>
+                <td><a class="cell-link">View</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== COMPANIES =================== -->
+    <div id="view-companies" class="view" style="display: none;">
+      <div class="breadcrumb-light"><a>Home</a> <span>/</span> Manage Companies</div>
+      <div class="admin-content">
+        <h1 class="page-title">Manage Companies</h1>
+        <div class="filter-row">
+          <input placeholder="Search company...">
+          <select><option>All countries</option></select>
+          <select><option>All verification states</option></select>
+          <div class="spacer"></div>
+        </div>
+        <div class="table-wrap" style="border: 1px solid var(--border);">
+          <table class="data">
+            <thead><tr><th>Company</th><th>Country</th><th>Tax ID</th><th>Users</th><th>Listings</th><th>Contracts</th><th>Verification</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td class="cell-link">Minerva Global Limited</td><td>Ukraine</td><td>UA-93847583</td><td>4</td><td>12</td><td>8</td><td><span class="verif verif-yes">✓ Verified</span></td><td><a class="cell-link">View</a></td></tr>
+              <tr><td class="cell-link">Adecoagro S.A.</td><td>Argentina</td><td>AR-2002148</td><td>6</td><td>9</td><td>14</td><td><span class="verif verif-yes">✓ Verified</span></td><td><a class="cell-link">View</a></td></tr>
+              <tr><td class="cell-link">Anderson Grain Group</td><td>USA</td><td>US-58-29384</td><td>3</td><td>22</td><td>11</td><td><span class="verif verif-yes">✓ Verified</span></td><td><a class="cell-link">View</a></td></tr>
+              <tr><td class="cell-link">Andrott Overseas Ltd.</td><td>Canada</td><td>CA-749382</td><td>2</td><td>8</td><td>5</td><td><span class="verif verif-yes">✓ Verified</span></td><td><a class="cell-link">View</a></td></tr>
+              <tr><td class="cell-link">Promac Food Products Ltd.</td><td>India</td><td>IN-AAACP9382</td><td>2</td><td>3</td><td>0</td><td><span class="verif verif-pending">⏳ Under Review</span></td><td><a class="cell-link">Review</a></td></tr>
+              <tr><td class="cell-link">Oleocampo S.C.A</td><td>Spain</td><td>ES-B82938472</td><td>3</td><td>6</td><td>4</td><td><span class="verif verif-yes">✓ Verified</span></td><td><a class="cell-link">View</a></td></tr>
+              <tr><td class="cell-link">Golden Harvest Trading</td><td>Australia</td><td>AU-1234567</td><td>1</td><td>0</td><td>0</td><td><span class="verif verif-no">✕ Rejected</span></td><td><a class="cell-link">Review</a></td></tr>
+              <tr><td class="cell-link">Impex Express SA</td><td>Argentina</td><td>AR-30729384</td><td>2</td><td>5</td><td>3</td><td><span class="verif verif-yes">✓ Verified</span></td><td><a class="cell-link">View</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== CONTRACTS =================== -->
+    <div id="view-contracts" class="view" style="display: none;">
+      <div class="breadcrumb-light"><a>Home</a> <span>/</span> Manage Contracts</div>
+      <div class="admin-content">
+        <h1 class="page-title">Manage Contracts</h1>
+        <div class="filter-row">
+          <input placeholder="Search ID, product, partner...">
+          <select><option>All statuses</option><option>New</option><option>In Progress</option><option>Signed</option><option>Settled</option><option>Terminated</option></select>
+          <select><option>All countries</option></select>
+          <div class="spacer"></div>
+          <button class="btn-outline">Export CSV</button>
+        </div>
+
+        <div class="table-wrap" style="border: 1px solid var(--border);">
+          <table class="data">
+            <thead><tr><th>ID</th><th>Product</th><th>Seller</th><th>Buyer</th><th>Volume MT</th><th>Price</th><th>Status</th><th>Period</th><th>Basis</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>268</td><td class="cell-link">Wheat Flour</td><td class="cell-link">Minerva Global</td><td class="cell-link">Adecoagro S.A.</td><td>2000</td><td>210 USD</td><td><span class="status status-signed">Signed</span></td><td>30/03 – 25/04</td><td>FOB</td><td><a class="cell-link">View</a></td></tr>
+              <tr><td>266</td><td class="cell-link">Wheat</td><td class="cell-link">Minerva Global</td><td class="cell-link">Oleocampo S.C.A</td><td>1500</td><td>200 USD</td><td><span class="status status-settled">Settled</span></td><td>20/02 – 28/02</td><td>FOB</td><td><a class="cell-link">View</a></td></tr>
+              <tr><td>265</td><td class="cell-link">Wheat</td><td class="cell-link">Minerva Global</td><td class="cell-link">Adecoagro S.A.</td><td>1000</td><td>210 USD</td><td><span class="status status-new">New</span></td><td>20/02 – 01/03</td><td>CIF</td><td><a class="cell-link">View</a></td></tr>
+              <tr><td>256</td><td class="cell-link">Wheat</td><td class="cell-link">Anderson Grain</td><td class="cell-link">Australian Grain Co.</td><td>1200</td><td>185 USD</td><td><span class="status status-progress">In Progress</span></td><td>01/04 – 01/05</td><td>FOB</td><td><a class="cell-link">View</a></td></tr>
+              <tr><td>253</td><td class="cell-link">Wheat</td><td class="cell-link">Anderson Grain</td><td class="cell-link">Adecoagro S.A.</td><td>1200</td><td>183 USD</td><td><span class="status status-signed">Signed</span></td><td>06/04</td><td>FOB</td><td><a class="cell-link">View</a></td></tr>
+              <tr><td>251</td><td class="cell-link">Corn</td><td class="cell-link">Anderson Grain</td><td class="cell-link">Golden Harvest</td><td>4000</td><td>186 USD</td><td><span class="status status-progress">In Progress</span></td><td>05/04</td><td>FOB</td><td><a class="cell-link">View</a></td></tr>
+              <tr><td>248</td><td class="cell-link">Barley</td><td class="cell-link">Anderson Grain</td><td class="cell-link">Adecoagro S.A.</td><td>1000</td><td>168 USD</td><td><span class="status status-terminated">Terminated</span></td><td>20/03</td><td>FAS</td><td><a class="cell-link">View</a></td></tr>
+              <tr><td>247</td><td class="cell-link">Sorghum</td><td class="cell-link">Anderson Grain</td><td class="cell-link">Impex Express SA</td><td>1000</td><td>133 USD</td><td><span class="status status-new">New</span></td><td>27/03</td><td>FOB</td><td><a class="cell-link">View</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== TENDERS =================== -->
+    <div id="view-tenders" class="view" style="display: none;">
+      <div class="breadcrumb-light"><a>Home</a> <span>/</span> Manage Tenders</div>
+      <div class="admin-content">
+        <h1 class="page-title">Manage Tenders</h1>
+        <div class="filter-row">
+          <input placeholder="Search tender...">
+          <select><option>All statuses</option></select>
+          <div class="spacer"></div>
+          <button class="btn-primary">+ New Tender</button>
+        </div>
+        <div class="table-wrap" style="border: 1px solid var(--border);">
+          <table class="data">
+            <thead><tr><th>ID</th><th>Product</th><th>Issued By</th><th>Volume MT</th><th>Closing</th><th>Bids</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>T-104</td><td class="cell-link">Wheat (Hard Red Winter)</td><td class="cell-link">Adecoagro S.A.</td><td>10,000</td><td>28 May 2026</td><td>7</td><td><span class="status status-progress">Open</span></td><td><a class="cell-link">Bids</a></td></tr>
+              <tr><td>T-103</td><td class="cell-link">Corn (Yellow #2)</td><td class="cell-link">Oleocampo S.C.A</td><td>5,000</td><td>22 May 2026</td><td>12</td><td><span class="status status-progress">Open</span></td><td><a class="cell-link">Bids</a></td></tr>
+              <tr><td>T-102</td><td class="cell-link">Soy Bean Oil</td><td class="cell-link">Golden Harvest</td><td>800</td><td>15 May 2026</td><td>4</td><td><span class="status status-signed">Closed</span></td><td><a class="cell-link">Award</a></td></tr>
+              <tr><td>T-101</td><td class="cell-link">Chickpeas (Kabuli)</td><td class="cell-link">Promac Food Products</td><td>2,000</td><td>10 May 2026</td><td>9</td><td><span class="status status-settled">Awarded</span></td><td><a class="cell-link">View</a></td></tr>
+              <tr><td>T-100</td><td class="cell-link">Barley</td><td class="cell-link">Impex Express SA</td><td>3,000</td><td>05 May 2026</td><td>0</td><td><span class="status status-terminated">Cancelled</span></td><td><a class="cell-link">View</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== MESSAGES (admin moderation) =================== -->
+    <div id="view-messages" class="view" style="display: none;">
+      <div class="breadcrumb-light"><a>Home</a> <span>/</span> Messaging</div>
+      <div class="admin-content">
+        <h1 class="page-title">Messaging Oversight</h1>
+        <div class="filter-row">
+          <input placeholder="Search by sender, content...">
+          <select><option>All threads</option><option>Flagged</option><option>Unread</option></select>
+          <div class="spacer"></div>
+          <span style="font-size: 13px; color: var(--text-light);">39 active threads</span>
+        </div>
+        <div class="table-wrap" style="border: 1px solid var(--border);">
+          <table class="data">
+            <thead><tr><th>Thread</th><th>From</th><th>To</th><th>Topic</th><th>Last message</th><th>Time</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>#3920</td><td class="cell-link">Juan Ortega</td><td class="cell-link">David Ellis</td><td>Contract 253 — Wheat</td><td>Updated contract status on AgriMarket, please confirm.</td><td>15:16</td><td><span class="verif verif-yes">Healthy</span></td><td><a class="cell-link">Open</a></td></tr>
+              <tr><td>#3919</td><td class="cell-link">Marcus Stein</td><td class="cell-link">Eric Braustak</td><td>Pricing inquiry — Wheat Flour</td><td>Can you confirm volumes for Q3?</td><td>14:32</td><td><span class="verif verif-yes">Healthy</span></td><td><a class="cell-link">Open</a></td></tr>
+              <tr><td>#3918</td><td class="cell-link">Priya Khanna</td><td class="cell-link">Teodor Morena</td><td>Verification — Tax docs</td><td>Resubmitted tax registration document.</td><td>13:10</td><td><span class="verif verif-pending">Pending review</span></td><td><a class="cell-link">Open</a></td></tr>
+              <tr><td>#3917</td><td class="cell-link">Raj Patel</td><td class="cell-link">Lucia Mendez</td><td>Black Beans — 5000 MT</td><td>Counter offer attached.</td><td>11:45</td><td><span class="verif verif-yes">Healthy</span></td><td><a class="cell-link">Open</a></td></tr>
+              <tr><td>#3916</td><td class="cell-link">Anonymous user</td><td class="cell-link">Anderson Grain</td><td>Sorghum inquiry</td><td>Please share your full price list off platform.</td><td>10:02</td><td><span class="verif verif-no">⚠ Flagged</span></td><td><a class="cell-link">Review</a></td></tr>
+              <tr><td>#3915</td><td class="cell-link">Eric Braustak</td><td class="cell-link">Juan Ortega</td><td>Wheat 1200 MT</td><td>Final delivery confirmed for 06/04.</td><td>09:18</td><td><span class="verif verif-yes">Healthy</span></td><td><a class="cell-link">Open</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== SUPPORT =================== -->
+    <div id="view-support" class="view" style="display: none;">
+      <div class="breadcrumb-light"><a>Home</a> <span>/</span> Support Tickets</div>
+      <div class="admin-content">
+        <h1 class="page-title">Support Tickets</h1>
+        <div class="filter-row">
+          <input placeholder="Search ticket #, subject, user...">
+          <select><option>All priorities</option><option>High</option><option>Medium</option><option>Low</option></select>
+          <select><option>All statuses</option><option>Open</option><option>In Progress</option><option>Resolved</option></select>
+          <div class="spacer"></div>
+        </div>
+        <div class="table-wrap" style="border: 1px solid var(--border);">
+          <table class="data">
+            <thead><tr><th>#</th><th>Subject</th><th>User</th><th>Company</th><th>Priority</th><th>Status</th><th>Assigned</th><th>Updated</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>482</td><td class="cell-link">Payment dispute — Contract #248</td><td>Juan Ortega</td><td>Adecoagro S.A.</td><td><span class="status status-terminated">High</span></td><td><span class="status status-progress">In Progress</span></td><td>T. Morena</td><td>2h ago</td><td><a class="cell-link">Open</a></td></tr>
+              <tr><td>481</td><td class="cell-link">Cannot upload tax document</td><td>Priya Khanna</td><td>Promac Food</td><td><span class="status status-signed">Medium</span></td><td><span class="status status-new">Open</span></td><td>—</td><td>4h ago</td><td><a class="cell-link">Open</a></td></tr>
+              <tr><td>480</td><td class="cell-link">Wrong currency on listing</td><td>Raj Patel</td><td>Andrott Overseas</td><td><span style="color: var(--text-muted);">Low</span></td><td><span class="status status-progress">In Progress</span></td><td>G. Walthood</td><td>6h ago</td><td><a class="cell-link">Open</a></td></tr>
+              <tr><td>479</td><td class="cell-link">Cannot find buyer messages</td><td>Eric Braustak</td><td>Minerva Global</td><td><span class="status status-signed">Medium</span></td><td><span class="status status-settled">Resolved</span></td><td>T. Morena</td><td>1d ago</td><td><a class="cell-link">Open</a></td></tr>
+              <tr><td>478</td><td class="cell-link">Request to delete listing</td><td>Lucia Mendez</td><td>Oleocampo S.C.A</td><td><span style="color: var(--text-muted);">Low</span></td><td><span class="status status-settled">Resolved</span></td><td>G. Walthood</td><td>2d ago</td><td><a class="cell-link">Open</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== COMPLIANCE =================== -->
+    <div id="view-compliance" class="view" style="display: none;">
+      <div class="breadcrumb-light"><a>Home</a> <span>/</span> Compliance</div>
+      <div class="admin-content">
+        <h1 class="page-title">Compliance & KYC</h1>
+
+        <div class="stat-grid">
+          <div class="stat-card"><div class="label">Pending review</div><div class="value">17</div></div>
+          <div class="stat-card"><div class="label">Approved this month</div><div class="value">42</div><div class="delta">+18%</div></div>
+          <div class="stat-card"><div class="label">Rejected</div><div class="value">6</div></div>
+          <div class="stat-card"><div class="label">Avg. review time</div><div class="value">2.3<span style="font-size: 14px; color: var(--text-muted);"> hrs</span></div></div>
+        </div>
+
+        <div class="table-wrap" style="border: 1px solid var(--border);">
+          <table class="data">
+            <thead><tr><th>Company</th><th>Country</th><th>Document type</th><th>Submitted</th><th>Submitted by</th><th>Status</th><th>Reviewer</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td class="cell-link">Promac Food Products Ltd.</td><td>India</td><td>Tax Registration</td><td>14 May 2026</td><td>Priya Khanna</td><td><span class="verif verif-pending">⏳ Under Review</span></td><td>T. Morena</td><td><a class="cell-link">Review</a></td></tr>
+              <tr><td class="cell-link">Promac Food Products Ltd.</td><td>India</td><td>Certificate of Incorporation</td><td>14 May 2026</td><td>Priya Khanna</td><td><span class="verif verif-pending">⏳ Under Review</span></td><td>T. Morena</td><td><a class="cell-link">Review</a></td></tr>
+              <tr><td class="cell-link">Golden Harvest Trading</td><td>Australia</td><td>Bank Confirmation</td><td>10 May 2026</td><td>Marcus Stein</td><td><span class="verif verif-no">✕ Rejected</span></td><td>G. Walthood</td><td><a class="cell-link">View</a></td></tr>
+              <tr><td class="cell-link">Minerva Global Limited</td><td>Ukraine</td><td>Bank Confirmation</td><td>13 May 2026</td><td>Eric Braustak</td><td><span class="verif verif-pending">⏳ Under Review</span></td><td>T. Morena</td><td><a class="cell-link">Review</a></td></tr>
+              <tr><td class="cell-link">Andrott Overseas Ltd.</td><td>Canada</td><td>Updated Tax ID</td><td>09 May 2026</td><td>Raj Patel</td><td><span class="verif verif-yes">✓ Approved</span></td><td>T. Morena</td><td><a class="cell-link">View</a></td></tr>
+              <tr><td class="cell-link">Adecoagro S.A.</td><td>Argentina</td><td>Director ID</td><td>05 May 2026</td><td>Juan Ortega</td><td><span class="verif verif-yes">✓ Approved</span></td><td>T. Morena</td><td><a class="cell-link">View</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+function showView(name, ev) {
+  document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+  document.getElementById('view-' + name).style.display = 'block';
+  document.querySelectorAll('.admin-side-item').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.lnav-link').forEach(l => l.classList.remove('active'));
+  // Activate matching sidebar item by matching i18n key on inner span
+  const i18nMap = {
+    'dashboard': 'admin_dashboard',
+    'customers': 'admin_users',
+    'companies': 'admin_companies',
+    'listings': 'admin_products',
+    'tenders': 'admin_tenders',
+    'contracts': 'admin_admin_contracts',
+    'messages': 'admin_messaging',
+    'support': 'admin_support',
+    'compliance': 'admin_compliance'
+  };
+  const targetKey = i18nMap[name];
+  if (targetKey) {
+    document.querySelectorAll('.admin-side-item').forEach(el => {
+      const span = el.querySelector('[data-i18n]');
+      if (span && span.getAttribute('data-i18n') === targetKey) el.classList.add('active');
+    });
+  }
+  if (ev && ev.currentTarget && ev.currentTarget.classList.contains('lnav-link')) {
+    ev.currentTarget.classList.add('active');
+  }
+  window.scrollTo(0, 0);
+}
+
+/* ---- ALT LISTINGS: moderation queue ---- */
+(function(){
+  const queue = [
+    { type:'sell', emo:'🌾', name:'Wheat Flour',  meta:'Premium · 50kg', co:'Minerva Global Limited', cflag:'🇺🇦', cc:'Ukraine',      price:'$200–$300',  unit:'2,000–3,000 t/mo', status:'review',  pri:'high', date:'30 Mar 2026', lang:'en' },
+    { type:'sell', emo:'🌽', name:'Corn',         meta:'Grade #2',       co:'MGL Trading',            cflag:'🇺🇦', cc:'Ukraine',      price:'$178–$187',  unit:'1,000–3,000 t/mo', status:'active',  pri:'low',  date:'21 Feb 2026', lang:'en' },
+    { type:'sell', emo:'🌾', name:'Wheat',        meta:'Winter, 12% prot.', co:'Minerva Global Limited', cflag:'🇺🇦', cc:'Ukraine',  price:'$180–$188',  unit:'1,000–1,500 t/mo', status:'active',  pri:'low',  date:'20 Feb 2026', lang:'en' },
+    { type:'sell', emo:'🌾', name:'Wheat',        meta:'Spring grade',   co:'Minerva Global Limited', cflag:'🇺🇦', cc:'Ukraine',      price:'$185',        unit:'100–4,000 t/mo',   status:'flagged', pri:'high', date:'19 Feb 2026', lang:'en' },
+    { type:'sell', emo:'🛢️', name:'Soy Bean Oil', meta:'Refined',        co:'Promac Food Products',   cflag:'🇻🇳', cc:'Vietnam',      price:'$820–$1,000',unit:'20–500 t/mo',      status:'active',  pri:'low',  date:'07 Mar 2026', lang:'en' },
+    { type:'sell', emo:'🫘', name:'Chickpeas',    meta:'Kabuli · 8mm',   co:'Andrott Overseas Ltd.',  cflag:'🇨🇦', cc:'Canada',       price:'$550–$720',  unit:'300–6,000 t/mo',   status:'active',  pri:'low',  date:'07 Mar 2026', lang:'en' },
+    { type:'sell', emo:'🫘', name:'Black Beans',  meta:'Export grade',   co:'Andrott Overseas Ltd.',  cflag:'🇨🇦', cc:'Canada',       price:'$620–$850',  unit:'200–7,000 t/mo',   status:'review',  pri:'med',  date:'07 Mar 2026', lang:'en' },
+    { type:'sell', emo:'🫘', name:'Green Lentils',meta:'Laird type',     co:'Andrott Overseas Ltd.',  cflag:'🇨🇦', cc:'Canada',       price:'$540–$880',  unit:'200–8,000 t/mo',   status:'active',  pri:'low',  date:'06 Mar 2026', lang:'en' },
+    { type:'buy',  emo:'🌽', name:'Corn',         meta:'Animal feed',    co:'Anderson Grain Group',   cflag:'🇺🇸', cc:'United States',price:'$160–$190',  unit:'2,000–8,000 t/mo', status:'active',  pri:'low',  date:'06 Mar 2026', lang:'en' },
+    { type:'sell', emo:'🌾', name:'Sorghum',      meta:'Red, food grade',co:'Anderson Grain Group',   cflag:'🇺🇸', cc:'United States',price:'$130–$160',  unit:'300–10,000 t/mo',  status:'paused',  pri:'low',  date:'06 Mar 2026', lang:'en' },
+    { type:'sell', emo:'🌾', name:'Barley',       meta:'Feed grade',     co:'Australian Grain Co.',   cflag:'🇦🇺', cc:'Australia',    price:'$180–$280',  unit:'500–5,000 t/mo',   status:'active',  pri:'low',  date:'05 Mar 2026', lang:'en' }
+  ];
+  const statusLabel = { active: 'Active', review: 'Awaiting review', flagged: 'Flagged', paused: 'Paused' };
+  const el = document.getElementById('admin-queue');
+  if (!el) return;
+  el.innerHTML = queue.map(q => `
+    <div class="qrow pri-${q.pri}">
+      <div class="pri"></div>
+      <div><span class="qtype ${q.type}">${q.type}</span></div>
+      <div class="qprod">
+        <div class="em">${q.emo}</div>
+        <div>
+          <div class="pn">${q.name}</div>
+          <div class="pm">${q.meta} · <span style="text-transform:uppercase;letter-spacing:0.3px;">LANG ${q.lang}</span></div>
+        </div>
+      </div>
+      <div class="qco">
+        <a>${q.co}</a>
+        <div class="country">${q.cflag} ${q.cc}</div>
+      </div>
+      <div class="qprice">
+        ${q.price}
+        <small>USD / MT</small>
+      </div>
+      <div class="qvol">${q.unit}<br><span style="color:var(--text-muted);font-size:11px;">Listed ${q.date}</span></div>
+      <div><span class="qstatus ${q.status}">${statusLabel[q.status]}</span></div>
+      <div class="qacts">
+        <button class="approve" title="Approve"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7l3 3 7-7"/></svg></button>
+        <button class="reject" title="Reject"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l8 8M11 3l-8 8"/></svg></button>
+        <button title="Edit"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 11l7-7 2 2-7 7H2v-2z"/></svg></button>
+        <button title="More"><svg viewBox="0 0 14 14" fill="currentColor"><circle cx="3" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11" cy="7" r="1.3"/></svg></button>
+      </div>
+    </div>
+  `).join('');
+
+  // wire status tiles -> filter
+  document.querySelectorAll('.adm-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      document.querySelectorAll('.adm-tile').forEach(t => t.classList.remove('active'));
+      tile.classList.add('active');
+      const s = tile.dataset.status;
+      document.querySelectorAll('#admin-queue .qrow').forEach(r => {
+        const rs = r.querySelector('.qstatus');
+        if (s === 'all') r.style.display = '';
+        else r.style.display = rs && rs.classList.contains(s) ? '' : 'none';
+      });
+    });
+  });
+
+  // ---- moderation store: wire approve / reject ----
+  const modStore = {};
+  queue.forEach((q, i) => modStore[i] = q.status);
+
+  function syncTileCounts() {
+    const counts = { all:0, active:0, review:0, flagged:0, paused:0 };
+    Object.values(modStore).forEach(s => { counts.all++; if (counts[s] !== undefined) counts[s]++; });
+    document.querySelector('.adm-tile[data-status="all"] .lv').textContent     = counts.all;
+    document.querySelector('.adm-tile[data-status="review"] .lv').textContent  = counts.review;
+    document.querySelector('.adm-tile[data-status="active"] .lv').textContent  = counts.active;
+    document.querySelector('.adm-tile[data-status="flagged"] .lv').textContent = counts.flagged;
+  }
+
+  function adminToast(msg, ok) {
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+      background:${ok?'#047857':'#b91c1c'};color:#fff;padding:11px 22px;border-radius:4px;
+      font-size:13px;font-weight:500;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.18);`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(()=>t.remove(),400); }, 2800);
+  }
+
+  el.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const row = btn.closest('.qrow');
+    if (!row) return;
+    const rows = [...document.querySelectorAll('#admin-queue .qrow')];
+    const idx = rows.indexOf(row);
+    const statusEl = row.querySelector('.qstatus');
+
+    if (btn.classList.contains('approve')) {
+      modStore[idx] = 'active';
+      statusEl.className = 'qstatus active';
+      statusEl.textContent = 'Active';
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+      syncTileCounts();
+      adminToast('✓ Listing approved and published.', true);
+    } else if (btn.classList.contains('reject')) {
+      modStore[idx] = 'rejected';
+      row.style.transition = 'opacity 0.4s';
+      row.style.opacity = '0.45';
+      statusEl.className = 'qstatus';
+      statusEl.style.cssText = 'background:#fee2e2;color:#b91c1c;padding:3px 9px;border-radius:3px;font-size:10px;font-weight:700;';
+      statusEl.textContent = 'Rejected';
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+      syncTileCounts();
+      adminToast('Listing rejected and removed from queue.', false);
+    }
+  });
+
+  syncTileCounts();
+})();
+
+</script>
+
+<script src="ui-micro.js"></script>
+</body>
+</html>

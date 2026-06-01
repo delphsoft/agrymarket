@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriMarket — Market Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<script src="i18n.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #3a7bd5;
+    --accent: #2563EB;
+    --cyan: #00d2d2;
+    --text: #1a1f2e;
+    --text-light: #5a6478;
+    --text-muted: #8b95a8;
+    --border: #e5e7eb;
+    --border-light: #eef0f4;
+    --bg-light: #f5f7fa;
+    --bg-soft: #fafbfc;
+    --ink: #0f1729;
+    --green: #047857;
+    --amber: #b45309;
+    --purple: #6d28d9;
+    --teal: #0f766e;
+    --sky: #0369a1;
+  }
+
+  body { font-family: 'Roboto', sans-serif; color: var(--text); background: #fff; line-height: 1.5; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 40px; }
+
+  /* ============== NAV (clone of landing) ============== */
+  nav.mi-nav {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; padding: 0 40px; height: 60px;
+  }
+  .mi-nav .logo {
+    font-size: 18px; font-weight: 700; color: #fff; letter-spacing: 3px;
+    margin-right: 48px; text-transform: uppercase;
+    text-decoration: none;
+  }
+  .mi-nav .links { display: flex; gap: 32px; flex: 1; }
+  .mi-nav .links a {
+    color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;
+    font-weight: 400;
+  }
+  .mi-nav .links a.active { color: #fff; font-weight: 500; }
+  .mi-nav .right { display: flex; align-items: center; gap: 16px; }
+  .mi-nav .right .signin { color: rgba(255,255,255,0.9); font-size: 14px; cursor: pointer; text-decoration: none; }
+  .mi-nav .right .reg {
+    border: 1.5px solid rgba(255,255,255,0.8); color: #fff; background: transparent;
+    padding: 7px 18px; font-size: 13px; font-weight: 500; letter-spacing: 0.5px;
+    cursor: pointer; font-family: inherit; text-transform: uppercase;
+  }
+  .mi-nav .right .reg:hover { background: rgba(255,255,255,0.15); }
+
+  /* ============== HERO ============== */
+  .mi-hero {
+    background: linear-gradient(135deg, #4a90d9 0%, #3a7bd5 30%, #00c8c8 100%);
+    padding: 130px 40px 70px;
+    position: relative; overflow: hidden;
+    color: #fff;
+  }
+  .mi-hero::before {
+    content: ''; position: absolute; top: -60%; right: -20%;
+    width: 700px; height: 700px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 60%);
+  }
+  .mi-hero-inner {
+    max-width: 1180px; margin: 0 auto; padding: 0 40px;
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 40px; align-items: end;
+  }
+  .mi-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: rgba(255,255,255,0.85); margin-bottom: 14px;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .mi-eyebrow .live-dot {
+    width: 7px; height: 7px; background: #fff; border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% {opacity:1;transform:scale(1);} 50% {opacity:0.4;transform:scale(0.85);} }
+  .mi-hero h1 {
+    font-family: 'Fraunces', serif; font-size: 56px; font-weight: 400;
+    line-height: 1.05; letter-spacing: -1px; margin-bottom: 18px;
+  }
+  .mi-hero p {
+    font-size: 16px; color: rgba(255,255,255,0.85); line-height: 1.6; max-width: 540px;
+  }
+  .mi-hero-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    padding-bottom: 4px;
+  }
+  .mi-hero-stat .num {
+    font-family: 'Fraunces', serif; font-size: 36px; font-weight: 500;
+    line-height: 1; margin-bottom: 6px;
+  }
+  .mi-hero-stat .lbl {
+    font-size: 11px; color: rgba(255,255,255,0.7); letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ============== CATEGORY STRIP / GENERATE BAR ============== */
+  .toolbar-sec {
+    background: #fff; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .toolbar {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 0; flex-wrap: wrap;
+  }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+  .chip {
+    padding: 7px 14px; font-size: 12px; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--border); border-radius: 100px; color: var(--text-light);
+    background: #fff; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all 0.15s;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .chip .count { color: var(--text-muted); font-weight: 400; font-size: 11px; }
+  .chip.active .count { color: rgba(255,255,255,0.6); }
+  .chip .ic { font-size: 13px; line-height: 1; }
+
+  .gen-bar {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .admin-pill {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+    color: #b91c1c; background: rgba(185,28,28,0.08);
+    padding: 4px 8px; border-radius: 100px; font-family: inherit;
+  }
+  .gen-select {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px;
+    font-family: inherit; font-size: 12px; color: var(--text); background: #fff;
+    cursor: pointer; outline: none;
+  }
+  .gen-select:focus { border-color: var(--accent); }
+  .gen-btn {
+    padding: 9px 16px; font-size: 12px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; cursor: pointer; font-family: inherit;
+    background: var(--ink); color: #fff; border: none; border-radius: 4px;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all 0.15s;
+  }
+  .gen-btn:hover:not(:disabled) { background: var(--accent); }
+  .gen-btn:disabled { opacity: 0.6; cursor: wait; }
+  .gen-btn svg { width: 13px; }
+  .gen-btn .spin {
+    width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.8s linear infinite; display: none;
+  }
+  .gen-btn.loading .spin { display: inline-block; }
+  .gen-btn.loading .star { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ============== SEC ============== */
+  .sec { padding: 56px 0; }
+  .sec.first { padding-top: 56px; }
+  .sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+  .sec-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+  }
+  .sec-title {
+    font-family: 'Fraunces', serif;
+    font-size: 30px; font-weight: 400; color: var(--ink);
+    line-height: 1.15; letter-spacing: -0.3px;
+  }
+  .sec-sub { font-size: 14px; color: var(--text-light); margin-top: 6px; max-width: 460px; }
+  .count-pill {
+    font-size: 12px; color: var(--text-muted); font-weight: 500;
+    background: var(--bg-light); padding: 5px 12px; border-radius: 100px;
+  }
+
+  /* ============== FEATURED CARD ============== */
+  .featured {
+    display: grid; grid-template-columns: 1.1fr 1fr;
+    gap: 0;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef4fb 100%);
+    border: 1px solid var(--border-light);
+    border-radius: 6px; overflow: hidden;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .featured:hover { box-shadow: 0 12px 32px rgba(15, 23, 41, 0.06); transform: translateY(-2px); }
+  .featured-body { padding: 44px 48px; display: flex; flex-direction: column; }
+  .featured h2 {
+    font-family: 'Fraunces', serif; font-size: 32px; font-weight: 400;
+    color: var(--ink); line-height: 1.2; margin: 14px 0 16px;
+    letter-spacing: -0.3px;
+  }
+  .featured p { font-size: 14px; color: var(--text-light); line-height: 1.7; margin-bottom: 20px; }
+  .featured-meta {
+    margin-top: auto; padding-top: 18px; border-top: 1px solid var(--border-light);
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; color: var(--text-muted); font-weight: 500;
+  }
+  .featured-meta .dot { width: 3px; height: 3px; background: var(--text-muted); border-radius: 50%; }
+  .featured-chart {
+    background: var(--ink); padding: 44px 32px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    color: #fff;
+  }
+  .featured-chart .chart-head { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
+  .featured-chart .chart-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 400; margin-bottom: 30px; line-height: 1.3; }
+  .featured-chart .bars { display: flex; align-items: flex-end; gap: 6px; flex: 1; min-height: 140px; margin-bottom: 18px; }
+  .featured-chart .bars .b {
+    flex: 1; background: linear-gradient(180deg, var(--cyan), rgba(0,210,210,0.3));
+    border-radius: 2px 2px 0 0; min-height: 10px;
+  }
+  .featured-chart .ax {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 0.5px;
+    padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* ============== POST GRID ============== */
+  .grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  }
+  .post {
+    background: #fff; border: 1px solid var(--border); border-radius: 6px;
+    padding: 26px 26px 22px; cursor: pointer; transition: all 0.2s;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .post:hover {
+    border-color: rgba(37,99,235,0.4);
+    box-shadow: 0 8px 24px rgba(15,23,41,0.06);
+    transform: translateY(-2px);
+  }
+  .post.ai {
+    border-color: rgba(37,99,235,0.3);
+    background: linear-gradient(180deg, rgba(37,99,235,0.02), #fff 60%);
+  }
+  .post.ai::before {
+    content: '✨ AI'; position: absolute; top: 12px; right: 14px;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.8px;
+    color: var(--accent); background: rgba(37,99,235,0.08);
+    padding: 3px 8px; border-radius: 100px;
+  }
+  .post .tag {
+    display: inline-flex; align-self: flex-start;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 4px 9px; border-radius: 2px;
+    margin-bottom: 16px;
+    align-items: center; gap: 5px;
+  }
+  .post .tag .ic { font-size: 11px; }
+  .tag-weekly     { background: rgba(37,99,235,0.08);  color: var(--accent); }
+  .tag-compliance { background: rgba(245,158,11,0.1);  color: var(--amber); }
+  .tag-origin     { background: rgba(4,120,87,0.1);    color: var(--green); }
+  .tag-logistics  { background: rgba(15,118,110,0.1);  color: var(--teal); }
+  .tag-fx         { background: rgba(109,40,217,0.08); color: var(--purple); }
+  .tag-weather    { background: rgba(3,105,161,0.1);   color: var(--sky); }
+  .post h3 {
+    font-family: 'Fraunces', serif; font-size: 20px; font-weight: 400;
+    color: var(--ink); line-height: 1.3; margin-bottom: 12px;
+    letter-spacing: -0.2px;
+  }
+  .post p { font-size: 13px; color: var(--text-light); line-height: 1.65; margin-bottom: 18px; }
+  .post-meta {
+    margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border-light);
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; color: var(--text-muted); font-weight: 500;
+  }
+  .post-meta .dot { width: 3px; height: 3px; background: var(--text-muted); border-radius: 50%; }
+  .mini-chart {
+    height: 36px; display: flex; align-items: flex-end; gap: 3px; margin-bottom: 14px;
+  }
+  .mini-chart .b {
+    flex: 1; min-height: 4px; border-radius: 1.5px 1.5px 0 0;
+    opacity: 0.85;
+  }
+
+  /* empty state for filtered */
+  .empty {
+    grid-column: 1 / -1; padding: 60px 20px; text-align: center;
+    color: var(--text-muted); font-size: 14px;
+    border: 1px dashed var(--border); border-radius: 6px;
+  }
+
+  /* ============== READER MODAL ============== */
+  .reader-bg {
+    position: fixed; inset: 0; background: rgba(15,23,41,0.55);
+    z-index: 800; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .reader-bg.show { opacity: 1; pointer-events: auto; }
+  .reader {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 720px; max-width: 95vw; background: #fff;
+    z-index: 801; overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: -8px 0 32px rgba(0,0,0,0.12);
+  }
+  .reader.show { transform: translateX(0); }
+  .reader-head {
+    padding: 36px 48px 28px; border-bottom: 1px solid var(--border-light);
+    position: relative;
+  }
+  .reader-close {
+    position: absolute; top: 18px; right: 22px;
+    width: 36px; height: 36px; background: var(--bg-light);
+    border: none; cursor: pointer; border-radius: 50%;
+    font-size: 22px; color: var(--text-light); line-height: 1;
+  }
+  .reader-close:hover { background: var(--border); }
+  .reader-tag {
+    display: inline-flex; align-self: flex-start;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 5px 10px; border-radius: 2px;
+    margin-bottom: 18px; align-items: center; gap: 6px;
+  }
+  .reader-head h1 {
+    font-family: 'Fraunces', serif; font-size: 32px; font-weight: 400;
+    color: var(--ink); line-height: 1.2; margin-bottom: 16px;
+    letter-spacing: -0.3px;
+  }
+  .reader-meta {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; color: var(--text-muted); font-weight: 500;
+  }
+  .reader-meta .dot { width: 3px; height: 3px; background: var(--text-muted); border-radius: 50%; }
+  .reader-body { padding: 32px 48px 48px; }
+  .reader-body p { font-size: 15px; line-height: 1.8; color: var(--text); margin-bottom: 20px; }
+  .reader-body p.lead { font-size: 17px; font-weight: 400; color: var(--ink); }
+  .reader-body h3 {
+    font-family: 'Fraunces', serif; font-size: 20px; font-weight: 500;
+    margin: 28px 0 12px; color: var(--ink);
+  }
+  .reader-chart {
+    height: 160px; background: var(--ink); border-radius: 6px;
+    padding: 24px; margin: 24px 0;
+    display: flex; align-items: flex-end; gap: 6px;
+  }
+  .reader-chart .b {
+    flex: 1; background: linear-gradient(180deg, var(--cyan), rgba(0,210,210,0.3));
+    border-radius: 2px 2px 0 0; min-height: 8px;
+  }
+  .reader-foot {
+    padding: 24px 48px; border-top: 1px solid var(--border-light);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .reader-foot .ai-note {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(37,99,235,0.08); color: var(--accent);
+    padding: 5px 10px; border-radius: 100px; font-size: 11px; font-weight: 600;
+  }
+
+  /* ============== TOAST ============== */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: #fff; padding: 12px 22px; border-radius: 4px;
+    font-size: 13px; font-weight: 500;
+    z-index: 9000; opacity: 0; pointer-events: none;
+    transition: all 0.25s; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.err { background: #991b1b; }
+
+  /* ============== FOOTER ============== */
+  footer.mi-foot {
+    background: var(--ink); color: rgba(255,255,255,0.6); padding: 40px 0;
+    margin-top: 40px;
+    font-size: 13px;
+  }
+  .mi-foot-inner {
+    max-width: 1180px; margin: 0 auto; padding: 0 40px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .mi-foot a { color: rgba(255,255,255,0.6); text-decoration: none; }
+  .mi-foot a:hover { color: #fff; }
+  .role-toggle {
+    font-size: 11px; color: rgba(255,255,255,0.35); cursor: pointer;
+    user-select: none;
+  }
+  .role-toggle:hover { color: rgba(255,255,255,0.7); }
+  .role-toggle .pill {
+    display: inline-block; padding: 2px 7px; border-radius: 100px;
+    background: rgba(255,255,255,0.08); margin-left: 6px;
+    font-weight: 600; letter-spacing: 0.5px;
+  }
+  .role-toggle.admin .pill { background: rgba(239,68,68,0.2); color: #fca5a5; }
+
+  @media (max-width: 980px) {
+    .mi-hero-inner { grid-template-columns: 1fr; }
+    .featured { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 700px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="ui-polish.css">
+  <script src="security.js"></script>
+</head>
+<body>
+<script src="demo-banner.js"></script>
+
+<!-- ============ NAV ============ -->
+<nav class="mi-nav">
+  <a href="index.html" class="logo">AgriMarket</a>
+  <div class="links">
+    <a href="index.html" data-i18n="mi_nav_marketplace">Marketplace</a>
+    <a href="index.html#how" data-i18n="mi_nav_how">How it works</a>
+    <a href="index.html#compliance" data-i18n="mi_nav_compliance">Compliance</a>
+    <a href="market-intelligence.html" class="active" data-i18n="mi_nav_mi">Market Intelligence</a>
+  </div>
+  <div class="right">
+    <a href="index.html" class="signin" data-i18n="nav_signin">SIGN IN</a>
+    <button class="reg" onclick="window.location.href='index.html'" data-i18n="nav_register">Register Now</button>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="mi-hero">
+  <div class="mi-hero-inner">
+    <div>
+      <div class="mi-eyebrow"><span class="live-dot"></span><span data-i18n="mi_hero_eyebrow">Updated continuously · Buenos Aires desk</span></div>
+      <h1 data-i18n="mi_hero_h1">Market<br>Intelligence</h1>
+      <p data-i18n="mi_hero_body">Weekly briefs, compliance alerts, origin spotlights and macro commentary on Argentina's agri-commodity complex — all in one feed.</p>
+    </div>
+    <div class="mi-hero-stats">
+      <div class="mi-hero-stat"><div class="num" id="stat-posts">—</div><div class="lbl" data-i18n="mi_stat_live">Live posts</div></div>
+      <div class="mi-hero-stat"><div class="num">6</div><div class="lbl" data-i18n="mi_stat_coverage">Coverage areas</div></div>
+      <div class="mi-hero-stat"><div class="num" id="stat-today">—</div><div class="lbl" data-i18n="mi_stat_today">Updated today</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TOOLBAR (filter + generate) ============ -->
+<section class="toolbar-sec">
+  <div class="wrap">
+    <div class="toolbar">
+      <div class="chips" id="chips"></div>
+      <div class="gen-bar" id="gen-bar" style="display:none;">
+        <span class="admin-pill">• ADMIN</span>
+        <select class="gen-select" id="gen-select">
+          <option value="weekly">📈 Weekly Brief</option>
+          <option value="compliance">⚖️ Compliance</option>
+          <option value="origin">📍 Origin Spotlight</option>
+          <option value="logistics">🚢 Logistics & Ports</option>
+          <option value="fx">💱 FX & Macro</option>
+          <option value="weather">🌦 Weather & Crop</option>
+        </select>
+        <button class="gen-btn" id="gen-btn" onclick="generatePost()">
+          <span class="spin"></span>
+          <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg>
+          <span class="lbl">Generate brief</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURED ============ -->
+<section class="sec first">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-eyebrow" data-i18n="mi_eyebrow_week">This week</div>
+        <h2 class="sec-title" data-i18n="mi_featured_h">Top of the desk</h2>
+        <p class="sec-sub" data-i18n="mi_featured_sub">The latest Weekly Brief — what our Buenos Aires traders are watching now.</p>
+      </div>
+    </div>
+    <div id="featured-slot"></div>
+  </div>
+</section>
+
+<!-- ============ FEED ============ -->
+<section class="sec" style="padding-top: 0;">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-eyebrow" data-i18n="mi_eyebrow_all">All posts</div>
+        <h2 class="sec-title" data-i18n="mi_feed_h">The feed</h2>
+      </div>
+      <span class="count-pill" id="count-pill">— posts</span>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="mi-foot">
+  <div class="mi-foot-inner">
+    <div>© 2026 AgriMarket Ltd · Market Intelligence</div>
+    <div style="display:flex; gap:24px; align-items:center;">
+      <span class="role-toggle" id="role-toggle" onclick="toggleAdmin()">demo role:<span class="pill" id="role-pill">VIEWER</span></span>
+      <a href="index.html" data-i18n="mi_foot_back">← Back to marketplace</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ READER ============ -->
+<div class="reader-bg" id="reader-bg" onclick="closeReader()"></div>
+<aside class="reader" id="reader">
+  <div class="reader-head">
+    <button class="reader-close" onclick="closeReader()">×</button>
+    <div id="r-tag"></div>
+    <h1 id="r-title">—</h1>
+    <div class="reader-meta">
+      <span id="r-author">—</span><span class="dot"></span>
+      <span id="r-date">—</span><span class="dot"></span>
+      <span id="r-read">—</span>
+    </div>
+  </div>
+  <div class="reader-body" id="r-body"></div>
+  <div class="reader-foot">
+    <span id="r-ai-note"></span>
+    <span>AgriMarket research desk</span>
+  </div>
+</aside>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================
+   CATEGORY METADATA
+   ===================================================== */
+const CATS = {
+  weekly:     { label: 'Weekly Brief',       icon: '📈', tagClass: 'tag-weekly' },
+  compliance: { label: 'Compliance',         icon: '⚖️', tagClass: 'tag-compliance' },
+  origin:     { label: 'Origin Spotlight',   icon: '📍', tagClass: 'tag-origin' },
+  logistics:  { label: 'Logistics & Ports',  icon: '🚢', tagClass: 'tag-logistics' },
+  fx:         { label: 'FX & Macro',         icon: '💱', tagClass: 'tag-fx' },
+  weather:    { label: 'Weather & Crop',     icon: '🌦', tagClass: 'tag-weather' }
+};
+
+/* =====================================================
+   SEED POSTS (handwritten desk content)
+   ===================================================== */
+const SEED_POSTS = [
+  {
+    id: 'wb-2026-05-17', cat: 'weekly', featured: true,
+    title: 'Rosario soy complex: crush margins firm as Up-River barges queue',
+    excerpt: 'Spot FOB indications firmed $6–9/MT WoW on slow farmer selling and tight near-month barge slots at Up-River terminals. Where the desk sees the next leg.',
+    body: [
+      'Argentine soybean FOB indications at Up-River terminals firmed $6–9/MT week-on-week as farmer selling stayed slow into late May and near-month barge logistics tightened. Crushers, who had been short-covering opportunistically, lifted their bid late in the week to secure beans for June replacement.',
+      'The desk is tracking three things into June. First, the pace at which farmers release the remaining ~18% of the 2025/26 crop they are holding off-market. Second, whether the BCR\'s estimate of the Paraná river draft holds through the dry-spell window. Third, whether soymeal demand from EU and SEA buyers comes back after the long weekend.',
+      'On the meal side, hi-pro continues to print at a $6–8 premium over the curve, with end-of-May load-outs comfortably done. Soy oil is the laggard — refined volumes are loose, and degummed parity vs. CBOT bean oil remains wide enough to question discretionary exports.',
+      'Trading takeaway: we are constructive on near-dated FOB premiums into the back half of June, but expect the curve to flatten as barge availability normalises post-monsoon. Buyers waiting for a pullback should consider scale-down bids rather than chasing fixed price.'
+    ],
+    author: 'Buenos Aires desk', date: 'May 17, 2026', readTime: '6 min',
+    chart: [28,42,36,58,48,72,64,82,76,95,88,100]
+  },
+  {
+    id: 'cp-2026-05-15', cat: 'compliance',
+    title: 'Retenciones & ROE Verde: what soy & corn exporters must file in Q3',
+    excerpt: 'A practical checklist of the export-tax declarations and ROE Verde windows your shipments need before nomination.',
+    body: [
+      'AFIP has clarified Q3 filing windows for export-tax (derechos de exportación / retenciones) declarations on soy, corn and wheat shipments. The headline change: nomination cut-off now sits 72 hours before vessel ETA rather than 48.',
+      'A working checklist for exporters: (1) Confirm ROE Verde is open for your commodity and origin port; (2) Lodge the DJVE within 24h of contract signing; (3) Submit anticipo de retenciones before B/L date; (4) Retain SENASA phyto and origin paperwork for the audit window (now 5 years).',
+      'Common rejection reasons we see: mismatched HS codes between DJVE and B/L, ROE Verde balance exhausted mid-shipment, and FX settlement falling outside the 15-day window from B/L.'
+    ],
+    author: 'Compliance team', date: 'May 15, 2026', readTime: '4 min'
+  },
+  {
+    id: 'os-2026-05-14', cat: 'origin',
+    title: 'Córdoba peanut flows loosening into Europe — what changed',
+    excerpt: 'Crush margins, peso parity and the spread to Brazilian groundnut. Our take on what changes the trade-flow picture this season.',
+    body: [
+      'Córdoba\'s peanut belt around General Cabrera, Hernando and Charras is exiting harvest 2026 with yields ~7% above the five-year average. Combined with a softer official-to-blue peso spread, exporters are seeing meaningfully better USD-equivalent farmgate parity.',
+      'Result: HPS Runner 38/42 offers at Rosario are landing $40–60/MT below comparable Brazilian groundnut into EU markets. Buyers we speak to are extending coverage into Q4.',
+      'The watch-out: aflatoxin specs. EU retail chains have tightened their internal limits below the legal ceiling. Sellers are advised to send up-front lab certs and offer blending rights.'
+    ],
+    author: 'Origin desk', date: 'May 14, 2026', readTime: '5 min'
+  },
+  {
+    id: 'lg-2026-05-13', cat: 'logistics',
+    title: 'Up-River barge queues: 14-day wait at Timbúes & San Lorenzo',
+    excerpt: 'A drier-than-normal Paraná tributary system has pushed barge cycle times up by 4 days. Knock-on for soy and soymeal load-out windows.',
+    body: [
+      'Average wait at Up-River load-out terminals reached 14 days this week — the highest since November 2023. Drivers: a drier autumn upstream on the Paraguay tributary, plus a tight Mississippi-style barge fleet utilisation.',
+      'Knock-on: soymeal vessels nominated for end-May are slipping to mid-June. We are recommending buyers re-confirm laycans and consider Bahía Blanca alternatives for spot tonnage.'
+    ],
+    author: 'Logistics desk', date: 'May 13, 2026', readTime: '3 min',
+    chart: [40,38,42,45,48,52,58,64,72,78,82,88]
+  },
+  {
+    id: 'fx-2026-05-12', cat: 'fx',
+    title: 'Dólar blend changes: 80/20 to 70/30 — what it means for FOB parity',
+    excerpt: 'BCRA tweaked the export-settlement blend last Friday. We model the impact on farmer selling and FOB premiums.',
+    body: [
+      'On Friday, the Banco Central moved the dólar blend for grain exports from 80/20 (MULC/CCL) to 70/30, raising the effective USD a farmer receives by roughly 4–5%.',
+      'Two consequences worth pricing in. First, farmer-side selling pace should accelerate over the next 4–6 weeks as carry becomes less attractive. Second, FOB premiums at Rosario have already absorbed ~$3/MT of the move, so the remaining tailwind is muted.',
+      'Watch: the next inflation print and whether BCRA signals further blend moves. The market is pricing 60/40 by year-end.'
+    ],
+    author: 'Macro desk', date: 'May 12, 2026', readTime: '5 min'
+  },
+  {
+    id: 'wt-2026-05-10', cat: 'weather',
+    title: 'La Niña fading — implications for the 2026/27 corn campaign',
+    excerpt: 'NOAA confirms the ENSO transition. We map the consensus rainfall outlook for the Argentine core area through October.',
+    body: [
+      'NOAA\'s mid-May ENSO update confirms La Niña is fading toward neutral by late winter. Historical analogues point to wetter-than-normal spring rains across the Pampa Húmeda, supportive for early corn planting in southern Buenos Aires and La Pampa.',
+      'Risks: a quick swing to weak El Niño raises the probability of localised flooding in Entre Ríos lowlands during the November planting window. Sorghum acreage may pick up as a hedge.',
+      'Our base case: 2026/27 corn area +3–5% YoY, with yield potential biased to the upside if Q4 rains arrive on schedule.'
+    ],
+    author: 'Weather desk', date: 'May 10, 2026', readTime: '4 min'
+  },
+  {
+    id: 'wb-2026-05-10', cat: 'weekly',
+    title: 'Wheat 11.5% at Quequén: protein premium widens to $14/MT',
+    excerpt: 'A late-season quality scare in Buenos Aires province has pushed the protein-spec premium wider. Where the next clip prints.',
+    body: [
+      'The basis for 11.5% min protein wheat at Quequén widened to a $14/MT premium over standard ART this week, the steepest since 2021. The driver: late-cycle rain stripped protein on roughly 8–12% of southern BA acreage.',
+      'On the buy-side, Brazilian millers (the marginal buyer) appear comfortable paying up given limited alternatives. Egyptian GASC tenders later this month will be the next print.'
+    ],
+    author: 'Buenos Aires desk', date: 'May 10, 2026', readTime: '5 min'
+  },
+  {
+    id: 'cp-2026-05-08', cat: 'compliance',
+    title: 'SENASA: new phyto requirements for citrus into the EU',
+    excerpt: 'Effective July 1, additional cold-treatment certification is required for Tucumán lemons and oranges shipped to EU ports.',
+    body: [
+      'SENASA published new phytosanitary requirements aligned with EU Regulation 2024/xxxx for citrus shipments. From July 1, exporters must produce cold-treatment certificates documenting a 1.1°C / 16-day regime, validated by an accredited inspector.',
+      'Exporters with vessels already loading in late June should liaise with SENASA inspectors this week to avoid documentation gaps at destination.'
+    ],
+    author: 'Compliance team', date: 'May 8, 2026', readTime: '3 min'
+  },
+  {
+    id: 'os-2026-05-07', cat: 'origin',
+    title: 'Mendoza Malbec bulk: old vines, new buyers',
+    excerpt: 'Bulk Malbec from Luján de Cuyo is finding fresh demand from UK & Nordic private labels. A look at what is selling.',
+    body: [
+      'After two soft years, bulk Malbec from Mendoza\'s premium GIs is moving again — driven by UK and Nordic private-label buyers replacing more expensive Languedoc and Tuscan reds.',
+      'Indicative offers from Luján de Cuyo cooperatives sit at $1.35–1.60/L FOB, with vintage 2024 representing the bulk of available tonnage.'
+    ],
+    author: 'Origin desk', date: 'May 7, 2026', readTime: '4 min'
+  },
+  {
+    id: 'lg-2026-05-06', cat: 'logistics',
+    title: 'Bahía Blanca dredging: depth restored to 13.5m',
+    excerpt: 'After 6 weeks of maintenance, the BB channel is back to nominal draft. Vessel sizing returns to Panamax-plus.',
+    body: [
+      'The dredging programme at Bahía Blanca completed this week, restoring channel depth to the nominal 13.5m. Loadings can return to Panamax-plus volumes (~58k MT typical) without lighterage at Recalada.',
+      'This unblocks roughly 12 nominations that had been deferred. Expect a short-term uptick in BB-origin tonnage in the next 3–4 weeks.'
+    ],
+    author: 'Logistics desk', date: 'May 6, 2026', readTime: '3 min'
+  },
+  {
+    id: 'fx-2026-05-05', cat: 'fx',
+    title: 'Peso parity and the export blend: a primer for new buyers',
+    excerpt: 'New to trading Argentine origin? Here is what you need to know about the dólar blend and how it shapes farmer selling.',
+    body: [
+      'Argentina runs a multi-currency settlement system for grain exports. The "dólar blend" splits proceeds between the official market (MULC) and the financial-parallel (CCL), giving farmers an effective USD rate above the official.',
+      'The blend ratio is a policy lever — BCRA tweaks it to incentivise or slow export pace. As a buyer, the blend matters because it shapes how aggressively farmers will sell into the curve.'
+    ],
+    author: 'Macro desk', date: 'May 5, 2026', readTime: '6 min'
+  },
+  {
+    id: 'wt-2026-05-03', cat: 'weather',
+    title: 'Frost risk in northern Buenos Aires — Q2 outlook',
+    excerpt: 'A southerly air mass parked over Patagonia is raising near-term frost risk for late-cycle soy in the core area.',
+    body: [
+      'A persistent southerly air mass is keeping morning minimums 3–4°C below the May average across the northern Buenos Aires core. Late-cycle soy in second-crop fields is the most exposed.',
+      'Forecast models split on the next 10 days. A nearer-term clearing event mid-week could trigger a sharp radiation frost.'
+    ],
+    author: 'Weather desk', date: 'May 3, 2026', readTime: '3 min'
+  }
+];
+
+/* =====================================================
+   STATE
+   ===================================================== */
+const LS_KEY = 'mi_ai_posts_v1';
+let POSTS = loadPosts();
+let activeCat = 'all';
+
+function loadPosts() {
+  try {
+    const ai = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+    return [...ai, ...SEED_POSTS].sort((a, b) => (b.ts || 0) - (a.ts || 0) || (b.date < a.date ? -1 : 1));
+  } catch { return [...SEED_POSTS]; }
+}
+function persistAI(post) {
+  try {
+    const ai = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+    ai.unshift(post);
+    localStorage.setItem(LS_KEY, JSON.stringify(ai.slice(0, 30)));
+  } catch {}
+}
+
+/* =====================================================
+   RENDER
+   ===================================================== */
+function renderChips() {
+  const counts = { all: POSTS.length };
+  Object.keys(CATS).forEach(k => counts[k] = POSTS.filter(p => p.cat === k).length);
+  const chipsEl = document.getElementById('chips');
+  const items = [
+    { k: 'all', label: 'All', icon: '' },
+    ...Object.entries(CATS).map(([k, v]) => ({ k, label: v.label, icon: v.icon }))
+  ];
+  chipsEl.innerHTML = items.map(it => `
+    <button class="chip ${activeCat === it.k ? 'active' : ''}" onclick="setCat('${it.k}')">
+      ${it.icon ? `<span class="ic">${it.icon}</span>` : ''}
+      <span>${it.label}</span>
+      <span class="count">${counts[it.k] || 0}</span>
+    </button>
+  `).join('');
+}
+
+function setCat(c) { activeCat = c; renderChips(); renderGrid(); }
+
+function renderFeatured() {
+  // featured = latest weekly post, or first if none
+  const featured = POSTS.find(p => p.cat === 'weekly') || POSTS[0];
+  if (!featured) { document.getElementById('featured-slot').innerHTML = ''; return; }
+  const cat = CATS[featured.cat];
+  const bars = (featured.chart || [28,42,36,58,48,72,64,82,76,95,88,100])
+    .map(h => `<div class="b" style="height:${h}%"></div>`).join('');
+  document.getElementById('featured-slot').innerHTML = `
+    <article class="featured" onclick="openReader('${featured.id}')">
+      <div class="featured-body">
+        <span class="tag ${cat.tagClass}"><span class="ic">${cat.icon}</span>${cat.label}${featured.aiGenerated ? ' · AI' : ''}</span>
+        <h2>${escapeHTML(featured.title)}</h2>
+        <p>${escapeHTML(featured.excerpt)}</p>
+        <div class="featured-meta">
+          <span>${escapeHTML(featured.author)}</span><span class="dot"></span>
+          <span>${escapeHTML(featured.date)}</span><span class="dot"></span>
+          <span>${escapeHTML(featured.readTime)} read</span>
+        </div>
+      </div>
+      <div class="featured-chart">
+        <div>
+          <div class="chart-head">12-week trend</div>
+          <div class="chart-title">${escapeHTML((featured.title.split(':')[0]) || 'Market trend')}</div>
+        </div>
+        <div class="bars">${bars}</div>
+        <div class="ax"><span>WK 1</span><span>WK 6</span><span>WK 12</span></div>
+      </div>
+    </article>
+  `;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  // exclude the featured post id from the grid
+  const featuredId = (POSTS.find(p => p.cat === 'weekly') || POSTS[0])?.id;
+  let list = POSTS.filter(p => p.id !== featuredId);
+  if (activeCat !== 'all') list = list.filter(p => p.cat === activeCat);
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty">No posts in <strong>${CATS[activeCat]?.label || activeCat}</strong> yet — try generating one with the button above.</div>`;
+  } else {
+    grid.innerHTML = list.map(renderPost).join('');
+  }
+  document.getElementById('count-pill').textContent = `${list.length + 1} post${(list.length + 1) === 1 ? '' : 's'}`;
+  document.getElementById('stat-posts').textContent = POSTS.length;
+  // updated today = posts with today's date or ts >= start of today
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayCount = POSTS.filter(p => p.ts && p.ts >= today.getTime()).length;
+  document.getElementById('stat-today').textContent = todayCount || 0;
+}
+
+function renderPost(p) {
+  const cat = CATS[p.cat];
+  const colors = {
+    weekly: '#2563EB', compliance: '#b45309', origin: '#047857',
+    logistics: '#0f766e', fx: '#6d28d9', weather: '#0369a1'
+  };
+  const c = colors[p.cat] || '#2563EB';
+  const chart = p.chart ? `
+    <div class="mini-chart">
+      ${p.chart.map(h => `<div class="b" style="height:${h}%; background: linear-gradient(180deg, ${c}, ${c}30);"></div>`).join('')}
+    </div>` : '';
+  return `
+    <article class="post ${p.aiGenerated ? 'ai' : ''}" onclick="openReader('${p.id}')">
+      <span class="tag ${cat.tagClass}"><span class="ic">${cat.icon}</span>${cat.label}</span>
+      <h3>${escapeHTML(p.title)}</h3>
+      ${chart}
+      <p>${escapeHTML(p.excerpt)}</p>
+      <div class="post-meta">
+        <span>${escapeHTML(p.author)}</span><span class="dot"></span>
+        <span>${escapeHTML(p.date)}</span><span class="dot"></span>
+        <span>${escapeHTML(p.readTime)}</span>
+      </div>
+    </article>
+  `;
+}
+
+function escapeHTML(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* =====================================================
+   READER
+   ===================================================== */
+function openReader(id) {
+  const p = POSTS.find(x => x.id === id);
+  if (!p) return;
+  const cat = CATS[p.cat];
+  document.getElementById('r-tag').innerHTML = `<span class="reader-tag ${cat.tagClass}"><span class="ic">${cat.icon}</span>${cat.label}</span>`;
+  document.getElementById('r-title').textContent = p.title;
+  document.getElementById('r-author').textContent = p.author;
+  document.getElementById('r-date').textContent = p.date;
+  document.getElementById('r-read').textContent = (p.readTime || '4 min') + ' read';
+  const body = document.getElementById('r-body');
+  const paragraphs = Array.isArray(p.body) ? p.body : [p.excerpt];
+  body.innerHTML = `
+    <p class="lead">${escapeHTML(p.excerpt)}</p>
+    ${p.chart ? `<div class="reader-chart">${p.chart.map(h => `<div class="b" style="height:${h}%"></div>`).join('')}</div>` : ''}
+    ${paragraphs.map(par => `<p>${escapeHTML(par)}</p>`).join('')}
+  `;
+  document.getElementById('r-ai-note').innerHTML = p.aiGenerated
+    ? '<span class="ai-note">✨ AI-drafted, desk-reviewed</span>'
+    : '';
+  document.getElementById('reader-bg').classList.add('show');
+  document.getElementById('reader').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeReader() {
+  document.getElementById('reader-bg').classList.remove('show');
+  document.getElementById('reader').classList.remove('show');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeReader(); });
+
+/* =====================================================
+   AI GENERATION
+   ===================================================== */
+function showToast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('err', !!isErr);
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function todayLabel() {
+  return new Date().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+}
+
+const PROMPTS = {
+  weekly: `You are a senior agri-commodity trader on AgriMarket's Buenos Aires desk. Write a fresh Weekly Brief covering the Argentine soy/corn/wheat complex this week. Focus on Rosario Up-River pricing, basis levels, crush margins, farmer selling pace, and what to watch into next week.`,
+  compliance: `You are AgriMarket's compliance lead. Write a fresh compliance alert relevant to Argentine agri exporters: AFIP retenciones, ROE Verde, SENASA phyto requirements, EU import rules (EUDR / new regulations), or AFIP-DGI procedure changes. Be specific and practical.`,
+  origin: `You are AgriMarket's origin desk. Write a fresh Origin Spotlight on a specific Argentine province (Buenos Aires, Córdoba, Santa Fe, La Pampa, Entre Ríos, Mendoza, Tucumán, or Salta) and a specific commodity it is known for. Cover what is changing in the trade flow.`,
+  logistics: `You are AgriMarket's logistics desk. Write a fresh Logistics & Ports update on Argentine export logistics: Up-River barge cycles, Rosario terminal queues, Bahía Blanca / Quequén operations, Paraná river draft, rail or trucking capacity, or container availability.`,
+  fx: `You are AgriMarket's macro desk. Write a fresh FX & Macro post on how Argentine policy (BCRA, dólar blend, cepo, peso parity) is shaping grain export economics and farmer behavior right now.`,
+  weather: `You are AgriMarket's weather desk. Write a fresh Weather & Crop Watch post on current and near-term conditions in Argentina's growing regions: ENSO state, rainfall outlook, frost risk, harvest progress, or pest pressure.`
+};
+
+async function generatePost() {
+  if (getRole() !== 'admin') { showToast('Admin only', true); return; }
+  const cat = document.getElementById('gen-select').value;
+  const btn = document.getElementById('gen-btn');
+  if (btn.classList.contains('loading')) return;
+  btn.classList.add('loading');
+  btn.disabled = true;
+  btn.querySelector('.lbl').textContent = 'Generating…';
+
+  const promptBase = PROMPTS[cat];
+  const prompt = `${promptBase}
+
+Return ONLY valid JSON with this exact shape (no markdown, no commentary):
+{
+  "title": "punchy headline, max 12 words, NO trailing period",
+  "excerpt": "1-2 sentences, max 35 words, what the post is about and why it matters",
+  "body": ["paragraph 1 (3-5 sentences)", "paragraph 2 (3-5 sentences)", "paragraph 3 (2-4 sentences)"],
+  "readTime": "X min",
+  "chart": [12 integer bar heights 0-100 representing a 12-week trend, only include if commodity prices/volumes are central to the post; omit otherwise]
+}
+
+Write like a working trader, not a journalist. Use specific numbers, regions, and terminology. Today is ${todayLabel()}.`;
+
+  try {
+    const raw = await window.claude.complete(prompt);
+    let parsed = parseAIResponse(raw);
+    if (!parsed || !parsed.title || !parsed.excerpt || !Array.isArray(parsed.body)) {
+      throw new Error('Bad shape');
+    }
+
+    const authors = {
+      weekly: 'Buenos Aires desk', compliance: 'Compliance team',
+      origin: 'Origin desk', logistics: 'Logistics desk',
+      fx: 'Macro desk', weather: 'Weather desk'
+    };
+
+    const newPost = {
+      id: cat + '-ai-' + Date.now(),
+      cat,
+      title: String(parsed.title).replace(/[.!]$/, '').slice(0, 140),
+      excerpt: String(parsed.excerpt).slice(0, 280),
+      body: parsed.body.slice(0, 6).map(s => String(s).slice(0, 1200)),
+      author: authors[cat] || 'Research desk',
+      date: todayLabel(),
+      ts: Date.now(),
+      readTime: parsed.readTime || '4 min',
+      chart: Array.isArray(parsed.chart) && parsed.chart.length === 12
+        ? parsed.chart.map(n => Math.max(4, Math.min(100, Number(n) || 0)))
+        : null,
+      aiGenerated: true
+    };
+
+    POSTS.unshift(newPost);
+    persistAI(newPost);
+    renderChips();
+    renderFeatured();
+    renderGrid();
+    showToast(`✨ New ${CATS[cat].label} added to the feed`);
+
+    // briefly highlight by opening it
+    setTimeout(() => openReader(newPost.id), 400);
+  } catch (err) {
+    console.warn('Generation failed:', err);
+    showToast('Could not generate brief — try again', true);
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    btn.querySelector('.lbl').textContent = 'Generate brief';
+  }
+}
+
+function parseAIResponse(raw) {
+  if (!raw) return null;
+  // strip markdown fences
+  let s = String(raw).trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+  // try direct parse
+  try { return JSON.parse(s); } catch {}
+  // try to find the first {...} block
+  const m = s.match(/\{[\s\S]*\}/);
+  if (m) {
+    try { return JSON.parse(m[0]); } catch {}
+  }
+  return null;
+}
+
+/* =====================================================
+   ROLE GATE (admin-only AI generation)
+   ===================================================== */
+function getRole() { return localStorage.getItem('mi_role') || 'viewer'; }
+function setRole(r) { localStorage.setItem('mi_role', r); applyRole(); }
+function applyRole() {
+  const isAdmin = getRole() === 'admin';
+  document.getElementById('gen-bar').style.display = isAdmin ? 'flex' : 'none';
+  const pill = document.getElementById('role-pill');
+  const t = document.getElementById('role-toggle');
+  pill.textContent = isAdmin ? 'ADMIN' : 'VIEWER';
+  t.classList.toggle('admin', isAdmin);
+}
+function toggleAdmin() { setRole(getRole() === 'admin' ? 'viewer' : 'admin'); }
+applyRole();
+
+/* =====================================================
+   INIT
+   ===================================================== */
+// give seed posts timestamps so "today" stat works
+SEED_POSTS.forEach(p => { if (!p.ts) p.ts = Date.parse(p.date) || 0; });
+
+renderChips();
+renderFeatured();
+renderGrid();
+</script>
+
+<script src="ui-micro.js"></script>
+</body>
+</html>

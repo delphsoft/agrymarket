@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriMarket — Argentina's Commodities Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap" rel="stylesheet">
+<script src="i18n.js"></script>
+<script src="listings-data.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #3a7bd5;
+    --blue-dark: #2563EB;
+    --cyan: #00d2d2;
+    --accent: #2563EB;
+    --text: #1a1f2e;
+    --text-light: #5a6478;
+    --text-muted: #8b95a8;
+    --border: #e5e7eb;
+    --border-light: #eef0f4;
+    --bg-light: #f5f7fa;
+    --bg-soft: #fafbfc;
+    --ink: #0f1729;
+    --green: #1eb980;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  body { font-family: 'Roboto', sans-serif; color: var(--text); background: #fff; line-height: 1.5; }
+
+  /* =================================================================
+     NAV  +  HERO  (UNCHANGED — kept from original)
+     ================================================================= */
+  nav {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; padding: 0 40px; height: 60px;
+  }
+  .nav-logo {
+    font-size: 18px; font-weight: 700; color: #fff; letter-spacing: 3px;
+    margin-right: 48px; text-transform: uppercase;
+  }
+  .nav-links { display: flex; gap: 32px; flex: 1; }
+  .nav-links a {
+    color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;
+    font-weight: 400; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: #fff; }
+  .nav-links .dropdown { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+  .nav-links .dropdown svg { width: 10px; opacity: 0.7; }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .nav-signin { color: rgba(255,255,255,0.9); font-size: 14px; cursor: pointer; text-decoration: none; }
+  .nav-register {
+    border: 1.5px solid rgba(255,255,255,0.8); color: #fff; background: transparent;
+    padding: 7px 18px; font-size: 13px; font-weight: 500; letter-spacing: 0.5px;
+    cursor: pointer; font-family: inherit; text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .nav-register:hover { background: rgba(255,255,255,0.15); }
+  .nav-lang { color: rgba(255,255,255,0.9); font-size: 14px; display: flex; align-items: center; gap: 3px; cursor: pointer; }
+
+  .hero {
+    background: linear-gradient(135deg, #4a90d9 0%, #3a7bd5 30%, #00c8c8 100%);
+    min-height: 320px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 100px 40px 60px;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .hero h1 { font-size: 36px; font-weight: 300; color: #fff; margin-bottom: 12px; letter-spacing: 0.3px; }
+  .hero p { color: rgba(255,255,255,0.85); font-size: 15px; margin-bottom: 36px; }
+
+  .search-bar {
+    display: flex; align-items: center; width: 100%; max-width: 680px;
+    border-radius: 2px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+  }
+  .categories-btn {
+    background: rgba(255,255,255,0.18); border: none; color: #fff;
+    padding: 0 22px; height: 52px; font-size: 13px; font-weight: 500;
+    letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+    display: flex; align-items: center; gap: 10px; white-space: nowrap;
+    font-family: inherit; border-right: 1px solid rgba(255,255,255,0.25);
+    transition: background 0.2s;
+  }
+  .categories-btn:hover { background: rgba(255,255,255,0.28); }
+  .categories-btn svg { width: 16px; opacity: 0.9; }
+  .search-inner { display: flex; flex: 1; background: #fff; }
+  .buy-sell-tabs { display: flex; }
+  .tab {
+    padding: 0 18px; height: 52px; font-size: 14px; font-weight: 500;
+    cursor: pointer; border: none; background: transparent; color: #999;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .tab.active { background: var(--accent); color: #fff; }
+  .tab:not(.active):hover { color: var(--accent); }
+  .search-inner input {
+    flex: 1; border: none; outline: none; padding: 0 16px;
+    font-size: 14px; color: #555; font-family: inherit;
+    border-left: 1px solid #e5e7eb;
+  }
+  .search-inner input::placeholder { color: #bbb; }
+  .search-btn { background: transparent; border: none; padding: 0 16px; cursor: pointer; color: var(--accent); }
+  .search-btn svg { width: 18px; }
+
+  .cat-main {
+    display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+    font-size: 13px; color: #444; cursor: pointer; font-weight: 500;
+    border-left: 3px solid transparent;
+  }
+  .cat-main:hover, .cat-main.active {
+    background: #fff; color: #2563EB; border-left-color: #2563EB;
+  }
+  .cat-panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+  .cat-sub { font-size: 13px; color: #555; padding: 6px 0; cursor: pointer; transition: color 0.15s; }
+  .cat-sub:hover { color: #2563EB; }
+  .cat-panel-title { font-size: 11px; color: #999; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
+  .cat-trending { display: inline-block; background: #fef3c7; color: #92400e; font-size: 9px; padding: 1px 6px; border-radius: 8px; font-weight: 700; margin-left: 6px; letter-spacing: 0.3px; }
+
+  .tab-buy.active, .tab-sell.active { background: #2563EB; }
+
+  /* =================================================================
+     LIVE MARKET TICKER  — NEW
+     ================================================================= */
+  .ticker-section {
+    background: var(--ink); color: #fff; overflow: hidden;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .ticker-bar { display: flex; align-items: stretch; }
+  .ticker-label {
+    background: var(--accent); padding: 0 22px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; white-space: nowrap; flex-shrink: 0;
+  }
+  .live-dot {
+    width: 8px; height: 8px; background: #fff; border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+  .ticker-track-wrap { flex: 1; overflow: hidden; padding: 14px 0; }
+  .ticker-track {
+    display: flex; gap: 36px; width: max-content;
+    animation: tickerScroll 60s linear infinite;
+  }
+  .ticker-track:hover { animation-play-state: paused; }
+  @keyframes tickerScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  .ticker-item {
+    display: flex; align-items: baseline; gap: 10px;
+    font-size: 13px; white-space: nowrap;
+  }
+  .ticker-item .sym { color: #fff; font-weight: 600; letter-spacing: 0.5px; }
+  .ticker-item .px { color: rgba(255,255,255,0.85); font-variant-numeric: tabular-nums; }
+  .ticker-item .delta { font-weight: 600; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .ticker-item .delta.up { color: #4ade80; }
+  .ticker-item .delta.down { color: #f87171; }
+  .ticker-item .delta::before {
+    content: ''; display: inline-block; width: 0; height: 0;
+    margin-right: 3px; vertical-align: middle;
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+  }
+  .ticker-item .delta.up::before { border-bottom: 5px solid #4ade80; }
+  .ticker-item .delta.down::before { border-top: 5px solid #f87171; }
+
+  /* =================================================================
+     SECTION SCAFFOLDING
+     ================================================================= */
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 40px; }
+  .sec { padding: 76px 0; }
+  .sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 32px; }
+  .sec-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+  }
+  .sec-title {
+    font-family: 'Fraunces', 'Roboto', serif;
+    font-size: 32px; font-weight: 400; color: var(--ink);
+    line-height: 1.15; letter-spacing: -0.3px;
+  }
+  .sec-sub { font-size: 14px; color: var(--text-light); margin-top: 8px; max-width: 460px; line-height: 1.6; }
+  .sec-link {
+    font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  }
+  .sec-link svg { width: 12px; transition: transform 0.2s; }
+  .sec-link:hover svg { transform: translateX(3px); }
+  .sec-link-static {
+    color: var(--text-muted); cursor: default;
+    font-weight: 500;
+  }
+  .sec-link-static:hover svg { transform: none; }
+
+  /* =================================================================
+     COMPACT ARGENTINA MARKET STRIP (replaces the big ticker)
+     ================================================================= */
+  .ar-mkt-sec { background: #fff; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); padding: 28px 0; }
+  .ar-mkt {
+    display: grid; grid-template-columns: auto 1fr; gap: 32px;
+    align-items: center;
+  }
+  .ar-mkt-label {
+    display: flex; flex-direction: column; gap: 4px; min-width: 200px;
+  }
+  .ar-mkt-label .lbl-eyebrow {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .ar-mkt-label .lbl-eyebrow .live-dot {
+    width: 7px; height: 7px; background: #ef4444; border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .ar-mkt-label .lbl-title {
+    font-size: 14px; font-weight: 600; color: var(--ink); letter-spacing: -0.1px;
+  }
+  .ar-mkt-label .lbl-sub {
+    font-size: 11px; color: var(--text-muted);
+  }
+  .ar-mkt-rail {
+    overflow: hidden; position: relative;
+    mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
+  }
+  .ar-mkt-track {
+    display: flex; gap: 28px; width: max-content;
+    animation: tickerScroll 60s linear infinite;
+  }
+  .ar-mkt-track:hover { animation-play-state: paused; }
+  .ar-mkt-item {
+    display: flex; align-items: baseline; gap: 8px; padding: 4px 14px 4px 0;
+    font-size: 12px; white-space: nowrap;
+    border-right: 1px solid var(--border-light);
+  }
+  .ar-mkt-item:last-child { border-right: none; }
+  .ar-mkt-item .sym {
+    color: var(--ink); font-weight: 600; letter-spacing: 0.2px;
+    font-size: 11px; text-transform: uppercase;
+  }
+  .ar-mkt-item .px {
+    color: var(--text); font-variant-numeric: tabular-nums; font-weight: 500;
+  }
+  .ar-mkt-item .delta {
+    font-weight: 600; font-size: 11px; font-variant-numeric: tabular-nums;
+  }
+  .ar-mkt-item .delta.up { color: #047857; }
+  .ar-mkt-item .delta.down { color: #b91c1c; }
+  .ar-mkt-item .delta::before {
+    content: ''; display: inline-block; width: 0; height: 0;
+    margin-right: 3px; vertical-align: middle;
+    border-left: 3.5px solid transparent; border-right: 3.5px solid transparent;
+  }
+  .ar-mkt-item .delta.up::before { border-bottom: 4.5px solid #047857; }
+  .ar-mkt-item .delta.down::before { border-top: 4.5px solid #b91c1c; }
+
+  /* =================================================================
+     FEATURED LISTINGS — NEW (3-col data-dense cards)
+     ================================================================= */
+  .filters-row {
+    display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .chip {
+    padding: 7px 14px; font-size: 12px; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--border); border-radius: 100px; color: var(--text-light);
+    background: #fff; transition: all 0.15s; font-family: inherit;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .chip .count { color: var(--text-muted); margin-left: 4px; font-weight: 400; }
+  .chip.active .count { color: rgba(255,255,255,0.6); }
+
+  .listing-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--text-light); margin-bottom: 16px;
+    padding-bottom: 14px; border-bottom: 1px solid var(--border-light);
+  }
+  .listing-meta strong { color: var(--ink); font-weight: 600; }
+  .listing-meta .lm-sort { color: var(--accent); font-weight: 600; }
+  .listing-empty {
+    padding: 56px 24px; text-align: center; color: var(--text-light);
+    background: var(--bg-soft); border: 1px dashed var(--border); border-radius: 6px;
+  }
+  .listing-empty a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .badge.fresh { background: rgba(245, 158, 11, 0.95); color: #fff; }
+
+  .listing-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  }
+  .listing {
+    background: #fff; border: 1px solid rgba(30,41,59,0.08); border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(30,41,59,0.05), 0 4px 12px rgba(30,41,59,0.04);
+    overflow: hidden; cursor: pointer; transition: all 0.2s;
+    display: flex; flex-direction: column;
+  }
+  .listing:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(30,41,59,0.14), 0 2px 6px rgba(30,41,59,0.06);
+    border-color: rgba(37, 99, 235, 0.25);
+  }
+  .listing-media {
+    aspect-ratio: 16/10; background: #f0f0f0; background-size: cover;
+    background-position: center; position: relative;
+  }
+  .listing-media.placeholder {
+    background: linear-gradient(135deg, #e8eef6 0%, #d9e4f2 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .listing-media.placeholder svg { width: 60px; height: 60px; opacity: 0.4; }
+  .listing-badges {
+    position: absolute; top: 12px; left: 12px; display: flex; gap: 6px;
+  }
+  .badge {
+    background: rgba(255,255,255,0.95); color: var(--ink);
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 4px 9px; border-radius: 100px;
+    backdrop-filter: blur(4px);
+  }
+  .badge.verified { background: rgba(30, 185, 128, 0.95); color: #fff; }
+  .badge.new { background: rgba(37, 99, 235, 0.95); color: #fff; }
+  .listing-fav {
+    position: absolute; top: 10px; right: 10px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,0.9); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .listing-fav:hover { background: #fff; transform: scale(1.08); }
+  .listing-fav svg { width: 16px; stroke: var(--text-light); fill: none; stroke-width: 1.7; }
+  .listing-fav.saved svg { fill: #ef4444; stroke: #ef4444; }
+  /* ---- listing-media: img tag + emoji fallback ---- */
+  .listing-media { position:relative; overflow:hidden; }
+  .listing-media img.lm-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .listing-media .lm-fb { position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; font-size:54px; opacity:0; pointer-events:none; transition:opacity 0.25s; }
+  .listing-media .lm-fb.show { opacity:1; }
+
+  .listing-body { padding: 18px 18px 16px; display: flex; flex-direction: column; flex: 1; }
+  .listing-origin {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--text-muted); letter-spacing: 0.4px;
+    text-transform: uppercase; font-weight: 600; margin-bottom: 8px;
+  }
+  .flag { font-size: 14px; }
+  .listing-title {
+    font-size: 16px; font-weight: 600; color: var(--ink);
+    line-height: 1.3; margin-bottom: 14px;
+  }
+  .listing-specs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px;
+    padding: 12px 0; border-top: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light); margin-bottom: 14px;
+  }
+  .spec-key { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; margin-bottom: 2px; }
+  .spec-val { font-size: 13px; color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .listing-foot {
+    display: flex; align-items: flex-end; justify-content: space-between; margin-top: auto;
+  }
+  .listing-price { display: flex; flex-direction: column; }
+  .listing-price .px {
+    font-size: 20px; font-weight: 700; color: var(--ink);
+    font-variant-numeric: tabular-nums; letter-spacing: -0.3px;
+  }
+  .listing-price .unit { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .listing-seller {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--text-light);
+  }
+  .seller-avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: linear-gradient(135deg, #4a90d9, #00c8c8);
+    color: #fff; font-size: 9px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* =================================================================
+     ORIGIN STRIP — NEW (browse by country)
+     ================================================================= */
+  .origin-sec { background: var(--bg-soft); border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); }
+  .origin-grid {
+    display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px;
+  }
+  .origin-card {
+    background: #fff; border: 1px solid rgba(30,41,59,0.08); border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(30,41,59,0.04), 0 2px 8px rgba(30,41,59,0.03);
+    padding: 18px 12px; text-align: center; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .origin-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15,23,41,0.06);
+  }
+  .origin-card { text-decoration: none; display: block; }
+  .origin-card .of { font-size: 28px; line-height: 1; margin-bottom: 8px; }
+  .origin-card .on { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .origin-card .oc { font-size: 10px; color: var(--text-muted); letter-spacing: 0.4px; }
+
+  /* =================================================================
+     HOW IT WORKS — NEW (4 numbered steps)
+     ================================================================= */
+  .how-sec { background: #fff; }
+  .how-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    position: relative;
+  }
+  .how-step { padding: 24px 28px 24px 0; position: relative; }
+  .how-step:not(:last-child)::after {
+    content: ''; position: absolute; top: 36px; right: 18px;
+    width: 12px; height: 12px; border-top: 1.5px solid var(--border);
+    border-right: 1.5px solid var(--border); transform: rotate(45deg);
+    opacity: 0.7;
+  }
+  .how-num {
+    font-family: 'Fraunces', serif; font-size: 36px; font-weight: 400;
+    color: var(--accent); line-height: 1; margin-bottom: 14px;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .how-num::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    margin-left: 4px;
+  }
+  .how-step h4 {
+    font-size: 16px; font-weight: 600; color: var(--ink);
+    margin-bottom: 8px; line-height: 1.35;
+  }
+  .how-step p { font-size: 13px; color: var(--text-light); line-height: 1.65; }
+
+  /* =================================================================
+     EDITORIAL FEATURE BAND — NEW
+     ================================================================= */
+  .editorial {
+    background: var(--ink); color: #fff; position: relative; overflow: hidden;
+  }
+  .editorial-grid {
+    display: grid; grid-template-columns: 1.05fr 1fr;
+    align-items: stretch; min-height: 460px;
+  }
+  .editorial-text {
+    padding: 80px 60px 80px 0;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .editorial-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    color: var(--cyan); text-transform: uppercase; margin-bottom: 18px;
+  }
+  .editorial h2 {
+    font-family: 'Fraunces', serif; font-size: 44px; font-weight: 400;
+    line-height: 1.1; margin-bottom: 24px; letter-spacing: -0.5px;
+  }
+  .editorial p { font-size: 15px; color: rgba(255,255,255,0.72); line-height: 1.7; margin-bottom: 32px; max-width: 480px; }
+  .editorial-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+    margin-top: 16px; max-width: 480px;
+  }
+  .ed-stat { border-left: 2px solid var(--cyan); padding-left: 14px; }
+  .ed-stat .num {
+    font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500;
+    color: #fff; line-height: 1; margin-bottom: 6px;
+  }
+  .ed-stat .lbl { font-size: 11px; color: rgba(255,255,255,0.6); letter-spacing: 0.5px; line-height: 1.4; }
+
+  .editorial-media {
+    background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1600&q=80');
+    background-size: cover; background-position: center;
+    position: relative;
+  }
+  .editorial-media::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(15,23,41,0.6) 0%, rgba(15,23,41,0) 30%);
+  }
+  .editorial-quote {
+    position: absolute; bottom: 40px; right: 40px; max-width: 320px;
+    background: rgba(255,255,255,0.96); color: var(--ink);
+    padding: 24px 28px; border-radius: 4px; z-index: 1;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .editorial-quote::before {
+    content: '“'; position: absolute; top: 0px; left: 16px;
+    font-family: 'Fraunces', serif; font-size: 60px; color: var(--accent);
+    line-height: 1;
+  }
+  .editorial-quote p {
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 400;
+    color: var(--ink); line-height: 1.55; margin: 12px 0 14px; padding-left: 28px;
+    font-style: italic;
+  }
+  .editorial-quote .who {
+    font-size: 11px; color: var(--text-muted); padding-left: 28px;
+    font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+
+  /* =================================================================
+     INSIGHT CARDS — NEW (market intelligence preview)
+     ================================================================= */
+  .insight-grid {
+    display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 20px;
+  }
+  .insight {
+    background: #fff; border: 1px solid var(--border); border-radius: 4px;
+    padding: 28px; display: flex; flex-direction: column;
+    transition: all 0.2s; cursor: pointer;
+  }
+  .insight:hover { border-color: var(--accent); box-shadow: 0 8px 24px rgba(15,23,41,0.06); }
+  .insight-tag {
+    display: inline-block; align-self: flex-start;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 4px 8px; border-radius: 2px;
+    background: rgba(37,99,235,0.08); color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .insight-tag.market { background: rgba(30,185,128,0.1); color: #047857; }
+  .insight-tag.compliance { background: rgba(245,158,11,0.1); color: #92400e; }
+  .insight h3 {
+    font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400;
+    color: var(--ink); line-height: 1.25; margin-bottom: 12px;
+    letter-spacing: -0.2px;
+  }
+  .insight.lg h3 { font-size: 26px; }
+  .insight p { font-size: 13px; color: var(--text-light); line-height: 1.65; margin-bottom: 16px; }
+  .insight-meta {
+    margin-top: auto; display: flex; align-items: center;
+    gap: 10px; padding-top: 14px; border-top: 1px solid var(--border-light);
+    font-size: 11px; color: var(--text-muted); font-weight: 500;
+  }
+  .insight-meta .dot { width: 3px; height: 3px; background: var(--text-muted); border-radius: 50%; }
+  .insight.lg {
+    background: linear-gradient(135deg, #f8fafc 0%, #eef4fb 100%);
+    border-color: rgba(37,99,235,0.15);
+  }
+  .insight-chart {
+    margin: 8px 0 16px; height: 60px; display: flex; align-items: flex-end;
+    gap: 4px;
+  }
+  .insight-chart .bar {
+    flex: 1; background: linear-gradient(180deg, var(--accent), rgba(37,99,235,0.4));
+    border-radius: 2px 2px 0 0; min-height: 8px;
+  }
+
+  /* =================================================================
+     CTA BAND — NEW
+     ================================================================= */
+  .cta-band {
+    background: linear-gradient(135deg, #4a90d9 0%, #3a7bd5 35%, #00c8c8 100%);
+    padding: 60px 40px; text-align: center; color: #fff;
+    position: relative; overflow: hidden;
+  }
+  .cta-band::before, .cta-band::after {
+    content: ''; position: absolute;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 50%;
+  }
+  .cta-band::before { top: -120px; right: -80px; width: 320px; height: 320px; }
+  .cta-band::after  { bottom: -160px; left: -100px; width: 360px; height: 360px; }
+  .cta-band-inner { max-width: 720px; margin: 0 auto; position: relative; z-index: 1; }
+  .cta-band h2 {
+    font-family: 'Fraunces', serif; font-size: 38px; font-weight: 400;
+    line-height: 1.15; margin-bottom: 14px; letter-spacing: -0.3px;
+  }
+  .cta-band p { font-size: 15px; opacity: 0.9; margin-bottom: 28px; }
+  .cta-actions { display: flex; gap: 14px; justify-content: center; }
+  .btn-white {
+    background: #fff; color: var(--ink); border: none;
+    padding: 14px 32px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; cursor: pointer; font-family: inherit;
+    transition: all 0.2s;
+  }
+  .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+  .btn-ghost {
+    background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.7);
+    padding: 13px 30px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; cursor: pointer; font-family: inherit;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.15); border-color: #fff; }
+
+  /* =================================================================
+     FOOTER — NEW (4-column)
+     ================================================================= */
+  footer { background: var(--ink); color: rgba(255,255,255,0.7); padding-top: 64px; }
+  .footer-inner-new {
+    max-width: 1180px; margin: 0 auto; padding: 0 40px;
+    display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 48px;
+    padding-bottom: 48px;
+  }
+  .footer-brand .footer-logo {
+    font-size: 18px; font-weight: 700; color: #fff; letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .footer-brand p {
+    font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.55);
+    margin-bottom: 24px; max-width: 280px;
+  }
+  .footer-newsletter-new {
+    display: flex; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 2px; overflow: hidden;
+  }
+  .footer-newsletter-new input {
+    flex: 1; background: transparent; border: none; outline: none;
+    padding: 10px 14px; color: #fff; font-size: 13px; font-family: inherit;
+  }
+  .footer-newsletter-new input::placeholder { color: rgba(255,255,255,0.4); }
+  .footer-newsletter-new button {
+    background: var(--accent); color: #fff; border: none;
+    padding: 0 18px; font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; cursor: pointer; font-family: inherit;
+  }
+  .footer-col h4 {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: #fff; margin-bottom: 18px;
+  }
+  .footer-col a {
+    display: block; font-size: 13px; color: rgba(255,255,255,0.6);
+    text-decoration: none; padding: 6px 0; transition: color 0.2s;
+  }
+  .footer-col a:hover { color: #fff; }
+  .footer-bot {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 20px 40px; max-width: 1180px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: rgba(255,255,255,0.4);
+  }
+  .footer-bot .socials { display: flex; gap: 10px; }
+  .footer-bot .socials a {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2); display: flex;
+    align-items: center; justify-content: center; color: rgba(255,255,255,0.6);
+    transition: all 0.15s;
+  }
+  .footer-bot .socials a:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .footer-bot .socials svg { width: 13px; height: 13px; }
+
+  /* =================================================================
+     DRAWER / AUTH MODAL — UNCHANGED
+     ================================================================= */
+  .pd-drawer-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 8000; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .pd-drawer-bg.show { opacity: 1; pointer-events: auto; }
+  .pd-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 560px; max-width: 95vw; background: #fff; z-index: 8001; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto; box-shadow: -8px 0 32px rgba(0,0,0,0.12); font-family: 'Roboto', sans-serif; }
+  .pd-drawer.show { transform: translateX(0); }
+  .pd-hero { height: 220px; background-size: cover; background-position: center; position: relative; }
+  .pd-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%); }
+  .pd-hero .pd-close { position: absolute; top: 14px; right: 16px; width: 36px; height: 36px; background: rgba(0,0,0,0.5); border: none; color: #fff; font-size: 22px; cursor: pointer; border-radius: 50%; z-index: 2; line-height: 1; }
+  .pd-hero .pd-name { position: absolute; bottom: 16px; left: 24px; color: #fff; z-index: 1; }
+  .pd-hero .pd-name h2 { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
+  .pd-hero .pd-name .loc { font-size: 13px; opacity: 0.9; }
+  .pd-section { padding: 20px 24px; border-bottom: 1px solid #eee; }
+  .pd-price-row { display: flex; align-items: baseline; gap: 8px; }
+  .pd-price-row .price { font-size: 26px; font-weight: 700; color: #2563EB; }
+  .pd-price-row .unit { font-size: 13px; color: #999; }
+  .pd-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 18px 24px; }
+  .pd-stats .stat { font-size: 12px; color: #888; }
+  .pd-stats .stat strong { display: block; color: #333; font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+  .pd-cta-row { padding: 20px 24px; display: flex; gap: 12px; position: sticky; bottom: 0; background: #fff; border-top: 1px solid #eee; }
+  .pd-cta-row button { flex: 1; padding: 13px; font-family: inherit; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
+  .pd-cta-primary { background: #2563EB; color: #fff; border: none; }
+  .pd-cta-secondary { background: transparent; color: #2563EB; border: 1.5px solid #2563EB; }
+  .pd-locked-notice { margin: 0 24px 16px; padding: 14px; background: #fef3c7; border-left: 3px solid #f59e0b; font-size: 13px; color: #92400e; display: flex; align-items: center; gap: 10px; }
+
+  @media (max-width: 980px) {
+    .listing-grid, .insight-grid { grid-template-columns: 1fr 1fr; }
+    .origin-grid { grid-template-columns: repeat(4, 1fr); }
+    .how-grid { grid-template-columns: 1fr 1fr; }
+    .editorial-grid { grid-template-columns: 1fr; }
+    .editorial-text { padding: 48px 32px; }
+    .editorial-media { min-height: 320px; }
+    .footer-inner-new { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ---- MOBILE NAV ---- */
+  .nav-hamburger {
+    display: none; flex-direction: column; gap: 5px; background: none; border: none;
+    cursor: pointer; padding: 6px; margin-left: 8px;
+  }
+  .nav-hamburger span {
+    display: block; width: 22px; height: 2px;
+    background: rgba(255,255,255,0.9); border-radius: 2px; transition: all 0.2s;
+  }
+  .mobile-nav {
+    display: none; flex-direction: column; background: var(--ink);
+    padding: 12px 24px 20px; border-top: 1px solid rgba(255,255,255,0.08);
+    position: sticky; top: 0; z-index: 900;
+  }
+  .mobile-nav a {
+    color: rgba(255,255,255,0.88); font-size: 15px; padding: 12px 0;
+    text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .mobile-nav a:last-child { border-bottom: none; }
+  .mobile-nav a:hover { color: #fff; }
+  .mobile-nav-divider { height: 1px; background: rgba(255,255,255,0.15); margin: 8px 0; }
+  .mobile-nav-register {
+    display: inline-block; margin-top: 8px; padding: 10px 0;
+    border: 1.5px solid rgba(255,255,255,0.7); text-align: center;
+    border-radius: 4px; font-weight: 600;
+  }
+  @media (max-width: 768px) {
+    nav .nav-links, nav .nav-signin, nav .nav-register { display: none !important; }
+    .nav-hamburger { display: flex !important; }
+    .mobile-nav.open { display: flex; }
+    .listing-grid { grid-template-columns: 1fr !important; }
+    .origin-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .hero h1 { font-size: 26px !important; }
+    .hero { padding: 80px 20px 48px !important; }
+    .sec { padding: 48px 20px !important; }
+  }
+</style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="ui-polish.css">
+  <script src="security.js"></script>
+</head>
+<body>
+<script src="demo-banner.js"></script>
+
+<!-- ============================================================
+     NAV — UNCHANGED
+     ============================================================ -->
+<nav>
+  <div class="nav-logo">AgriMarket</div>
+  <div class="nav-links">
+    <a href="#" data-i18n="nav_how">How it works</a>
+    <a href="#" data-i18n="nav_compliance">Compliance</a>
+    <a href="#" data-i18n="nav_about">About</a>
+    <span class="dropdown">
+      <a href="#" data-i18n="nav_ask">Ask manager</a>
+      <svg viewBox="0 0 10 6" fill="none" stroke="white" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg>
+    </span>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="nav-signin" onclick="openAuth('signin');return false;" data-i18n="nav_signin">SIGN IN</a>
+    <button class="nav-register" onclick="openAuth('register')" data-i18n="nav_register">Register Now</button>
+    <button class="nav-hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="nav-lang" onclick="toggleLangMenu(event)" id="navLangBtn" style="position:relative;">
+      <span data-lang-display>EN</span>
+      <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg>
+      <div id="langMenu" style="display:none;position:absolute;top:100%;right:0;margin-top:8px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.15);border-radius:4px;overflow:hidden;min-width:130px;z-index:1500;">
+        <div data-lang-pick="en" onclick="setLang('en');closeLangMenu();event.stopPropagation();" style="padding:10px 16px;color:#333;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;">🇬🇧 English</div>
+        <div data-lang-pick="es" onclick="setLang('es');closeLangMenu();event.stopPropagation();" style="padding:10px 16px;color:#333;font-size:13px;cursor:pointer;">🇪🇸 Español</div>
+      </div>
+    </span>
+  </div>
+</nav>
+
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav" id="mobileNav">
+  <a href="index.html#featured" onclick="closeMobileNav()">Marketplace</a>
+  <a href="market-intelligence.html" onclick="closeMobileNav()">Market Intelligence</a>
+  <a href="compliance-passport.html" onclick="closeMobileNav()">Compliance Passport</a>
+  <a href="index.html#regions" onclick="closeMobileNav()">Browse by Region</a>
+  <div class="mobile-nav-divider"></div>
+  <a href="#" onclick="openAuth('signin');closeMobileNav();return false;">Sign In</a>
+  <a href="#" class="mobile-nav-register" onclick="openAuth('register');closeMobileNav();return false;">Register Now</a>
+</div>
+
+<!-- ============================================================
+     HERO — UNCHANGED
+     ============================================================ -->
+<section class="hero">
+  <h1 data-i18n="hero_title">Argentina's commodities marketplace, online</h1>
+  <p data-i18n="hero_subtitle">Direct from Rosario, Bª Blanca, Córdoba and Mendoza — to your port</p>
+  <div class="search-bar" style="position:relative;">
+    <button class="categories-btn" onclick="toggleCategories(event)" id="catBtn">
+      <svg viewBox="0 0 16 14" fill="none" stroke="white" stroke-width="1.5">
+        <line x1="0" y1="1" x2="16" y2="1"/>
+        <line x1="0" y1="7" x2="16" y2="7"/>
+        <line x1="0" y1="13" x2="16" y2="13"/>
+      </svg>
+      <span data-i18n="hero_categories">CATEGORIES</span>
+      <svg width="10" height="6" viewBox="0 0 10 6" style="margin-left:auto;opacity:0.8;"><path d="M1 1l4 4 4-4" fill="none" stroke="white" stroke-width="1.5"/></svg>
+    </button>
+    <div id="catDropdown" style="display:none;position:fixed;width:520px;background:#fff;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:1500;padding:0;border-radius:0 0 4px 4px;text-align:left;">
+      <div style="display:grid;grid-template-columns:200px 1fr;">
+        <div style="background:#f5f7fa;border-right:1px solid #e5e7eb;">
+          <div class="cat-main active" data-cat="grains" onmouseover="showCatPanel('grains')">🌽 <span data-i18n="cat_grains">Grains</span><svg width="6" height="10" viewBox="0 0 6 10" style="margin-left:auto;"><path d="M1 1l4 4-4 4" fill="none" stroke="#666" stroke-width="1.5"/></svg></div>
+          <div class="cat-main" data-cat="oilseeds" onmouseover="showCatPanel('oilseeds')">🌻 <span data-i18n="cat_oilseeds">Oilseeds</span><svg width="6" height="10" viewBox="0 0 6 10" style="margin-left:auto;"><path d="M1 1l4 4-4 4" fill="none" stroke="#666" stroke-width="1.5"/></svg></div>
+          <div class="cat-main" data-cat="oils" onmouseover="showCatPanel('oils')">🛢️ <span data-i18n="cat_oils">Oils &amp; Meals</span><svg width="6" height="10" viewBox="0 0 6 10" style="margin-left:auto;"><path d="M1 1l4 4-4 4" fill="none" stroke="#666" stroke-width="1.5"/></svg></div>
+          <div class="cat-main" data-cat="peanuts" onmouseover="showCatPanel('peanuts')">🥜 <span data-i18n="cat_peanuts">Peanuts &amp; Pulses</span><svg width="6" height="10" viewBox="0 0 6 10" style="margin-left:auto;"><path d="M1 1l4 4-4 4" fill="none" stroke="#666" stroke-width="1.5"/></svg></div>
+          <div class="cat-main" data-cat="beef" onmouseover="showCatPanel('beef')">🐄 <span data-i18n="cat_beef">Beef &amp; Protein</span><svg width="6" height="10" viewBox="0 0 6 10" style="margin-left:auto;"><path d="M1 1l4 4-4 4" fill="none" stroke="#666" stroke-width="1.5"/></svg></div>
+          <div class="cat-main" data-cat="wine" onmouseover="showCatPanel('wine')">🍷 <span data-i18n="cat_wine">Wine &amp; Must</span><svg width="6" height="10" viewBox="0 0 6 10" style="margin-left:auto;"><path d="M1 1l4 4-4 4" fill="none" stroke="#666" stroke-width="1.5"/></svg></div>
+          <div class="cat-main" data-cat="citrus" onmouseover="showCatPanel('citrus')">🍋 <span data-i18n="cat_citrus">Citrus &amp; Fruit</span><svg width="6" height="10" viewBox="0 0 6 10" style="margin-left:auto;"><path d="M1 1l4 4-4 4" fill="none" stroke="#666" stroke-width="1.5"/></svg></div>
+          <div class="cat-main" data-cat="dairy" onmouseover="showCatPanel('dairy')">🥛 <span data-i18n="cat_dairy">Dairy &amp; Honey</span><svg width="6" height="10" viewBox="0 0 6 10" style="margin-left:auto;"><path d="M1 1l4 4-4 4" fill="none" stroke="#666" stroke-width="1.5"/></svg></div>
+        </div>
+        <div id="catPanel" style="padding:18px 20px;"></div>
+      </div>
+      <div style="padding:12px 20px;background:#f5f7fa;border-top:1px solid #e5e7eb;font-size:12px;color:#666;text-align:center;">
+        <span data-i18n="cat_browse_all">Browse all categories</span>
+      </div>
+    </div>
+    <div class="search-inner">
+      <div class="buy-sell-tabs">
+        <button class="tab tab-buy active" id="tab-buy" onclick="setTab('buy')" data-i18n="hero_buy">BUY</button>
+        <button class="tab tab-sell" id="tab-sell" onclick="setTab('sell')" data-i18n="hero_sell">SELL</button>
+      </div>
+      <input type="text" id="heroSearch" placeholder="What are you looking for?" data-i18n-placeholder="hero_search_placeholder"
+        onkeydown="if(event.key==='Enter')doSearch()">
+      <button class="search-btn" onclick="doSearch()">
+        <svg viewBox="0 0 20 20" fill="none" stroke="#2563EB" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5L18 18"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     EDITORIAL BAND — WHY AGRIMARKET
+     ============================================================ -->
+<section class="editorial">
+  <div class="wrap" style="padding: 0 40px;">
+    <div class="editorial-grid">
+      <div class="editorial-text">
+        <div class="editorial-eyebrow">Why AgriMarket · Argentina</div>
+        <h2>From the Pampa to your port — without the middle-men markup.</h2>
+        <p>We connect Argentine producers and cooperatives directly with end-buyers, with the compliance, contracts and logistics rails of a traditional brokerage built in. Better basis vs. Rosario, full traceability, faster cycle times.</p>
+        <div class="editorial-stats">
+          <div class="ed-stat"><div class="num">$840M</div><div class="lbl">Argentine volume traded since launch</div></div>
+          <div class="ed-stat"><div class="num">1,840+</div><div class="lbl">Verified Argentine sellers</div></div>
+          <div class="ed-stat"><div class="num">23</div><div class="lbl">Provinces connected</div></div>
+        </div>
+      </div>
+      <div class="editorial-media">
+        <div class="editorial-quote">
+          <p>We cut our sourcing cycle from six weeks to nine days. Same Rosario quality, better basis, real paperwork.</p>
+          <div class="who">M. Schiariti · Head of trading, Buenos Aires</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FEATURED LISTINGS — Argentina focus
+     ============================================================ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-eyebrow">Live offers · Argentina</div>
+        <h2 class="sec-title" data-i18n="sec_featured">Featured Argentine commodities, ready to ship</h2>
+        <p class="sec-sub" data-i18n="sec_featured_sub">Hand-curated FOB and CIF offers from verified Argentine growers, cooperatives and exporters. Updated continuously.</p>
+      </div>
+      <span class="sec-link sec-link-static">Browse all 1,840 Argentine listings
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
+      </span>
+    </div>
+
+    <div class="filters-row" id="filters-row">
+      <!-- chips injected by JS so counts stay in sync with catalog -->
+    </div>
+
+    <div class="listing-meta" id="listing-meta"></div>
+    <div class="listing-grid" id="listing-grid">
+      <!-- listings injected by JS -->
+    </div>
+    <div class="listing-empty" id="listing-empty" style="display:none;">
+      No live offers in this category yet. <a href="#" onclick="setCatFilter('all');return false;">See all Argentine listings</a>.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     BROWSE BY ARGENTINE REGION
+     ============================================================ -->
+<section class="sec origin-sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-eyebrow">By region</div>
+        <h2 class="sec-title" data-i18n="sec_regions">Sourced direct from Argentina's agri heartland</h2>
+        <p class="sec-sub" data-i18n="sec_regions_sub">From the Pampa Húmeda to the Cuyo wine country — trade direct with provincial cooperatives and processors.</p>
+      </div>
+      <span class="sec-link sec-link-static">23 provinces covered
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
+      </span>
+    </div>
+    <div class="origin-grid">
+      <a class="origin-card" href="region.html?region=buenos-aires"><div class="of">🌾</div><div class="on">Buenos Aires</div><div class="oc">GRAINS · BEEF · SUNFLOWER</div></a>
+      <a class="origin-card" href="region.html?region=cordoba"><div class="of">🌽</div><div class="on">Córdoba</div><div class="oc">CORN · SOY · PEANUTS</div></a>
+      <a class="origin-card" href="region.html?region=santa-fe"><div class="of">🚢</div><div class="on">Santa Fe</div><div class="oc">ROSARIO HUB · MEALS</div></a>
+      <a class="origin-card" href="region.html?region=la-pampa"><div class="of">🥜</div><div class="on">La Pampa</div><div class="oc">PEANUTS · SUNFLOWER</div></a>
+      <a class="origin-card" href="region.html?region=entre-rios"><div class="of">🐄</div><div class="on">Entre Ríos</div><div class="oc">RICE · HONEY · CITRUS</div></a>
+      <a class="origin-card" href="region.html?region=mendoza"><div class="of">🍷</div><div class="on">Mendoza</div><div class="oc">WINE · OLIVES · MUST</div></a>
+      <a class="origin-card" href="region.html?region=tucuman"><div class="of">🍋</div><div class="on">Tucumán</div><div class="oc">CITRUS · SUGAR · SOY</div></a>
+      <a class="origin-card" href="region.html?region=salta"><div class="of">🌶️</div><div class="on">Salta</div><div class="oc">BEANS · TOBACCO · WINE</div></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     HOW IT WORKS — NEW (4 numbered steps)
+     ============================================================ -->
+<section class="sec how-sec">
+  <div class="wrap">
+    <div class="sec-head" style="margin-bottom: 24px;">
+      <div>
+        <div class="sec-eyebrow">Process</div>
+        <h2 class="sec-title" data-i18n="sec_how">From discovery to delivery, in four steps</h2>
+      </div>
+    </div>
+    <div class="how-grid">
+      <div class="how-step">
+        <div class="how-num">01</div>
+        <h4>Verify & onboard</h4>
+        <p>Complete our KYC compliance in under 48 hours. Every counterparty on the platform is verified before they can trade.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-num">02</div>
+        <h4>Discover & negotiate</h4>
+        <p>Browse live offers from across Argentina's 23 provinces. Open private negotiations on price, basis, volume and shipment window.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-num">03</div>
+        <h4>Contract digitally</h4>
+        <p>Generate, redline and sign GAFTA / FOSFA-aligned contracts inside the platform. Audit trail kept end-to-end.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-num">04</div>
+        <h4>Ship & settle</h4>
+        <p>Track shipment milestones, exchange documents, and settle through our partner trade-finance network.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     INSIGHTS / MARKET INTEL — NEW
+     ============================================================ -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-eyebrow" data-i18n="sec_market_intel">Market intelligence</div>
+        <h2 class="sec-title" data-i18n="sec_market_intel">Stay ahead of the Argentine curve</h2>
+        <p class="sec-sub" data-i18n="sec_market_intel_sub">Weekly Rosario reports, AFIP &amp; export-tax updates, and price commentary from our Buenos Aires desk.</p>
+      </div>
+      <a class="sec-link" href="market-intelligence.html" data-i18n="sec_market_link">All insights
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
+      </a>
+    </div>
+    <div class="insight-grid">
+      <div class="insight lg">
+        <span class="insight-tag market">Weekly Brief</span>
+        <h3>Rosario soy complex: crush margins firm as Up-River barges queue</h3>
+        <div class="insight-chart">
+          <div class="bar" style="height: 28%;"></div>
+          <div class="bar" style="height: 42%;"></div>
+          <div class="bar" style="height: 36%;"></div>
+          <div class="bar" style="height: 58%;"></div>
+          <div class="bar" style="height: 48%;"></div>
+          <div class="bar" style="height: 72%;"></div>
+          <div class="bar" style="height: 64%;"></div>
+          <div class="bar" style="height: 82%;"></div>
+          <div class="bar" style="height: 76%;"></div>
+          <div class="bar" style="height: 95%;"></div>
+          <div class="bar" style="height: 88%;"></div>
+          <div class="bar" style="height: 100%;"></div>
+        </div>
+        <p>Spot FOB indications firmed $6–9/MT WoW on slow farmer selling and tight near-month barge slots at Up-River terminals. Where the desk sees the next leg.</p>
+        <div class="insight-meta">
+          <span>Buenos Aires desk</span><span class="dot"></span>
+          <span>May 17, 2026</span><span class="dot"></span>
+          <span>6 min read</span>
+        </div>
+      </div>
+      <div class="insight">
+        <span class="insight-tag compliance">Compliance</span>
+        <h3>Retenciones &amp; ROE Verde: what soy &amp; corn exporters must file in Q3</h3>
+        <p>A practical checklist of the export-tax declarations and ROE Verde windows your shipments need before nomination.</p>
+        <div class="insight-meta"><span>Compliance team</span><span class="dot"></span><span>4 min read</span></div>
+      </div>
+      <div class="insight">
+        <span class="insight-tag">Origin spotlight</span>
+        <h3>Why Córdoba peanut flows are loosening into Europe</h3>
+        <p>Crush margins, peso parity and the spread to Brazilian groundnut — our take on what changes the trade-flow picture this season.</p>
+        <div class="insight-meta"><span>Origin desk</span><span class="dot"></span><span>5 min read</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     ARGENTINA MARKET STRIP — compact, replaces top ticker
+     ============================================================ -->
+<section class="ar-mkt-sec">
+  <div class="wrap">
+    <div class="ar-mkt">
+      <div class="ar-mkt-label">
+        <span class="lbl-eyebrow"><span class="live-dot"></span>Live · Rosario</span>
+        <span class="lbl-title">Argentina FOB prices, today</span>
+        <span class="lbl-sub">Bolsa de Comercio · indicative spot</span>
+      </div>
+      <div class="ar-mkt-rail">
+        <div class="ar-mkt-track" id="ticker-track">
+          <!-- populated by JS, duplicated for seamless loop -->
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA BAND — NEW
+     ============================================================ -->
+<section class="cta-band">
+  <div class="cta-band-inner">
+    <h2 data-i18n="cta_title">Free for 6 months. No card. No catch.</h2>
+    <p data-i18n="cta_body">Join 1,840+ verified Argentine sellers and overseas buyers. Get matched on price, run negotiations and contracts, settle through trade-finance partners — all in one place.</p>
+    <div class="cta-actions">
+      <button class="btn-white" onclick="openAuth('register')" data-i18n="cta_create">Create free account</button>
+      <button class="btn-ghost" data-i18n="cta_talk">Talk to a manager</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER — NEW
+     ============================================================ -->
+<footer>
+  <div class="footer-inner-new">
+    <div class="footer-brand">
+      <div class="footer-logo">AgriMarket</div>
+      <p>The global trading platform for verified agri-commodity buyers and sellers. Built by traders, for traders.</p>
+      <form class="footer-newsletter-new" onsubmit="return false;">
+        <input type="email" placeholder="you@company.com">
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+    <div class="footer-col">
+      <h4>Marketplace</h4>
+      <a href="#">Live listings</a>
+      <a href="#">Browse by origin</a>
+      <a href="#">Browse by category</a>
+      <a href="#">Market intelligence</a>
+      <a href="#">Price benchmarks</a>
+    </div>
+    <div class="footer-col">
+      <h4 data-i18n="footer_platform">Platform</h4>
+      <a href="#" data-i18n="footer_how">How it works</a>
+      <a href="#" data-i18n="footer_compliance">Compliance &amp; KYC</a>
+      <a href="#" data-i18n="footer_contracts_settle">Contracts &amp; settlement</a>
+      <a href="#" data-i18n="footer_logistics">Logistics partners</a>
+      <a href="#" data-i18n="footer_support">Support</a>
+    </div>
+    <div class="footer-col">
+      <h4 data-i18n="footer_company">Company</h4>
+      <a href="#" data-i18n="footer_about">About AgriMarket</a>
+      <a href="#" data-i18n="footer_careers">Careers</a>
+      <a href="#" data-i18n="footer_press">Press</a>
+      <a href="#" data-i18n="footer_terms">Terms of Service</a>
+      <a href="#" data-i18n="footer_privacy">Privacy policy</a>
+    </div>
+  </div>
+  <div class="footer-bot">
+    <div>© 2026 AgriMarket Ltd · All rights reserved</div>
+    <div class="socials">
+      <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg></a>
+      <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     PRODUCT DETAIL DRAWER — UNCHANGED
+     ============================================================ -->
+<div class="pd-drawer-bg" id="pdBg" onclick="closePD()"></div>
+<aside class="pd-drawer" id="pdDrawer">
+  <div class="pd-hero" id="pd-hero">
+    <button class="pd-close" onclick="closePD()">&times;</button>
+    <div class="pd-name">
+      <h2 id="pd-title">Product</h2>
+      <div class="loc" id="pd-loc">Location</div>
+    </div>
+  </div>
+  <div class="pd-section">
+    <div class="pd-price-row"><span class="price" id="pd-price">$0</span><span class="unit" data-i18n="per_mt">/ MT</span></div>
+    <div style="margin-top: 8px; font-size: 13px; color: #666;" id="pd-vol-line">Volume & basis</div>
+  </div>
+  <div class="pd-stats">
+    <div class="stat"><strong id="pd-vol">—</strong>Available volume</div>
+    <div class="stat"><strong id="pd-basis">—</strong>Incoterms</div>
+    <div class="stat"><strong id="pd-ship">—</strong>Ships from</div>
+  </div>
+  <div class="pd-section">
+    <h4 style="font-size: 11px; color: #999; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; margin-bottom: 12px;" data-i18n="detail_specs">Product specifications</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; font-size: 13px;">
+      <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #f0f0f0;"><span style="color:#888;">Protein</span><span style="font-weight:500;">12.5% min</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #f0f0f0;"><span style="color:#888;">Moisture</span><span style="font-weight:500;">14% max</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #f0f0f0;"><span style="color:#888;">Foreign matter</span><span style="font-weight:500;">2% max</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #f0f0f0;"><span style="color:#888;">Crop year</span><span style="font-weight:500;">2025/26</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span style="color:#888;">Packaging</span><span style="font-weight:500;">Bulk / 50kg</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span style="color:#888;">Payment</span><span style="font-weight:500;">L/C at sight</span></div>
+    </div>
+  </div>
+  <div class="pd-section">
+    <h4 style="font-size: 11px; color: #999; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; margin-bottom: 12px;" data-i18n="detail_listed_by">Listed by</h4>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,#4a90d9,#00c8c8); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px;" id="pd-seller-avatar">AG</div>
+      <div style="flex: 1;"><div style="font-weight: 600; font-size: 14px; color: #333;" id="pd-seller-name">Anderson Grain Group</div><div style="font-size: 12px; color: #888;">Verified seller · 24 trades · 4.8/5</div></div>
+      <div style="background: #d1fae5; color: #065f46; font-size: 10px; padding: 3px 8px; border-radius: 10px; font-weight: 700;">✓ VERIFIED</div>
+    </div>
+  </div>
+  <div class="pd-locked-notice">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#92400e" stroke-width="1.5"><rect x="3" y="8" width="12" height="8" rx="1"/><path d="M5 8V5a4 4 0 018 0v3"/></svg>
+    Sign in to contact the seller, request a quote, or save this listing.
+  </div>
+  <div class="pd-cta-row">
+    <button class="pd-cta-secondary" onclick="closePD();openAuth('signin');" data-i18n="nav_signin">SIGN IN</button>
+    <button class="pd-cta-primary" onclick="closePD();openAuth('register');" data-i18n="nav_register">Register Now</button>
+  </div>
+</aside>
+
+<!-- ============================================================
+     AUTH MODAL — UNCHANGED
+     ============================================================ -->
+<div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;width:440px;max-width:100%;border-radius:4px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:'Roboto',sans-serif;">
+    <div style="background:linear-gradient(135deg,#4a90d9 0%,#3a7bd5 35%,#00c8c8 100%);padding:32px 32px 28px;color:#fff;position:relative;">
+      <button onclick="closeAuth()" style="position:absolute;top:14px;right:18px;background:transparent;border:none;color:#fff;font-size:24px;cursor:pointer;line-height:1;opacity:0.8;">&times;</button>
+      <div style="font-size:11px;letter-spacing:3px;font-weight:700;margin-bottom:10px;opacity:0.9;">AGRIMARKET</div>
+      <h2 id="auth-title" style="font-size:24px;font-weight:300;margin-bottom:6px;" data-i18n="auth_welcome">Welcome back</h2>
+      <p id="auth-subtitle" style="font-size:13px;opacity:0.85;" data-i18n="auth_welcome_sub">Sign in to access your dashboard</p>
+    </div>
+    <div style="display:flex;border-bottom:1px solid #e5e7eb;">
+      <button id="auth-tab-signin" onclick="setAuthMode('signin')" style="flex:1;padding:14px;background:#fff;border:none;font-family:inherit;font-size:13px;font-weight:600;color:#2563EB;cursor:pointer;border-bottom:2px solid #2563EB;letter-spacing:0.5px;" data-i18n="auth_signin_tab">SIGN IN</button>
+      <button id="auth-tab-register" onclick="setAuthMode('register')" style="flex:1;padding:14px;background:#fff;border:none;font-family:inherit;font-size:13px;font-weight:600;color:#999;cursor:pointer;border-bottom:2px solid transparent;letter-spacing:0.5px;" data-i18n="auth_register_tab">REGISTER</button>
+    </div>
+    <div style="padding:28px 32px;">
+      <div style="margin-bottom:20px;">
+        <label style="display:block;font-size:11px;color:#888;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;" data-i18n="auth_i_am">I am a</label>
+        <div id="role-buttons" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <button data-role="buyer" onclick="selectRole('buyer')" class="role-btn" style="padding:14px 8px;background:#fff;border:1.5px solid #2563EB;color:#2563EB;font-family:inherit;font-size:12px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;"><div style="font-size:18px;margin-bottom:4px;">🛒</div><span data-i18n="auth_buyer">Buyer</span></button>
+          <button data-role="seller" onclick="selectRole('seller')" class="role-btn" style="padding:14px 8px;background:#fff;border:1.5px solid #e5e7eb;color:#666;font-family:inherit;font-size:12px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;"><div style="font-size:18px;margin-bottom:4px;">🌾</div><span data-i18n="auth_seller">Seller</span></button>
+          <button data-role="admin" onclick="selectRole('admin')" class="role-btn" style="padding:14px 8px;background:#fff;border:1.5px solid #e5e7eb;color:#666;font-family:inherit;font-size:12px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;"><div style="font-size:18px;margin-bottom:4px;">⚙️</div><span data-i18n="auth_admin">Admin</span></button>
+        </div>
+      </div>
+      <div id="register-fields" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+          <div><label style="display:block;font-size:11px;color:#888;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;" data-i18n="auth_first">First name</label><input placeholder="John" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;font-family:inherit;font-size:14px;outline:none;"></div>
+          <div><label style="display:block;font-size:11px;color:#888;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;" data-i18n="auth_last">Last name</label><input placeholder="Smith" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;font-family:inherit;font-size:14px;outline:none;"></div>
+        </div>
+        <div style="margin-bottom:14px;"><label style="display:block;font-size:11px;color:#888;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;" data-i18n="auth_company">Company</label><input placeholder="Your company name" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;font-family:inherit;font-size:14px;outline:none;"></div>
+      </div>
+      <div style="margin-bottom:14px;"><label style="display:block;font-size:11px;color:#888;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;" data-i18n="auth_email">Email</label><input type="email" placeholder="you@company.com" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;font-family:inherit;font-size:14px;outline:none;"></div>
+      <div style="margin-bottom:18px;"><label style="display:block;font-size:11px;color:#888;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;" data-i18n="auth_password">Password</label><input type="password" placeholder="••••••••" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;font-family:inherit;font-size:14px;outline:none;"></div>
+      <button id="auth-submit" onclick="submitAuth()" style="width:100%;padding:14px;background:#2563EB;color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:background 0.2s;" data-i18n="auth_submit_signin">Sign In to Dashboard</button>
+      <div id="auth-footer" style="text-align:center;margin-top:18px;font-size:13px;color:#666;"><span data-i18n="auth_footer_signin">New to AgriMarket?</span> <a onclick="setAuthMode('register')" style="color:#2563EB;font-weight:600;cursor:pointer;text-decoration:none;" data-i18n="auth_create">Create an account</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCRIPTS
+     ============================================================ -->
+<script>
+/* -------- ARGENTINA FOB STRIP -------- */
+const tickerData = [
+  { sym: 'SOY FOB UP-RIVER',  px: '$432.10/MT',  d: '+2.1%', dir: 'up' },
+  { sym: 'CORN FOB UP-RIVER', px: '$184.25/MT',  d: '-0.4%', dir: 'down' },
+  { sym: 'WHEAT FOB B.BLANCA',px: '$226.50/MT',  d: '+1.8%', dir: 'up' },
+  { sym: 'SUNFL. OIL FOB',    px: '$985.00/MT',  d: '+0.9%', dir: 'up' },
+  { sym: 'SOY MEAL HI-PRO',   px: '$398.00/MT',  d: '+1.2%', dir: 'up' },
+  { sym: 'SOY OIL DEG.',      px: '$925.00/MT',  d: '+0.6%', dir: 'up' },
+  { sym: 'SORGHUM FOB',       px: '$198.00/MT',  d: '+0.3%', dir: 'up' },
+  { sym: 'PEANUTS RUNNER',    px: '$1,420/MT',   d: '-0.8%', dir: 'down' },
+  { sym: 'BARLEY MALT QQN',   px: '$232.00/MT',  d: '+0.5%', dir: 'up' },
+  { sym: 'BEEF HILTON QUOTA', px: '$8,950/MT',   d: '-0.3%', dir: 'down' },
+  { sym: 'MALBEC MUST',       px: '$1.42/L',     d: '+1.4%', dir: 'up' },
+  { sym: 'LEMON CIF EU',      px: '$0.78/kg',    d: '+0.5%', dir: 'up' }
+];
+function buildTicker() {
+  const html = tickerData.map(t => `
+    <div class="ar-mkt-item">
+      <span class="sym">${t.sym}</span>
+      <span class="px">${t.px}</span>
+      <span class="delta ${t.dir}">${t.d}</span>
+    </div>
+  `).join('');
+  // duplicate for seamless loop
+  document.getElementById('ticker-track').innerHTML = html + html;
+}
+buildTicker();
+
+/* -------- SEARCH -------- */
+function doSearch() {
+  const q = document.getElementById('heroSearch').value.trim();
+  const tab = document.querySelector('.tab.active')?.classList.contains('tab-sell') ? 'sell' : 'buy';
+  if (!q && !tab) return;
+  window.location.href = 'search-results.html?q=' + encodeURIComponent(q) + '&mode=' + tab;
+}
+
+/* -------- FEATURED LISTINGS — dynamic, reads from window.LISTINGS -------- */
+let currentCategory = 'all';
+
+function listingsFor(cat) {
+  const pool = cat === 'all' ? LISTINGS.slice() : LISTINGS.filter(l => l.category === cat);
+  return pool.sort((a, b) => a.addedDays - b.addedDays); // recently-added first
+}
+
+function renderChips() {
+  const order = ['all','soybeans','corn','wheat','sunflower-oil','soy-meal-oil','peanuts','sorghum','beef','wine'];
+  const row = document.getElementById('filters-row');
+  row.innerHTML = order.map(k => `
+    <button class="chip${k === currentCategory ? ' active' : ''}" data-cat="${k}" onclick="setCatFilter('${k}')">
+      ${CATEGORY_META[k].label} <span class="count">${countByCategory(k)}</span>
+    </button>
+  `).join('');
+}
+
+function setCatFilter(cat) {
+  currentCategory = cat;
+  renderChips();
+  renderListings();
+}
+
+function renderListings() {
+  const items = listingsFor(currentCategory);
+  const grid  = document.getElementById('listing-grid');
+  const empty = document.getElementById('listing-empty');
+  const meta  = document.getElementById('listing-meta');
+
+  meta.innerHTML = items.length
+    ? `<div class="lm-left"><strong>${items.length}</strong> live ${CATEGORY_META[currentCategory].label.toLowerCase()} offer${items.length===1?'':'s'} · <span class="lm-sort">sorted by recently added</span></div>
+       <div class="lm-right">Auto-refreshing · last sync 4 min ago</div>`
+    : '';
+
+  if (!items.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  const show = items.slice(0, 9);
+  grid.innerHTML = show.map(p => listingCardHTML(p)).join('');
+
+  grid.querySelectorAll('.listing').forEach((card, i) => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.listing-fav')) return;
+      openPD(show[i].id);
+    });
+  });
+}
+
+const catEmoji={'soybeans':'🌱','corn':'🌽','wheat':'🌾','sunflower-oil':'🌻','soy-meal-oil':'🫘','peanuts':'🥜','sorghum':'🌾','beef':'🥩','wine':'🍷','other':'🌿'};
+
+function listingCardHTML(p) {
+  const badge = p.badge === 'verified'
+    ? '<span class="badge verified">✓ VERIFIED</span>'
+    : '<span class="badge new">NEW</span>';
+  const fresh = p.addedDays <= 2 ? '<span class="badge fresh">JUST LISTED</span>' : '';
+  const seller = sellerInitials(p.seller);
+  return `
+    <article class="listing" data-id="${p.id}">
+      <div class="listing-media">
+        <img class="lm-img" src="${p.img}" alt="${p.title}" loading="lazy"
+          onerror="this.style.display='none';var f=this.parentNode.querySelector('.lm-fb');if(f)f.classList.add('show')"
+          onload="this.parentNode.style.background='none'">
+        <div class="lm-fb">${catEmoji[p.category]||'📦'}</div>
+        <div class="listing-badges">${badge}${fresh}</div>
+        <button class="listing-fav ${(()=>{try{return JSON.parse(localStorage.getItem('agri_favs')||'[]').includes(p.id);}catch(e){return false;}})()? 'saved':''}" onclick="toggleFav(event, this)" aria-label="Save">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        </button>
+      </div>
+      <div class="listing-body">
+        <div class="listing-origin"><span class="flag">🇦🇷</span><span>${p.province}</span><span style="opacity:0.4;">·</span><span style="text-transform:none;letter-spacing:0;color:var(--text-light);font-weight:400;">${p.locDetail||''}</span></div>
+        <h3 class="listing-title">${p.title}</h3>
+        <div class="listing-specs">
+          <div><div class="spec-key">Volume</div><div class="spec-val">${p.vol}</div></div>
+          <div><div class="spec-key">Incoterms</div><div class="spec-val">${p.basis}</div></div>
+          <div><div class="spec-key">Ships</div><div class="spec-val">${p.ship}</div></div>
+          <div><div class="spec-key">Listed</div><div class="spec-val">${addedLabel(p.addedDays)}</div></div>
+        </div>
+        <div class="listing-foot">
+          <div class="listing-price">
+            <span class="px">${p.price}</span>
+            <span class="unit">${p.priceUnit}</span>
+          </div>
+          <div class="listing-seller">
+            <div class="seller-avatar">${seller}</div>
+            <span>Verified</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function toggleFav(e, btn) {
+  e.stopPropagation();
+  btn.classList.toggle('saved');
+  const id = btn.closest('.listing').dataset.id;
+  const favs = JSON.parse(localStorage.getItem('agri_favs') || '[]');
+  const idx = favs.indexOf(id);
+  if (idx > -1) favs.splice(idx, 1); else favs.push(id);
+  localStorage.setItem('agri_favs', JSON.stringify(favs));
+}
+
+renderChips();
+renderListings();
+
+/* -------- MOBILE NAV -------- */
+function toggleMobileNav() {
+  document.getElementById('mobileNav').classList.toggle('open');
+}
+function closeMobileNav() {
+  document.getElementById('mobileNav').classList.remove('open');
+}
+
+/* -------- PRODUCT DRAWER -------- */
+function openPD(id) {
+  const p = (typeof id === 'string' ? LISTINGS.find(l => l.id === id) : LISTINGS[id]) || LISTINGS[0];
+  document.getElementById('pd-title').textContent = p.title;
+  document.getElementById('pd-loc').textContent = 'Argentina · ' + (p.locDetail || p.province);
+  document.getElementById('pd-price').textContent = p.price;
+  document.getElementById('pd-vol').textContent = p.vol;
+  document.getElementById('pd-basis').textContent = p.basis;
+  document.getElementById('pd-ship').textContent = p.province;
+  document.getElementById('pd-seller-name').textContent = p.seller;
+  document.getElementById('pd-seller-avatar').textContent = sellerInitials(p.seller);
+  const hero = document.getElementById('pd-hero');
+  hero.style.background = p.img
+    ? `url('${p.img}') center/cover no-repeat`
+    : 'linear-gradient(135deg, #4a90d9 0%, #00c8c8 100%)';
+  document.getElementById('pdBg').classList.add('show');
+  document.getElementById('pdDrawer').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closePD() {
+  document.getElementById('pdBg').classList.remove('show');
+  document.getElementById('pdDrawer').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+/* -------- AUTH MODAL -------- */
+let authRole = 'buyer';
+let authMode = 'signin';
+function openAuth(mode) { document.getElementById('authModal').style.display = 'flex'; setAuthMode(mode || 'signin'); }
+function closeAuth() { document.getElementById('authModal').style.display = 'none'; }
+function setAuthMode(mode) {
+  authMode = mode;
+  const isSignIn = mode === 'signin';
+  document.getElementById('auth-title').textContent = isSignIn ? t('auth_welcome') : t('auth_join');
+  document.getElementById('auth-subtitle').textContent = isSignIn ? t('auth_welcome_sub') : t('auth_join_sub');
+  document.getElementById('register-fields').style.display = isSignIn ? 'none' : 'block';
+  document.getElementById('auth-submit').textContent = isSignIn ? t('auth_submit_signin') : t('auth_submit_register');
+  document.getElementById('auth-footer').innerHTML = isSignIn
+    ? t('auth_footer_signin') + ' <a onclick="setAuthMode(\'register\')" style="color:#2563EB;font-weight:600;cursor:pointer;text-decoration:none;">' + t('auth_create') + '</a>'
+    : t('auth_footer_register') + ' <a onclick="setAuthMode(\'signin\')" style="color:#2563EB;font-weight:600;cursor:pointer;text-decoration:none;">' + t('auth_signin_link') + '</a>';
+  document.getElementById('auth-tab-signin').style.color = isSignIn ? '#2563EB' : '#999';
+  document.getElementById('auth-tab-signin').style.borderBottomColor = isSignIn ? '#2563EB' : 'transparent';
+  document.getElementById('auth-tab-register').style.color = !isSignIn ? '#2563EB' : '#999';
+  document.getElementById('auth-tab-register').style.borderBottomColor = !isSignIn ? '#2563EB' : 'transparent';
+}
+function selectRole(role) {
+  authRole = role;
+  document.querySelectorAll('.role-btn').forEach(bt => {
+    const isActive = bt.dataset.role === role;
+    bt.style.border = isActive ? '1.5px solid #2563EB' : '1.5px solid #e5e7eb';
+    bt.style.color = isActive ? '#2563EB' : '#666';
+  });
+}
+function submitAuth() {
+  const targets = { buyer: 'buyer.html', seller: 'seller.html', admin: 'admin.html' };
+  try { localStorage.setItem('mi_role', authRole === 'admin' ? 'admin' : 'viewer'); } catch {}
+  window.location.href = targets[authRole] || 'buyer.html';
+}
+document.getElementById('authModal').addEventListener('click', (e) => { if (e.target.id === 'authModal') closeAuth(); });
+
+/* -------- BUY/SELL TABS -------- */
+function setTab(type) {
+  document.getElementById('tab-buy').classList.toggle('active', type === 'buy');
+  document.getElementById('tab-sell').classList.toggle('active', type === 'sell');
+  if (typeof _tweaks !== 'undefined') applyTweaks(_tweaks);
+}
+
+/* -------- CATEGORIES DROPDOWN -------- */
+const categoryData = {
+  grains:   { title: 'Grains',           items: [{name:'Yellow Corn',trending:true},{name:'Bread Wheat 11.5%'},{name:'Durum Wheat'},{name:'Sorghum (Granífero)',trending:true},{name:'Malt Barley'},{name:'Feed Barley'},{name:'Rice (Long Grain)'},{name:'Oats'}] },
+  oilseeds: { title: 'Oilseeds',         items: [{name:'Soybeans Non-GMO IP',trending:true},{name:'Soybeans Standard'},{name:'Sunflower Seeds',trending:true},{name:'Flaxseed (Lino)'},{name:'Rapeseed (Colza)'},{name:'Safflower (Cártamo)'}] },
+  oils:     { title: 'Oils & Meals',     items: [{name:'Sunflower Oil CP6',trending:true},{name:'Soy Oil Degummed'},{name:'Soy Oil Refined'},{name:'Soybean Meal Hi-Pro',trending:true},{name:'Sunflower Meal Pellets'},{name:'Soy Hulls'}] },
+  peanuts:  { title: 'Peanuts & Pulses', items: [{name:'Peanuts Runner 38/42',trending:true},{name:'Peanuts Blanched'},{name:'Peanut Butter / Paste'},{name:'High-Oleic Peanuts'},{name:'Black Beans (Porotos)'},{name:'White Beans Alubia'},{name:'Lentils'},{name:'Chickpeas'}] },
+  beef:     { title: 'Beef & Protein',   items: [{name:'Hilton Quota Cuts',trending:true},{name:'Lean Trim 65 CL'},{name:'Striploin Frozen'},{name:'Tenderloin'},{name:'Bone-in Forequarter'},{name:'Halal Lamb'},{name:'Poultry MDM'},{name:'Pork Picnic'}] },
+  wine:     { title: 'Wine & Must',      items: [{name:'Malbec Bulk Premium',trending:true},{name:'Cabernet Sauvignon Bulk'},{name:'Bonarda Bulk'},{name:'Torrontés Bulk'},{name:'Concentrated Grape Must'},{name:'Sparkling Base Wine'},{name:'Olive Oil EVOO',trending:true}] },
+  citrus:   { title: 'Citrus & Fruit',   items: [{name:'Tucumán Lemons',trending:true},{name:'Lemon Juice NFC'},{name:'Lemon Oil Cold-Pressed'},{name:'Oranges Valencia'},{name:'Mandarins Murcott'},{name:'Blueberries (Frozen)'},{name:'Apples Red Delicious'},{name:'Pears Williams'}] },
+  dairy:    { title: 'Dairy & Honey',    items: [{name:'Whole Milk Powder',trending:true},{name:'Skimmed Milk Powder'},{name:'Mozzarella Frozen Blocks'},{name:'Sweet Whey Powder'},{name:'Pure Pampean Honey',trending:true},{name:'Royal Jelly'},{name:'Yerba Mate (Bulk)'},{name:'Stevia Leaf'}] }
+};
+function showCatPanel(cat) {
+  document.querySelectorAll('.cat-main').forEach(el => el.classList.toggle('active', el.dataset.cat === cat));
+  const data = categoryData[cat]; if (!data) return;
+  const localTitle = t('cat_' + cat) !== 'cat_' + cat ? t('cat_' + cat) : data.title;
+  const hot = t('badge_hot');
+  document.getElementById('catPanel').innerHTML = `
+    <div class="cat-panel-title">${localTitle}</div>
+    <div class="cat-panel-grid">${data.items.map(it => `<div class="cat-sub">${it.name}${it.trending ? '<span class="cat-trending">' + hot + '</span>' : ''}</div>`).join('')}</div>
+  `;
+}
+function toggleCategories(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('catDropdown');
+  const btn = document.getElementById('catBtn');
+  const open = dd.style.display !== 'none';
+  if (open) { dd.style.display = 'none'; return; }
+  const r = btn.getBoundingClientRect();
+  dd.style.top = (r.bottom + 2) + 'px';
+  dd.style.left = r.left + 'px';
+  dd.style.display = 'block';
+  showCatPanel('grains');
+}
+window.addEventListener('scroll', () => {
+  const dd = document.getElementById('catDropdown');
+  if (dd && dd.style.display === 'block') {
+    const r = document.getElementById('catBtn').getBoundingClientRect();
+    dd.style.top = (r.bottom + 2) + 'px'; dd.style.left = r.left + 'px';
+  }
+});
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('catDropdown'); const btn = document.getElementById('catBtn');
+  if (dd && !dd.contains(e.target) && !btn.contains(e.target)) dd.style.display = 'none';
+});
+
+/* -------- LANG MENU -------- */
+function toggleLangMenu(e) { e && e.stopPropagation && e.stopPropagation(); const m = document.getElementById('langMenu'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
+function closeLangMenu() { const m = document.getElementById('langMenu'); if (m) m.style.display = 'none'; }
+document.addEventListener('click', (e) => { const m = document.getElementById('langMenu'); const b = document.getElementById('navLangBtn'); if (m && b && !b.contains(e.target)) m.style.display = 'none'; });
+document.addEventListener('langchange', () => {
+  const authModal = document.getElementById('authModal');
+  if (authModal && authModal.style.display === 'flex') setAuthMode(authMode);
+  const dd = document.getElementById('catDropdown');
+  if (dd && dd.style.display === 'block') {
+    const active = document.querySelector('.cat-main.active');
+    if (active) showCatPanel(active.dataset.cat);
+  }
+});
+
+/* -------- TWEAKS -------- */
+window.addEventListener('message', (e) => {
+  if (e.data?.type === '__activate_edit_mode') showTweaks(true);
+  if (e.data?.type === '__deactivate_edit_mode') showTweaks(false);
+});
+window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+function showTweaks(show) { document.getElementById('tweaks-panel').style.display = show ? 'flex' : 'none'; }
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "heroGradientStart": "#4a88d9",
+  "heroGradientEnd": "#0043e0",
+  "accentColor": "#2445eb"
+}/*EDITMODE-END*/;
+function applyTweaks(t) {
+  document.querySelector('.hero').style.background = `linear-gradient(135deg, ${t.heroGradientStart} 0%, #3a7bd5 35%, ${t.heroGradientEnd} 100%)`;
+  document.querySelector('.cta-band').style.background = `linear-gradient(135deg, ${t.heroGradientStart} 0%, #3a7bd5 35%, ${t.heroGradientEnd} 100%)`;
+  document.querySelectorAll('.tab').forEach(el => el.style.background = '');
+  document.querySelectorAll('.tab.active').forEach(el => el.style.background = t.accentColor);
+  document.documentElement.style.setProperty('--accent', t.accentColor);
+  document.documentElement.style.setProperty('--blue-dark', t.accentColor);
+}
+applyTweaks(TWEAK_DEFAULTS);
+const _tweaks = {...TWEAK_DEFAULTS};
+function updateTweak(key, val) {
+  _tweaks[key] = val;
+  applyTweaks(_tweaks);
+  window.parent.postMessage({type:'__edit_mode_set_keys', edits: {[key]: val}}, '*');
+}
+</script>
+
+<!-- TWEAKS PANEL -->
+<div id="tweaks-panel" style="display:none;position:fixed;bottom:24px;right:24px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:20px;width:260px;box-shadow:0 8px 32px rgba(0,0,0,0.12);flex-direction:column;gap:14px;z-index:9999;font-family:'Roboto',sans-serif;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+    <span style="font-weight:700;font-size:13px;color:#333;">Tweaks</span>
+    <button onclick="document.getElementById('tweaks-panel').style.display='none';window.parent.postMessage({type:'__edit_mode_dismissed'},'*')" style="background:none;border:none;cursor:pointer;font-size:18px;color:#999;line-height:1;">×</button>
+  </div>
+  <label style="font-size:12px;color:#666;">Hero gradient start
+    <input type="color" value="#4a90d9" oninput="updateTweak('heroGradientStart',this.value)" style="display:block;margin-top:4px;width:100%;height:28px;border:1px solid #e5e7eb;cursor:pointer;">
+  </label>
+  <label style="font-size:12px;color:#666;">Hero gradient end
+    <input type="color" value="#00d2d2" oninput="updateTweak('heroGradientEnd',this.value)" style="display:block;margin-top:4px;width:100%;height:28px;border:1px solid #e5e7eb;cursor:pointer;">
+  </label>
+  <label style="font-size:12px;color:#666;">Accent color
+    <input type="color" value="#2563EB" oninput="updateTweak('accentColor',this.value)" style="display:block;margin-top:4px;width:100%;height:28px;border:1px solid #e5e7eb;cursor:pointer;">
+  </label>
+</div>
+
+<script src="ui-micro.js"></script>
+</body>
+</html>

@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriMarket – Compliance Passport</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  :root {
+    --ink: #0f1729;
+    --text2: #1a1f2e;
+    --pass: #047857;
+    --pass-bg: #d1fae5;
+    --fail: #b91c1c;
+    --fail-bg: #fee2e2;
+    --risk: #b45309;
+    --risk-bg: #fef3c7;
+    --pending: #6b7280;
+    --pending-bg: #f3f4f6;
+    --active: #2563EB;
+    --active-bg: #dbeafe;
+    --line: #e5e7eb;
+  }
+  body { background: #f7f9fc; color: var(--text2); }
+  .cp-wrap { max-width: 1320px; margin: 0 auto; padding: 24px 32px 60px; }
+
+  /* ---------- breadcrumb + page head ---------- */
+  .cp-bread {
+    font-size: 12px; color: var(--text-muted); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .cp-bread a { color: var(--accent); text-decoration: none; }
+  .cp-bread .sep { color: #c8ccd4; }
+
+  .cp-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 24px; margin-bottom: 26px;
+  }
+  .cp-head h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 30px; font-weight: 500; color: var(--ink);
+    line-height: 1.2; letter-spacing: -0.3px;
+  }
+  .cp-head .sub { color: var(--text-light); font-size: 13px; margin-top: 6px; }
+  .cp-head-actions { display: flex; gap: 10px; align-items: center; }
+  .cp-head-actions select {
+    padding: 9px 14px; font-size: 12px; border: 1px solid var(--line);
+    border-radius: 4px; background: #fff; font-family: inherit; color: var(--text);
+    outline: none; cursor: pointer;
+  }
+  .cp-head-actions select:focus { border-color: var(--accent); }
+
+  /* ---------- shipment strip ---------- */
+  .ship-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 24px;
+  }
+  .ship-tab {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; cursor: pointer; transition: all 0.15s;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .ship-tab:hover { border-color: rgba(37,99,235,0.4); }
+  .ship-tab.active { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+  .ship-tab .ttl-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .ship-tab .ttl { font-size: 13px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ship-tab .eta { font-size: 11px; color: var(--text-muted); }
+  .ship-tab .prod { font-size: 12px; color: var(--text-light); }
+  .ship-tab .prod strong { color: var(--ink); font-weight: 500; }
+  .ship-tab .gates {
+    display: flex; gap: 4px; align-items: center;
+    padding-top: 8px; border-top: 1px dashed var(--line);
+  }
+  .gate-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--pending-bg); border: 1px solid #d1d5db;
+  }
+  .gate-dot.pass { background: var(--pass); border-color: var(--pass); }
+  .gate-dot.fail { background: var(--fail); border-color: var(--fail); }
+  .gate-dot.risk { background: var(--risk); border-color: var(--risk); }
+  .gate-dot.active { background: var(--active); border-color: var(--active);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.2); }
+  .ship-tab .gates .verdict { margin-left: auto; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
+  .verdict.v-pass { color: var(--pass); }
+  .verdict.v-fail { color: var(--fail); }
+  .verdict.v-risk { color: var(--risk); }
+  .verdict.v-prog { color: var(--active); }
+
+  /* ---------- shipment hero ---------- */
+  .ship-hero {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 28px 32px; margin-bottom: 18px;
+    display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px;
+    align-items: center;
+  }
+  .ship-hero .h-prod {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .h-prod .tag-row { display: flex; gap: 8px; align-items: center; }
+  .h-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 100px;
+    background: var(--bg-light); color: var(--text-light);
+  }
+  .h-tag.live { background: rgba(239,68,68,0.1); color: #b91c1c; }
+  .h-tag.live::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%; background: #ef4444;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% {opacity:1;} 50% {opacity:0.35;} }
+  .h-prod .nm {
+    font-family: 'Fraunces', serif; font-size: 24px; font-weight: 500;
+    color: var(--ink); letter-spacing: -0.2px; margin-top: 2px;
+  }
+  .h-prod .id { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .h-prod .route {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 10px; font-size: 13px; color: var(--text); font-weight: 500;
+  }
+  .h-prod .route .arr { color: var(--text-muted); }
+  .h-prod .route .port { color: var(--ink); }
+  .h-stat .k {
+    font-size: 10px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 6px;
+  }
+  .h-stat .v {
+    font-size: 17px; font-weight: 600; color: var(--ink);
+    font-variant-numeric: tabular-nums; letter-spacing: -0.2px;
+  }
+  .h-stat .v small { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-left: 2px; }
+  .h-stat .vsub { font-size: 12px; color: var(--text-light); margin-top: 3px; }
+  .h-stat .verdict-big {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.5px;
+    background: var(--fail-bg); color: var(--fail);
+  }
+
+  /* ---------- pipeline ---------- */
+  .pipeline-card {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 24px 32px 28px; margin-bottom: 24px;
+  }
+  .pipeline-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 26px;
+  }
+  .pipeline-head h2 {
+    font-size: 15px; font-weight: 600; color: var(--ink);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .pipeline-head h2 .live-pill {
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    background: rgba(37,99,235,0.1); color: var(--accent);
+    padding: 3px 7px; border-radius: 100px;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .pipeline-head h2 .live-pill::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent); animation: pulse 1.4s ease-in-out infinite;
+  }
+  .pipeline-head .summary { font-size: 12px; color: var(--text-light); }
+  .pipeline-head .summary b { color: var(--ink); font-weight: 600; }
+
+  .pipeline {
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    position: relative;
+  }
+  .pipe-step {
+    position: relative; padding: 0 8px;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; cursor: pointer;
+    text-decoration: none; color: inherit;
+  }
+  /* connector line drawn behind */
+  .pipe-step::before {
+    content: ''; position: absolute; top: 22px; left: -50%; width: 100%;
+    height: 2px; background: var(--line); z-index: 0;
+  }
+  .pipe-step:first-child::before { display: none; }
+  .pipe-step.done::before, .pipe-step.fail::before, .pipe-step.risk::before { background: linear-gradient(90deg, var(--pass), var(--pass)); }
+  .pipe-step[data-after-fail]::before { background: linear-gradient(90deg, var(--fail), var(--line)); }
+
+  .pipe-dot {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--line); color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; font-family: 'Fraunces', serif;
+    position: relative; z-index: 1; transition: all 0.2s;
+  }
+  .pipe-step.done .pipe-dot { background: var(--pass); border-color: var(--pass); color: #fff; }
+  .pipe-step.fail .pipe-dot { background: var(--fail); border-color: var(--fail); color: #fff; }
+  .pipe-step.risk .pipe-dot { background: var(--risk); border-color: var(--risk); color: #fff; }
+  .pipe-step.active .pipe-dot {
+    background: #fff; border-color: var(--active); color: var(--active);
+    box-shadow: 0 0 0 5px rgba(37,99,235,0.15);
+    animation: pulse-ring 2s ease-in-out infinite;
+  }
+  @keyframes pulse-ring {
+    0%, 100% { box-shadow: 0 0 0 5px rgba(37,99,235,0.15); }
+    50% { box-shadow: 0 0 0 10px rgba(37,99,235,0.04); }
+  }
+  .pipe-step:hover .pipe-dot { transform: translateY(-2px); }
+  .pipe-step .pipe-icon {
+    margin-top: 10px; font-size: 18px;
+  }
+  .pipe-step .pipe-name {
+    margin-top: 6px; font-size: 12px; font-weight: 600; color: var(--ink);
+    line-height: 1.3;
+  }
+  .pipe-step .pipe-status {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .pipe-step.done .pipe-status { color: var(--pass); }
+  .pipe-step.fail .pipe-status { color: var(--fail); }
+  .pipe-step.risk .pipe-status { color: var(--risk); }
+  .pipe-step.active .pipe-status { color: var(--active); }
+  .pipe-step .pipe-meta {
+    font-size: 11px; color: var(--text-muted); margin-top: 2px;
+  }
+
+  /* ---------- alerts (suggested fixes) ---------- */
+  .fix-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .fix {
+    background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--fail);
+    border-radius: 6px; padding: 18px 22px;
+    display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: flex-start;
+  }
+  .fix.risk { border-left-color: var(--risk); }
+  .fix-ico {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--fail-bg); color: var(--fail);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .fix.risk .fix-ico { background: var(--risk-bg); color: var(--risk); }
+  .fix-body .fix-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px;
+  }
+  .fix-body .fix-title .gate-no {
+    font-size: 10px; padding: 2px 6px; background: var(--bg-light); color: var(--text-light);
+    border-radius: 3px; font-weight: 700; letter-spacing: 0.5px;
+  }
+  .fix-body .fix-detail { font-size: 12px; color: var(--text-light); margin-bottom: 10px; }
+  .fix-body .suggested {
+    background: linear-gradient(180deg, rgba(37,99,235,0.04), transparent);
+    border: 1px solid rgba(37,99,235,0.15); border-radius: 4px;
+    padding: 10px 12px; margin-top: 8px;
+    font-size: 12px; color: var(--text); line-height: 1.6;
+  }
+  .fix-body .suggested .sug-lbl {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 4px;
+  }
+  .fix-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  .btn-sm {
+    padding: 7px 14px; font-size: 11px; font-weight: 700; letter-spacing: 0.6px;
+    text-transform: uppercase; cursor: pointer; font-family: inherit; border-radius: 3px;
+    white-space: nowrap; transition: all 0.15s;
+  }
+  .btn-sm.solid { background: var(--accent); color: #fff; border: 1px solid var(--accent); }
+  .btn-sm.solid:hover { background: var(--accent-hover); }
+  .btn-sm.ghost { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .btn-sm.ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ---------- gate detail grid ---------- */
+  .gates-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px;
+  }
+  .gate {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 20px; transition: all 0.15s;
+    position: relative; display: flex; flex-direction: column;
+  }
+  .gate:target {
+    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  }
+  .gate-head {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .gate-no-row { display: flex; align-items: center; gap: 8px; }
+  .gate .num {
+    font-family: 'Fraunces', serif; font-size: 12px; font-weight: 700;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--bg-light); color: var(--text-light);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .gate.pass .num { background: var(--pass); color: #fff; }
+  .gate.fail .num { background: var(--fail); color: #fff; }
+  .gate.risk .num { background: var(--risk); color: #fff; }
+  .gate.active .num { background: var(--active); color: #fff; }
+  .gate-title {
+    font-size: 14px; font-weight: 600; color: var(--ink); letter-spacing: -0.1px;
+  }
+  .gate-pill {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 3px;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .gate-pill.pass { background: var(--pass-bg); color: var(--pass); }
+  .gate-pill.fail { background: var(--fail-bg); color: var(--fail); }
+  .gate-pill.risk { background: var(--risk-bg); color: var(--risk); }
+  .gate-pill.active { background: var(--active-bg); color: var(--active); }
+  .gate-desc {
+    font-size: 12px; color: var(--text-light); line-height: 1.55; margin-bottom: 14px;
+  }
+  .gate-evid {
+    border-top: 1px dashed var(--line); padding-top: 12px;
+    display: grid; gap: 7px;
+  }
+  .ev-row {
+    display: flex; justify-content: space-between; gap: 12px;
+    font-size: 11.5px; color: var(--text); line-height: 1.35;
+  }
+  .ev-row .k {
+    color: var(--text-muted); letter-spacing: 0.3px;
+    flex-shrink: 0;
+  }
+  .ev-row .v { color: var(--ink); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+  .ev-row .v.warn { color: var(--fail); }
+  .ev-row .v.amber { color: var(--risk); }
+  .ev-row .v.ok    { color: var(--pass); }
+  .gate-foot {
+    margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; color: var(--text-muted);
+  }
+  .gate-foot a {
+    color: var(--accent); text-decoration: none; font-weight: 600; font-size: 11px;
+  }
+  .gate-foot a:hover { text-decoration: underline; }
+
+  /* ---------- audit log ---------- */
+  .audit {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 22px 28px;
+  }
+  .audit h3 {
+    font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .audit h3 .ct { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .audit-list { display: flex; flex-direction: column; gap: 0; }
+  .audit-item {
+    display: grid; grid-template-columns: 70px 18px 1fr auto; gap: 14px;
+    padding: 10px 0; border-bottom: 1px solid var(--border-light);
+    align-items: flex-start; font-size: 12.5px;
+  }
+  .audit-item:last-child { border-bottom: none; }
+  .audit-item .t { color: var(--text-muted); font-variant-numeric: tabular-nums; font-size: 11.5px; }
+  .audit-item .marker {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--bg-light); margin-top: 4px; flex-shrink: 0;
+    border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line);
+  }
+  .audit-item.pass .marker { background: var(--pass); box-shadow: 0 0 0 1px var(--pass); }
+  .audit-item.fail .marker { background: var(--fail); box-shadow: 0 0 0 1px var(--fail); }
+  .audit-item.risk .marker { background: var(--risk); box-shadow: 0 0 0 1px var(--risk); }
+  .audit-item.active .marker {
+    background: var(--active); box-shadow: 0 0 0 1px var(--active);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .audit-item .msg { color: var(--text); line-height: 1.5; }
+  .audit-item .msg b { color: var(--ink); font-weight: 600; }
+  .audit-item .who { color: var(--text-muted); font-size: 11.5px; white-space: nowrap; }
+
+  /* ---------- COMPLIANCE COPILOT (FAB + panel) ---------- */
+  .cop-fab {
+    position: fixed; bottom: 28px; right: 28px; z-index: 200;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--ink); color: #fff; border: none;
+    box-shadow: 0 8px 24px rgba(15,23,41,0.25);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .cop-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,41,0.3); }
+  .cop-fab svg { width: 26px; height: 26px; }
+  .cop-fab .nudge {
+    position: absolute; top: -4px; right: -4px;
+    width: 16px; height: 16px; border-radius: 50%; background: var(--fail);
+    color: #fff; font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #fff;
+  }
+
+  .cop {
+    position: fixed; bottom: 28px; right: 28px; z-index: 201;
+    width: 420px; max-width: calc(100vw - 56px); height: 620px; max-height: calc(100vh - 56px);
+    background: #fff; border-radius: 10px;
+    box-shadow: 0 24px 60px rgba(15,23,41,0.25);
+    display: none; flex-direction: column;
+    overflow: hidden;
+    animation: cop-in 0.2s ease-out;
+  }
+  .cop.show { display: flex; }
+  @keyframes cop-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .cop-head {
+    background: var(--ink); color: #fff; padding: 16px 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .cop-head .av {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #4a90d9, #00c8c8);
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .cop-head .info { flex: 1; min-width: 0; }
+  .cop-head .nm { font-size: 14px; font-weight: 600; letter-spacing: -0.1px; }
+  .cop-head .st {
+    font-size: 11px; color: rgba(255,255,255,0.6);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .cop-head .st::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: #4ade80; animation: pulse 1.6s ease-in-out infinite;
+  }
+  .cop-head .x {
+    background: rgba(255,255,255,0.1); border: none; color: #fff;
+    width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+    font-size: 18px; line-height: 1;
+  }
+  .cop-head .x:hover { background: rgba(255,255,255,0.2); }
+
+  .cop-context {
+    padding: 10px 20px; background: rgba(37,99,235,0.06);
+    font-size: 11px; color: var(--accent);
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid rgba(37,99,235,0.1);
+  }
+  .cop-context strong { color: var(--ink); font-weight: 600; }
+  .cop-context svg { width: 12px; flex-shrink: 0; }
+
+  .cop-body {
+    flex: 1; overflow-y: auto; padding: 18px 20px;
+    display: flex; flex-direction: column; gap: 14px;
+    background: #fafbfc;
+  }
+  .cop-msg { display: flex; gap: 10px; }
+  .cop-msg.user { justify-content: flex-end; }
+  .cop-msg .bub {
+    max-width: 86%; padding: 11px 14px; border-radius: 14px;
+    font-size: 13px; line-height: 1.55; color: var(--text);
+    background: #fff; border: 1px solid var(--line);
+  }
+  .cop-msg.user .bub {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+    border-bottom-right-radius: 4px;
+  }
+  .cop-msg.bot .bub { border-bottom-left-radius: 4px; }
+  .cop-msg .bub .cite {
+    display: inline-block; min-width: 18px; height: 18px; padding: 0 5px;
+    background: rgba(37,99,235,0.1); color: var(--accent);
+    border-radius: 4px; font-size: 10px; font-weight: 700;
+    text-align: center; line-height: 18px; vertical-align: 1px;
+    margin: 0 1px; cursor: pointer; text-decoration: none;
+  }
+  .cop-msg .bub .cite:hover { background: var(--accent); color: #fff; }
+
+  .cop-sources {
+    margin-top: 8px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .cop-source {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 9px 12px; background: #fff; border: 1px solid var(--line);
+    border-radius: 6px; font-size: 12px; color: var(--text);
+    cursor: pointer; transition: all 0.15s; text-decoration: none;
+  }
+  .cop-source:hover { border-color: rgba(37,99,235,0.4); }
+  .cop-source .num {
+    flex-shrink: 0;
+    min-width: 18px; height: 18px; background: rgba(37,99,235,0.1); color: var(--accent);
+    border-radius: 4px; font-size: 10px; font-weight: 700;
+    text-align: center; line-height: 18px; padding: 0 4px;
+  }
+  .cop-source .src-body { flex: 1; min-width: 0; }
+  .cop-source .src-title { font-weight: 600; color: var(--ink); font-size: 12px; line-height: 1.35; }
+  .cop-source .src-meta { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.2px; }
+  .cop-source .src-meta .tag-pill {
+    display: inline-block; padding: 1px 5px; background: rgba(245,158,11,0.12); color: var(--risk);
+    border-radius: 2px; font-weight: 700; font-size: 9.5px; letter-spacing: 0.5px;
+    text-transform: uppercase; margin-right: 4px;
+  }
+
+  .cop-thinking { display: flex; gap: 4px; padding: 6px 0; }
+  .cop-thinking .d {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted);
+    animation: cop-bounce 1.2s ease-in-out infinite;
+  }
+  .cop-thinking .d:nth-child(2) { animation-delay: 0.15s; }
+  .cop-thinking .d:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes cop-bounce { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; transform: translateY(-3px); } }
+
+  .cop-suggest {
+    padding: 8px 18px 12px; display: flex; flex-wrap: wrap; gap: 6px;
+    background: #fafbfc; border-top: 1px solid var(--line);
+  }
+  .cop-suggest .chip-q {
+    padding: 6px 11px; font-size: 11.5px; color: var(--text-light);
+    background: #fff; border: 1px solid var(--line); border-radius: 100px;
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .cop-suggest .chip-q:hover { border-color: var(--accent); color: var(--accent); }
+
+  .cop-input {
+    padding: 12px 16px 14px; border-top: 1px solid var(--line);
+    display: flex; gap: 8px; background: #fff;
+  }
+  .cop-input input {
+    flex: 1; border: 1px solid var(--line); border-radius: 100px;
+    padding: 10px 16px; font-family: inherit; font-size: 13px;
+    outline: none; color: var(--text);
+  }
+  .cop-input input:focus { border-color: var(--accent); }
+  .cop-input button {
+    background: var(--accent); color: #fff; border: none; border-radius: 50%;
+    width: 38px; height: 38px; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cop-input button:disabled { opacity: 0.5; cursor: wait; }
+  .cop-input button svg { width: 16px; height: 16px; }
+
+  @media (max-width: 1100px) {
+    .ship-strip { grid-template-columns: repeat(2, 1fr); }
+    .ship-hero { grid-template-columns: 1fr 1fr; gap: 20px; }
+    .pipeline { grid-template-columns: repeat(3, 1fr); row-gap: 24px; }
+    .pipe-step:nth-child(4)::before { display: none; }
+    .gates-grid { grid-template-columns: repeat(2, 1fr); }
+    .fix-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-banner">
+  You're viewing the <strong>Compliance Passport</strong> demo (buyer view). Switch:
+  <a href="buyer.html">Buyer dashboard</a> ·
+  <a href="seller.html">Seller</a> ·
+  <a href="market-intelligence.html">Market Intelligence</a>
+</div>
+
+<!-- Top nav (matches buyer dashboard) -->
+<nav class="gnav">
+  <a href="index.html" class="gnav-logo">ALIRO</a>
+  <div class="gnav-links">
+    <a href="buyer.html" class="gnav-link">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6"><circle cx="8" cy="8" r="5"/><line x1="12" y1="12" x2="16" y2="16"/></svg>
+      <span>Browse</span>
+    </a>
+    <a href="buyer.html" class="gnav-link">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6"><rect x="3" y="2" width="12" height="14" rx="1"/><line x1="6" y1="6" x2="12" y2="6"/><line x1="6" y1="9" x2="12" y2="9"/><line x1="6" y1="12" x2="10" y2="12"/></svg>
+      <span>My Contracts</span>
+    </a>
+    <a href="#" class="gnav-link active">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6"><path d="M9 1l6 3v5c0 4-3 7-6 8-3-1-6-4-6-8V4z"/><path d="M6 9l2 2 4-4"/></svg>
+      <span>Compliance Passport</span>
+    </a>
+    <a href="buyer.html" class="gnav-link">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6"><path d="M2 3h14v10H6l-4 3z"/></svg>
+      <span>Messages</span>
+      <span class="badge">6</span>
+    </a>
+    <a href="buyer.html" class="gnav-link">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6"><circle cx="9" cy="6" r="3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+      <span>Profile</span>
+    </a>
+  </div>
+  <div class="gnav-right">
+    <button class="gnav-btn-outline">+ New Shipment</button>
+  </div>
+</nav>
+
+<!-- =================== PASSPORT VIEW =================== -->
+<div class="cp-wrap">
+
+  <div class="cp-bread">
+    <a href="buyer.html">Dashboard</a><span class="sep">›</span>
+    <a href="buyer.html">My Contracts</a><span class="sep">›</span>
+    <span>Compliance Passport</span>
+  </div>
+
+  <div class="cp-head">
+    <div>
+      <h1>Compliance Passport</h1>
+      <div class="sub">Six regulatory gates. One source of truth. Updated live as filings, certs and amendments land.</div>
+    </div>
+    <div class="cp-head-actions">
+      <select>
+        <option>All shipments (12)</option>
+        <option>Open issues (4)</option>
+        <option>Cleared (6)</option>
+        <option>This week</option>
+      </select>
+      <button class="btn-outline">Export audit PDF</button>
+    </div>
+  </div>
+
+  <!-- Shipment strip -->
+  <div class="ship-strip">
+    <div class="ship-tab active">
+      <div class="ttl-row"><span class="ttl">SHP-2026-0418</span><span class="eta">ETA May 22</span></div>
+      <div class="prod"><strong>Soybean HiPro</strong> · 25,000 MT · Rosario → Rotterdam</div>
+      <div class="gates">
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot fail"></span>
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot risk"></span>
+        <span class="gate-dot fail"></span>
+        <span class="verdict v-fail">2 fails · 1 risk</span>
+      </div>
+    </div>
+    <div class="ship-tab">
+      <div class="ttl-row"><span class="ttl">SHP-2026-0414</span><span class="eta">ETA Jun 03</span></div>
+      <div class="prod"><strong>Corn yellow #2</strong> · 18,500 MT · Bahía Blanca → Algeciras</div>
+      <div class="gates">
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot active"></span>
+        <span class="gate-dot"></span>
+        <span class="verdict v-prog">In progress</span>
+      </div>
+    </div>
+    <div class="ship-tab">
+      <div class="ttl-row"><span class="ttl">SHP-2026-0407</span><span class="eta">B/L May 03</span></div>
+      <div class="prod"><strong>Soybean meal</strong> · 32,000 MT · San Lorenzo → Tianjin</div>
+      <div class="gates">
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot pass"></span>
+        <span class="verdict v-pass">Cleared</span>
+      </div>
+    </div>
+    <div class="ship-tab">
+      <div class="ttl-row"><span class="ttl">SHP-2026-0421</span><span class="eta">ETA Jun 12</span></div>
+      <div class="prod"><strong>Wheat 11.5%</strong> · 12,000 MT · Quequén → Recife</div>
+      <div class="gates">
+        <span class="gate-dot pass"></span>
+        <span class="gate-dot active"></span>
+        <span class="gate-dot"></span>
+        <span class="gate-dot"></span>
+        <span class="gate-dot"></span>
+        <span class="gate-dot"></span>
+        <span class="verdict v-prog">Gate 2 / 6</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Selected shipment hero -->
+  <section class="ship-hero">
+    <div class="h-prod">
+      <div class="tag-row">
+        <span class="h-tag">FOB · Rosario Up-River</span>
+        <span class="h-tag live">LIVE PIPELINE</span>
+      </div>
+      <div class="nm">Soybean (Hi-Pro 46%) · 25,000 MT</div>
+      <div class="id">SHP-2026-0418 · Contract C-2026-1188 · B/L pending</div>
+      <div class="route">
+        <span class="port">🇦🇷 Terminal 6, Rosario</span>
+        <span class="arr">———▶</span>
+        <span class="port">🇳🇱 Port of Rotterdam</span>
+      </div>
+    </div>
+    <div class="h-stat">
+      <div class="k">Counterparties</div>
+      <div class="v" style="font-size:14px;">Adecoagro S.A.</div>
+      <div class="vsub">→ Cefetra B.V. · KYC ✓ both sides</div>
+    </div>
+    <div class="h-stat">
+      <div class="k">Contract value</div>
+      <div class="v">$11.85M <small>USD</small></div>
+      <div class="vsub">FOB $474/MT · L/C at sight</div>
+    </div>
+    <div class="h-stat">
+      <div class="k">Passport verdict</div>
+      <span class="verdict-big">⚠ 2 gates blocking</span>
+      <div class="vsub" style="margin-top:6px;">Vessel laycan May 20-24 · fixes due 48h</div>
+    </div>
+  </section>
+
+  <!-- Live pipeline -->
+  <section class="pipeline-card">
+    <div class="pipeline-head">
+      <h2>Six-gate compliance pipeline <span class="live-pill">LIVE</span></h2>
+      <div class="summary"><b>3 passed</b> · <b>1 at risk</b> · <b>2 failed</b> · last event 4 min ago</div>
+    </div>
+    <div class="pipeline">
+      <a class="pipe-step done" href="#g1">
+        <div class="pipe-dot">✓</div>
+        <div class="pipe-name">KYC &amp; Counterparty</div>
+        <div class="pipe-status">Passed</div>
+        <div class="pipe-meta">Mar 14</div>
+      </a>
+      <a class="pipe-step done" href="#g2">
+        <div class="pipe-dot">✓</div>
+        <div class="pipe-name">DJVE Filed</div>
+        <div class="pipe-status">Passed</div>
+        <div class="pipe-meta">May 02</div>
+      </a>
+      <a class="pipe-step fail" data-after-fail href="#g3">
+        <div class="pipe-dot">!</div>
+        <div class="pipe-name">ROE Verde Balance</div>
+        <div class="pipe-status">Failed</div>
+        <div class="pipe-meta">−1,800 MT</div>
+      </a>
+      <a class="pipe-step done" href="#g4">
+        <div class="pipe-dot">✓</div>
+        <div class="pipe-name">SENASA Phyto</div>
+        <div class="pipe-status">Passed</div>
+        <div class="pipe-meta">May 11</div>
+      </a>
+      <a class="pipe-step risk" href="#g5">
+        <div class="pipe-dot">⚠</div>
+        <div class="pipe-name">AFIP Retenciones</div>
+        <div class="pipe-status">At risk</div>
+        <div class="pipe-meta">Anticipo +14h late</div>
+      </a>
+      <a class="pipe-step fail" data-after-fail href="#g6">
+        <div class="pipe-dot">!</div>
+        <div class="pipe-name">Customs HS &amp; FX</div>
+        <div class="pipe-status">Failed</div>
+        <div class="pipe-meta">HS mismatch</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Suggested fixes -->
+  <div class="fix-row">
+    <div class="fix">
+      <div class="fix-ico">⛔</div>
+      <div class="fix-body">
+        <div class="fix-title"><span class="gate-no">GATE 3</span> ROE Verde balance exhausted</div>
+        <div class="fix-detail">Your soy ROE Verde allocation for May closed at 23,200 MT after Adecoagro's earlier nomination. Current shipment is <b>1,800 MT over</b> the May ceiling.</div>
+        <div class="suggested">
+          <div class="sug-lbl">✨ Platform suggests</div>
+          Two paths. <b>(a)</b> Re-split the B/L: 23,200 MT under the May allocation + 1,800 MT held for June 1 release (ETR loss ~$0.40/MT on the carry). <b>(b)</b> Request supplementary ROE allocation — typical AFIP issuance 24-48 h, success rate ~70% for clean exporters.
+        </div>
+      </div>
+      <div class="fix-actions">
+        <button class="btn-sm solid">Apply split (a)</button>
+        <button class="btn-sm ghost">File request (b)</button>
+        <button class="btn-sm ghost">Ask Copilot</button>
+      </div>
+    </div>
+    <div class="fix">
+      <div class="fix-ico">⛔</div>
+      <div class="fix-body">
+        <div class="fix-title"><span class="gate-no">GATE 6</span> HS code mismatch DJVE ↔ B/L draft</div>
+        <div class="fix-detail">DJVE was filed under <b>1201.90.00</b> (soybeans, other). Terminal-6 draft B/L came back coded <b>1201.10.00</b> (seed soybeans). Mismatch will trigger automatic AFIP rejection at customs gate.</div>
+        <div class="suggested">
+          <div class="sug-lbl">✨ Platform suggests</div>
+          Issue a B/L corrigendum to the terminal agent (Cofco) re-coding to <b>1201.90.00</b> before customs lodgement. Pre-filled corrigendum drafted — review and 1-click send. ETA to clear: 6-8 h.
+        </div>
+      </div>
+      <div class="fix-actions">
+        <button class="btn-sm solid">Send corrigendum</button>
+        <button class="btn-sm ghost">Open draft</button>
+        <button class="btn-sm ghost">Ask Copilot</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 gate detail cards -->
+  <div class="gates-grid">
+
+    <!-- Gate 1 -->
+    <article class="gate pass" id="g1">
+      <div class="gate-head">
+        <div class="gate-no-row">
+          <span class="num">1</span>
+          <span class="gate-title">KYC &amp; Counterparty</span>
+        </div>
+        <span class="gate-pill pass">✓ Passed</span>
+      </div>
+      <div class="gate-desc">Identity, sanctions and beneficial-owner check for both parties; recertified every 12 months.</div>
+      <div class="gate-evid">
+        <div class="ev-row"><span class="k">Buyer (Cefetra B.V.)</span><span class="v ok">Verified · Tier-1</span></div>
+        <div class="ev-row"><span class="k">Seller (Adecoagro S.A.)</span><span class="v ok">Verified · Tier-1</span></div>
+        <div class="ev-row"><span class="k">Sanctions (OFAC, EU, UN)</span><span class="v ok">Clear</span></div>
+        <div class="ev-row"><span class="k">UBO file last refreshed</span><span class="v">Mar 14, 2026</span></div>
+      </div>
+      <div class="gate-foot"><span>Recertifies Mar 2027</span><a href="#">3 documents</a></div>
+    </article>
+
+    <!-- Gate 2 -->
+    <article class="gate pass" id="g2">
+      <div class="gate-head">
+        <div class="gate-no-row">
+          <span class="num">2</span>
+          <span class="gate-title">DJVE Filed</span>
+        </div>
+        <span class="gate-pill pass">✓ Passed</span>
+      </div>
+      <div class="gate-desc">Declaración Jurada de Ventas al Exterior lodged with AFIP within 24h of contract signing.</div>
+      <div class="gate-evid">
+        <div class="ev-row"><span class="k">DJVE no.</span><span class="v">DJ-2026-118842</span></div>
+        <div class="ev-row"><span class="k">Filed</span><span class="v">May 02, 14:22 ART</span></div>
+        <div class="ev-row"><span class="k">SLA window</span><span class="v ok">+18h of signing</span></div>
+        <div class="ev-row"><span class="k">HS declared</span><span class="v">1201.90.00</span></div>
+      </div>
+      <div class="gate-foot"><span>Locked, amendable</span><a href="#">View filing</a></div>
+    </article>
+
+    <!-- Gate 3 FAIL -->
+    <article class="gate fail" id="g3">
+      <div class="gate-head">
+        <div class="gate-no-row">
+          <span class="num">3</span>
+          <span class="gate-title">ROE Verde Balance</span>
+        </div>
+        <span class="gate-pill fail">⛔ Failed</span>
+      </div>
+      <div class="gate-desc">Registro Oficial de Exportadores. Each shipment must fit within the exporter's open monthly allocation.</div>
+      <div class="gate-evid">
+        <div class="ev-row"><span class="k">May allocation</span><span class="v">23,200 MT</span></div>
+        <div class="ev-row"><span class="k">Shipment volume</span><span class="v">25,000 MT</span></div>
+        <div class="ev-row"><span class="k">Over allocation</span><span class="v warn">−1,800 MT</span></div>
+        <div class="ev-row"><span class="k">Next window opens</span><span class="v">Jun 01, 09:00 ART</span></div>
+      </div>
+      <div class="gate-foot"><span>Blocking customs</span><a href="#">Fix above ↑</a></div>
+    </article>
+
+    <!-- Gate 4 -->
+    <article class="gate pass" id="g4">
+      <div class="gate-head">
+        <div class="gate-no-row">
+          <span class="num">4</span>
+          <span class="gate-title">SENASA Phytosanitary</span>
+        </div>
+        <span class="gate-pill pass">✓ Passed</span>
+      </div>
+      <div class="gate-desc">SENASA-accredited phyto certificate issued at loading, EU-aligned residue and GMO declarations attached.</div>
+      <div class="gate-evid">
+        <div class="ev-row"><span class="k">Cert. no.</span><span class="v">AR-2026-08312</span></div>
+        <div class="ev-row"><span class="k">Inspector</span><span class="v">SENASA · Rosario</span></div>
+        <div class="ev-row"><span class="k">Aflatoxin B1</span><span class="v ok">0.6 ppb (limit 5)</span></div>
+        <div class="ev-row"><span class="k">EUDR origin proof</span><span class="v ok">Geolocations attached</span></div>
+      </div>
+      <div class="gate-foot"><span>Issued May 11</span><a href="#">Open cert</a></div>
+    </article>
+
+    <!-- Gate 5 RISK -->
+    <article class="gate risk" id="g5">
+      <div class="gate-head">
+        <div class="gate-no-row">
+          <span class="num">5</span>
+          <span class="gate-title">AFIP Retenciones</span>
+        </div>
+        <span class="gate-pill risk">⚠ At risk</span>
+      </div>
+      <div class="gate-desc">Export-tax (derechos de exportación) and anticipo de retenciones lodged before B/L date. Cut-off T-72h from ETA.</div>
+      <div class="gate-evid">
+        <div class="ev-row"><span class="k">Effective rate</span><span class="v">33% · soybeans</span></div>
+        <div class="ev-row"><span class="k">Anticipo lodged</span><span class="v amber">May 13, 16:08 ART</span></div>
+        <div class="ev-row"><span class="k">SLA</span><span class="v amber">+14h after T-72h cut-off</span></div>
+        <div class="ev-row"><span class="k">AFIP review status</span><span class="v">In review · likely OK</span></div>
+      </div>
+      <div class="gate-foot"><span>Auto-recheck every 30 min</span><a href="#">View filing</a></div>
+    </article>
+
+    <!-- Gate 6 FAIL -->
+    <article class="gate fail" id="g6">
+      <div class="gate-head">
+        <div class="gate-no-row">
+          <span class="num">6</span>
+          <span class="gate-title">Customs HS &amp; FX Settlement</span>
+        </div>
+        <span class="gate-pill fail">⛔ Failed</span>
+      </div>
+      <div class="gate-desc">HS code consistency across DJVE / B/L / customs entry. FX settlement to be repatriated within 15 days of B/L.</div>
+      <div class="gate-evid">
+        <div class="ev-row"><span class="k">DJVE HS</span><span class="v">1201.90.00</span></div>
+        <div class="ev-row"><span class="k">B/L draft HS</span><span class="v warn">1201.10.00 ⚠</span></div>
+        <div class="ev-row"><span class="k">Customs status</span><span class="v warn">Will reject on lodge</span></div>
+        <div class="ev-row"><span class="k">FX repatriation</span><span class="v">Pending B/L date</span></div>
+      </div>
+      <div class="gate-foot"><span>Blocking customs</span><a href="#">Send corrigendum ↑</a></div>
+    </article>
+
+  </div>
+
+  <!-- Audit log -->
+  <section class="audit">
+    <h3>Live audit log <span class="ct">· 14 events · auto-syncs from AFIP, SENASA, terminal &amp; carrier</span></h3>
+    <div class="audit-list">
+      <div class="audit-item active">
+        <span class="t">12:42</span>
+        <span class="marker"></span>
+        <span class="msg"><b>Platform suggestion drafted</b> — HS-code corrigendum for B/L pre-filled (1201.10.00 → 1201.90.00). Awaiting your send.</span>
+        <span class="who">AgriMarket · auto</span>
+      </div>
+      <div class="audit-item fail">
+        <span class="t">12:38</span>
+        <span class="marker"></span>
+        <span class="msg"><b>Gate 6 failed</b> — Terminal-6 B/L draft returned with HS 1201.10.00; conflict with DJVE filing.</span>
+        <span class="who">Cofco · terminal sync</span>
+      </div>
+      <div class="audit-item fail">
+        <span class="t">11:14</span>
+        <span class="marker"></span>
+        <span class="msg"><b>Gate 3 failed</b> — Soy ROE Verde May allocation moved to 23,200 MT after a partner nomination cleared. Current shipment 1,800 MT over.</span>
+        <span class="who">AFIP · ROE feed</span>
+      </div>
+      <div class="audit-item risk">
+        <span class="t">09:02</span>
+        <span class="marker"></span>
+        <span class="msg"><b>Gate 5 flagged at risk</b> — Anticipo de retenciones lodged 14 h past the T-72h SLA; AFIP marks in review.</span>
+        <span class="who">AFIP · status feed</span>
+      </div>
+      <div class="audit-item pass">
+        <span class="t">May 11</span>
+        <span class="marker"></span>
+        <span class="msg"><b>Gate 4 passed</b> — SENASA phyto cert AR-2026-08312 issued. Aflatoxin 0.6 ppb, EUDR geo-IDs attached.</span>
+        <span class="who">SENASA · Rosario</span>
+      </div>
+      <div class="audit-item pass">
+        <span class="t">May 02</span>
+        <span class="marker"></span>
+        <span class="msg"><b>Gate 2 passed</b> — DJVE DJ-2026-118842 filed within SLA. HS declared 1201.90.00.</span>
+        <span class="who">Adecoagro · ops</span>
+      </div>
+      <div class="audit-item pass">
+        <span class="t">Mar 14</span>
+        <span class="marker"></span>
+        <span class="msg"><b>Gate 1 passed</b> — KYC refresh complete for both counterparties. UBO files current.</span>
+        <span class="who">AgriMarket · compliance</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- =================== COMPLIANCE COPILOT =================== -->
+<button class="cop-fab" id="copFab" onclick="toggleCopilot()" aria-label="Open Compliance Copilot">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+    <path d="M12 2L4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/>
+    <path d="M9 12l2 2 4-4"/>
+  </svg>
+  <span class="nudge">2</span>
+</button>
+
+<aside class="cop" id="copPanel">
+  <header class="cop-head">
+    <div class="av">✨</div>
+    <div class="info">
+      <div class="nm">Compliance Copilot</div>
+      <div class="st">Connected · live regulation feed</div>
+    </div>
+    <button class="x" onclick="toggleCopilot()">×</button>
+  </header>
+  <div class="cop-context">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l5 2v5c0 3.5-2.2 5.8-5 6.7-2.8-0.9-5-3.2-5-6.7V3z"/></svg>
+    Context: <strong>SHP-2026-0418</strong> · Soybean Hi-Pro · Rosario → Rotterdam
+  </div>
+  <div class="cop-body" id="copBody">
+    <div class="cop-msg bot">
+      <div class="bub">
+        Hi — I'm the Compliance Copilot. I'm reading from this shipment's passport <em>and</em> AgriMarket's compliance research desk. I can explain a regulation, walk you through a filing, or check whether your suggested fix on this shipment will actually work.
+        <br><br>Try one of the chips below, or ask anything about your gates.
+      </div>
+    </div>
+  </div>
+  <div class="cop-suggest" id="copSuggest">
+    <button class="chip-q" onclick="askPreset('What does ROE Verde mean and why did Gate 3 fail?')">Why did Gate 3 fail?</button>
+    <button class="chip-q" onclick="askPreset('Will the HS-code corrigendum actually clear Gate 6 in time for our laycan?')">Will the HS fix clear Gate 6?</button>
+    <button class="chip-q" onclick="askPreset('How does the AFIP T-72h cut-off for anticipo de retenciones work?')">T-72h anticipo rule?</button>
+    <button class="chip-q" onclick="askPreset('Do I need EUDR geolocation evidence for this Rotterdam shipment?')">EUDR for Rotterdam?</button>
+  </div>
+  <form class="cop-input" onsubmit="onAsk(event)">
+    <input id="copInput" type="text" placeholder="Ask about a regulation, a gate, or a fix…" autocomplete="off">
+    <button type="submit" id="copSend" aria-label="Send">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12L21 4l-4 18-4-8-10-2z"/></svg>
+    </button>
+  </form>
+</aside>
+
+<script>
+/* ============================================================
+   COMPLIANCE COPILOT
+   - Sources are the "Compliance"-tagged posts from Market Intelligence
+     (kept in sync with the seed list in market-intelligence.html).
+   - We hand them to claude.complete and ask for a numbered-cite answer.
+   ============================================================ */
+const COMPLIANCE_SOURCES = [
+  {
+    id: 'cp-2026-05-15',
+    title: 'Retenciones & ROE Verde: what soy & corn exporters must file in Q3',
+    date: 'May 15, 2026',
+    author: 'Compliance team',
+    excerpt: 'A practical checklist of the export-tax declarations and ROE Verde windows your shipments need before nomination.',
+    body: [
+      'AFIP has clarified Q3 filing windows for export-tax (derechos de exportación / retenciones) declarations on soy, corn and wheat shipments. The headline change: nomination cut-off now sits 72 hours before vessel ETA rather than 48.',
+      'A working checklist for exporters: (1) Confirm ROE Verde is open for your commodity and origin port; (2) Lodge the DJVE within 24h of contract signing; (3) Submit anticipo de retenciones before B/L date; (4) Retain SENASA phyto and origin paperwork for the audit window (now 5 years).',
+      'Common rejection reasons we see: mismatched HS codes between DJVE and B/L, ROE Verde balance exhausted mid-shipment, and FX settlement falling outside the 15-day window from B/L.'
+    ]
+  },
+  {
+    id: 'cp-2026-05-08',
+    title: 'SENASA: new phyto requirements for citrus into the EU',
+    date: 'May 8, 2026',
+    author: 'Compliance team',
+    excerpt: 'Effective July 1, additional cold-treatment certification is required for Tucumán lemons and oranges shipped to EU ports.',
+    body: [
+      'SENASA published new phytosanitary requirements aligned with EU Regulation 2024/xxxx for citrus shipments. From July 1, exporters must produce cold-treatment certificates documenting a 1.1°C / 16-day regime, validated by an accredited inspector.',
+      'Exporters with vessels already loading in late June should liaise with SENASA inspectors this week to avoid documentation gaps at destination.'
+    ]
+  },
+  {
+    id: 'cp-2026-04-22',
+    title: 'EUDR deforestation-free deadline: what Argentine soy exporters must attach',
+    date: 'Apr 22, 2026',
+    author: 'Compliance team',
+    excerpt: 'EU operators now require plot-level geolocation, deforestation-free attestation and a chain-of-custody trail on every soybean shipment landed in EU ports.',
+    body: [
+      'The EU Deforestation Regulation (EUDR) is now fully enforced for soy. Every consignment landing at an EU port must carry plot-level geolocations (latitude/longitude pairs or polygons), a deforestation-free attestation referencing 31 December 2020 as the cut-off date, and a chain-of-custody trail back to the producing farm or cooperative.',
+      'For Rotterdam in particular, customs is using automated geo-checks against Global Forest Watch baselines. A missing or mismatched coordinate triggers a hold; the typical clearance delay is 5-9 days.',
+      'Our advice for soy shippers: bundle the EUDR pack with your SENASA phyto cert so it travels with the shipment. AgriMarket auto-attaches the geo-IDs registered against the seller\'s plot file.'
+    ]
+  },
+  {
+    id: 'cp-2026-04-10',
+    title: 'AFIP HS code reconciliation: how to avoid customs rejection at lodge',
+    date: 'Apr 10, 2026',
+    author: 'Compliance team',
+    excerpt: 'The single biggest cause of customs hold this quarter is a stale HS code on the B/L. A short guide to keeping DJVE, B/L and customs entry aligned.',
+    body: [
+      'AFIP\'s automated customs lodge will reject any consignment where the HS code on the B/L does not match the HS code on the underlying DJVE filing. Even a sub-line mismatch (e.g. 1201.10 vs 1201.90 for soybeans) is rejected.',
+      'If a discrepancy is found before lodge, the standard fix is a B/L corrigendum issued by the terminal agent. Typical turnaround at Rosario / Up-River terminals is 6-8 hours. After lodge, a corrigendum requires AFIP re-submission and adds 24-48 h.',
+      'AgriMarket sync-checks the DJVE HS against the draft B/L the moment the terminal posts it, and pre-fills the corrigendum if a mismatch is detected.'
+    ]
+  }
+];
+
+const SHIPMENT_CONTEXT = `
+Shipment SHP-2026-0418: Soybean Hi-Pro 46%, 25,000 MT, FOB Rosario Up-River → Rotterdam.
+Counterparties: Adecoagro S.A. (seller) → Cefetra B.V. (buyer). Contract value $11.85M. Vessel laycan May 20-24.
+Gate status right now:
+ 1. KYC & Counterparty — PASSED (Mar 14).
+ 2. DJVE Filed — PASSED. DJ-2026-118842, filed May 2 14:22 ART, HS 1201.90.00.
+ 3. ROE Verde Balance — FAILED. May allocation 23,200 MT vs shipment 25,000 MT, 1,800 MT over.
+ 4. SENASA Phyto — PASSED. Cert AR-2026-08312, aflatoxin 0.6 ppb, EUDR geo-IDs attached.
+ 5. AFIP Retenciones — AT RISK. Anticipo lodged 14h past T-72h SLA; AFIP marked "in review".
+ 6. Customs HS & FX — FAILED. B/L draft came back HS 1201.10.00 (seed) vs DJVE 1201.90.00 (other). Will be auto-rejected at customs lodge.
+Suggested fixes already drafted by the platform:
+ - Gate 3: split B/L into 23,200 MT May + 1,800 MT June, OR request supplementary AFIP ROE.
+ - Gate 6: send B/L corrigendum to Cofco terminal recoding to 1201.90.00.
+`.trim();
+
+let chatHistory = []; // [{role:'user'|'bot', content}]
+
+function toggleCopilot() {
+  document.getElementById('copPanel').classList.toggle('show');
+  if (document.getElementById('copPanel').classList.contains('show')) {
+    setTimeout(() => document.getElementById('copInput').focus(), 50);
+    // hide the nudge once opened
+    const nudge = document.querySelector('.cop-fab .nudge');
+    if (nudge) nudge.style.display = 'none';
+  }
+}
+
+function askPreset(q) {
+  document.getElementById('copInput').value = q;
+  onAsk(new Event('preset'));
+}
+
+function escapeHTML(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderCitesInText(text, citeNums) {
+  // Replace [1] [2] ... in the text with clickable cite chips. Allow [1,3] too.
+  const esc = escapeHTML(text);
+  return esc.replace(/\[(\d+(?:\s*,\s*\d+)*)\]/g, (m, grp) => {
+    return grp.split(',').map(n => {
+      const num = Number(n.trim());
+      if (!num || num < 1 || num > COMPLIANCE_SOURCES.length) return '';
+      return `<a class="cite" href="#" data-cite="${num}" onclick="highlightSource(${num});return false;">${num}</a>`;
+    }).join('');
+  });
+}
+
+function highlightSource(n) {
+  document.querySelectorAll('.cop-source').forEach(el => {
+    if (Number(el.dataset.n) === n) {
+      el.scrollIntoView({block: 'nearest'});
+      el.style.borderColor = 'var(--accent)';
+      setTimeout(() => el.style.borderColor = '', 1200);
+    }
+  });
+}
+
+function appendUser(text) {
+  const body = document.getElementById('copBody');
+  body.insertAdjacentHTML('beforeend', `<div class="cop-msg user"><div class="bub">${escapeHTML(text)}</div></div>`);
+  body.scrollTop = body.scrollHeight;
+}
+
+function appendThinking() {
+  const body = document.getElementById('copBody');
+  body.insertAdjacentHTML('beforeend',
+    `<div class="cop-msg bot" id="copThinking"><div class="bub"><div class="cop-thinking"><span class="d"></span><span class="d"></span><span class="d"></span></div></div></div>`);
+  body.scrollTop = body.scrollHeight;
+}
+function removeThinking() {
+  const t = document.getElementById('copThinking');
+  if (t) t.remove();
+}
+
+function appendBot(answer, citeNums) {
+  const body = document.getElementById('copBody');
+  const html = renderCitesInText(answer, citeNums);
+  const used = (citeNums || []).filter((v,i,a) => a.indexOf(v) === i).filter(n => n >=1 && n <= COMPLIANCE_SOURCES.length);
+  const srcHTML = used.length ? `
+    <div class="cop-sources">
+      ${used.map(n => {
+        const s = COMPLIANCE_SOURCES[n-1];
+        return `<a class="cop-source" data-n="${n}" href="market-intelligence.html#${s.id}" target="_blank">
+          <span class="num">${n}</span>
+          <span class="src-body">
+            <span class="src-title">${escapeHTML(s.title)}</span>
+            <span class="src-meta"><span class="tag-pill">Compliance</span>${escapeHTML(s.author)} · ${escapeHTML(s.date)}</span>
+          </span>
+        </a>`;
+      }).join('')}
+    </div>` : '';
+  body.insertAdjacentHTML('beforeend', `<div class="cop-msg bot"><div class="bub">${html}${srcHTML}</div></div>`);
+  body.scrollTop = body.scrollHeight;
+}
+
+function buildPrompt(question) {
+  const srcBlock = COMPLIANCE_SOURCES.map((s, i) => {
+    return `[${i+1}] "${s.title}" — ${s.author}, ${s.date}\n${s.body.join(' ')}`;
+  }).join('\n\n');
+
+  // include short rolling history (up to last 6 turns)
+  const histBlock = chatHistory.slice(-6).map(m => `${m.role === 'user' ? 'USER' : 'COPILOT'}: ${m.content}`).join('\n');
+
+  return `You are AgriMarket's Compliance Copilot — a regulatory assistant for Argentine agri-commodity exporters and their EU/Asia buyers. You answer in 1-3 short paragraphs (max ~110 words), in working-trader voice, with specific filings, timeframes and HS codes when relevant.
+
+CURRENT SHIPMENT CONTEXT (use this when the user asks "us", "we" or about gates):
+${SHIPMENT_CONTEXT}
+
+SOURCES (AgriMarket Market Intelligence — Compliance desk posts). Cite by bracketed number, e.g. [1] or [2,4]. Use ONLY these sources. If none of them apply, say so explicitly and answer from general AFIP / SENASA / EU rules without citing.
+
+${srcBlock}
+
+RECENT CONVERSATION:
+${histBlock || '(start of conversation)'}
+
+USER: ${question}
+
+Return ONLY valid JSON with this exact shape, no markdown:
+{
+  "answer": "your 1-3 paragraph reply with inline [n] citations where supported by a source",
+  "cites": [array of source numbers actually cited in the answer]
+}`;
+}
+
+function parseAIResponse(raw) {
+  if (!raw) return null;
+  let s = String(raw).trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+  try { return JSON.parse(s); } catch {}
+  const m = s.match(/\{[\s\S]*\}/);
+  if (m) { try { return JSON.parse(m[0]); } catch {} }
+  return null;
+}
+
+async function onAsk(ev) {
+  ev.preventDefault();
+  const input = document.getElementById('copInput');
+  const q = (input.value || '').trim();
+  if (!q) return;
+  const send = document.getElementById('copSend');
+  input.value = '';
+  send.disabled = true;
+
+  appendUser(q);
+  chatHistory.push({role: 'user', content: q});
+  appendThinking();
+
+  try {
+    const raw = await window.claude.complete(buildPrompt(q));
+    const parsed = parseAIResponse(raw);
+    removeThinking();
+    if (parsed && parsed.answer) {
+      appendBot(parsed.answer, Array.isArray(parsed.cites) ? parsed.cites.map(Number) : []);
+      chatHistory.push({role: 'bot', content: parsed.answer});
+    } else {
+      // graceful fallback — show raw text if not JSON
+      const text = (raw || '').trim() || 'Sorry — I could not parse a response just now. Try rephrasing?';
+      appendBot(text, []);
+      chatHistory.push({role: 'bot', content: text});
+    }
+  } catch (err) {
+    removeThinking();
+    appendBot('Could not reach the Copilot right now — please try again in a moment.', []);
+    console.warn(err);
+  } finally {
+    send.disabled = false;
+    input.focus();
+  }
+}
+
+/* close panel on Esc */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('copPanel').classList.contains('show')) {
+    toggleCopilot();
+  }
+});
+
+/* Simulate one more "live" event landing 20s after page load to show the
+   passport is alive — purely visual. */
+setTimeout(() => {
+  const list = document.querySelector('.audit-list');
+  if (!list) return;
+  list.insertAdjacentHTML('afterbegin', `
+    <div class="audit-item active" style="animation: pulse-row 1.2s ease;">
+      <span class="t">just now</span>
+      <span class="marker"></span>
+      <span class="msg"><b>AFIP sync</b> — anticipo de retenciones now showing "Approved (provisional)". Gate 5 likely to clear within the hour.</span>
+      <span class="who">AFIP · status feed</span>
+    </div>
+  `);
+}, 18000);
+</script>
+
+</body>
+</html>

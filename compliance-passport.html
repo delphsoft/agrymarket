@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriMarket — Compliance Passport</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap" rel="stylesheet">
+<script src="i18n.js"></script>
+<script src="lang-widget.js"></script>
+<link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="ui-polish.css">
+<style>
+  :root {
+    --ink: #0f1729;
+    --text2: #1a1f2e;
+    --pass: #047857;
+    --pass-bg: #d1fae5;
+    --fail: #b91c1c;
+    --fail-bg: #fee2e2;
+    --risk: #b45309;
+    --risk-bg: #fef3c7;
+    --pending: #6b7280;
+    --pending-bg: #f3f4f6;
+    --active: #2563EB;
+    --active-bg: #dbeafe;
+    --line: #e5e7eb;
+
+    /* region accent colors */
+    --reg-eu: #1e3a8a;
+    --reg-us: #b91c1c;
+    --reg-cn: #b45309;
+  }
+  body { background: #f7f9fc; color: var(--text2); }
+  .cp-wrap { max-width: 1320px; margin: 0 auto; padding: 24px 32px 60px; }
+
+  /* ---------- breadcrumb + page head ---------- */
+  .cp-bread {
+    font-size: 12px; color: var(--text-muted); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .cp-bread a { color: var(--accent); text-decoration: none; }
+  .cp-bread .sep { color: #c8ccd4; }
+
+  .cp-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 24px; margin-bottom: 26px;
+  }
+  .cp-head h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 30px; font-weight: 500; color: var(--ink);
+    line-height: 1.2; letter-spacing: -0.3px;
+  }
+  .cp-head .sub { color: var(--text-light); font-size: 13px; margin-top: 6px; }
+  .cp-head-actions { display: flex; gap: 10px; align-items: center; }
+  .cp-head-actions select {
+    padding: 9px 14px; font-size: 12px; border: 1px solid var(--line);
+    border-radius: 4px; background: #fff; font-family: inherit; color: var(--text);
+    outline: none; cursor: pointer;
+  }
+  .cp-head-actions select:focus { border-color: var(--accent); }
+
+  /* ---------- shipment strip ---------- */
+  .ship-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 24px;
+  }
+  .ship-tab {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; cursor: pointer; transition: all 0.15s;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .ship-tab:hover { border-color: rgba(37,99,235,0.4); }
+  .ship-tab.active { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+  .ship-tab .ttl-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .ship-tab .ttl { font-size: 13px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ship-tab .eta { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+  .ship-tab .prod { font-size: 12px; color: var(--text-light); line-height: 1.5; }
+  .ship-tab .prod strong { color: var(--ink); font-weight: 500; }
+  .ship-tab .route-line {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    margin-top: 4px; font-size: 11.5px; color: var(--text-light);
+  }
+  .ship-tab .route-line .dest-pill { margin-left: auto; flex-shrink: 0; }
+  .ship-tab .gates {
+    display: flex; gap: 4px; align-items: center;
+    padding-top: 8px; border-top: 1px dashed var(--line);
+  }
+  .gate-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--pending-bg); border: 1px solid #d1d5db;
+  }
+  .gate-dot.pass { background: var(--pass); border-color: var(--pass); }
+  .gate-dot.fail { background: var(--fail); border-color: var(--fail); }
+  .gate-dot.risk { background: var(--risk); border-color: var(--risk); }
+  .gate-dot.active { background: var(--active); border-color: var(--active);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.2); }
+  .ship-tab .gates .verdict { margin-left: auto; font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; }
+  .verdict.v-pass { color: var(--pass); }
+  .verdict.v-fail { color: var(--fail); }
+  .verdict.v-risk { color: var(--risk); }
+  .verdict.v-prog { color: var(--active); }
+
+  /* region pill on strip + hero */
+  .dest-pill, .ctx-region {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 2px 7px; border-radius: 100px; text-transform: uppercase;
+    vertical-align: 1px; white-space: nowrap;
+  }
+  .ctx-region { margin-left: 6px; }
+  .dest-pill.region-eu, .ctx-region.region-eu { background: rgba(30,58,138,0.1);  color: var(--reg-eu); }
+  .dest-pill.region-us, .ctx-region.region-us { background: rgba(185,28,28,0.08); color: var(--reg-us); }
+  .dest-pill.region-cn, .ctx-region.region-cn { background: rgba(180,83,9,0.1);   color: var(--reg-cn); }
+
+  /* ---------- shipment hero ---------- */
+  .ship-hero {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 28px 32px; margin-bottom: 18px;
+    display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px;
+    align-items: center;
+  }
+  .ship-hero .h-prod { display: flex; flex-direction: column; gap: 6px; }
+  .h-prod .tag-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .h-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 100px;
+    background: var(--bg-light); color: var(--text-light);
+  }
+  .h-tag.live { background: rgba(239,68,68,0.1); color: #b91c1c; }
+  .h-tag.live::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%; background: #ef4444;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .h-tag.region.region-eu { background: rgba(30,58,138,0.1);  color: var(--reg-eu); }
+  .h-tag.region.region-us { background: rgba(185,28,28,0.08); color: var(--reg-us); }
+  .h-tag.region.region-cn { background: rgba(180,83,9,0.1);   color: var(--reg-cn); }
+  @keyframes pulse { 0%,100% {opacity:1;} 50% {opacity:0.35;} }
+  .h-prod .nm {
+    font-family: 'Fraunces', serif; font-size: 24px; font-weight: 500;
+    color: var(--ink); letter-spacing: -0.2px; margin-top: 2px;
+  }
+  .h-prod .id { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .h-prod .route {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-top: 10px; font-size: 13px; color: var(--text); font-weight: 500;
+  }
+  .h-prod .route .arr { color: var(--text-muted); }
+  .h-prod .route .port { color: var(--ink); }
+  .h-stat .k {
+    font-size: 10px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 6px;
+  }
+  .h-stat .v {
+    font-size: 17px; font-weight: 600; color: var(--ink);
+    font-variant-numeric: tabular-nums; letter-spacing: -0.2px;
+  }
+  .h-stat .v small { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-left: 2px; }
+  .h-stat .vsub { font-size: 12px; color: var(--text-light); margin-top: 3px; }
+  .h-stat .verdict-big {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .verdict-big.v-pass { background: var(--pass-bg);   color: var(--pass); }
+  .verdict-big.v-fail { background: var(--fail-bg);   color: var(--fail); }
+  .verdict-big.v-risk { background: var(--risk-bg);   color: var(--risk); }
+  .verdict-big.v-prog { background: var(--active-bg); color: var(--active); }
+
+  /* ---------- pipeline ---------- */
+  .pipeline-card {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 24px 32px 28px; margin-bottom: 24px;
+  }
+  .pipeline-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 26px; gap: 16px;
+  }
+  .pipeline-head h2 {
+    font-size: 15px; font-weight: 600; color: var(--ink);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .pipeline-head h2 .live-pill {
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    background: rgba(37,99,235,0.1); color: var(--accent);
+    padding: 3px 7px; border-radius: 100px;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .pipeline-head h2 .live-pill::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent); animation: pulse 1.4s ease-in-out infinite;
+  }
+  .pipeline-head .summary { font-size: 12px; color: var(--text-light); }
+  .pipeline-head .summary b { color: var(--ink); font-weight: 600; }
+
+  .pipeline {
+    display: flex; gap: 0; align-items: flex-start;
+    position: relative;
+  }
+  .pipe-step {
+    flex: 1; min-width: 0; padding: 0 6px;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; cursor: pointer; position: relative;
+    text-decoration: none; color: inherit;
+  }
+  .pipe-step::before {
+    content: ''; position: absolute; top: 22px; left: -50%; right: 50%;
+    height: 2px; background: var(--line); z-index: 0;
+  }
+  .pipe-step:first-child::before { display: none; }
+  .pipe-step.done::before, .pipe-step.pass::before, .pipe-step.fail::before, .pipe-step.risk::before {
+    background: var(--pass);
+  }
+  .pipe-step.pending::before { background: var(--line); }
+  .pipe-step.active::before { background: linear-gradient(90deg, var(--pass), var(--active)); }
+
+  .pipe-dot {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--line); color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; font-family: 'Fraunces', serif;
+    position: relative; z-index: 1; transition: all 0.2s;
+  }
+  .pipe-step.pass .pipe-dot { background: var(--pass); border-color: var(--pass); color: #fff; }
+  .pipe-step.fail .pipe-dot { background: var(--fail); border-color: var(--fail); color: #fff; }
+  .pipe-step.risk .pipe-dot { background: var(--risk); border-color: var(--risk); color: #fff; }
+  .pipe-step.pending .pipe-dot { background: #fff; border-color: var(--line); color: var(--text-muted); }
+  .pipe-step.active .pipe-dot {
+    background: #fff; border-color: var(--active); color: var(--active);
+    box-shadow: 0 0 0 5px rgba(37,99,235,0.15);
+    animation: pulse-ring 2s ease-in-out infinite;
+  }
+  @keyframes pulse-ring {
+    0%, 100% { box-shadow: 0 0 0 5px rgba(37,99,235,0.15); }
+    50% { box-shadow: 0 0 0 10px rgba(37,99,235,0.04); }
+  }
+  .pipe-step:hover .pipe-dot { transform: translateY(-2px); }
+  .pipe-step .pipe-name {
+    margin-top: 8px; font-size: 11.5px; font-weight: 600; color: var(--ink);
+    line-height: 1.3; max-width: 110px;
+  }
+  .pipe-step .pipe-status {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .pipe-step.pass .pipe-status { color: var(--pass); }
+  .pipe-step.fail .pipe-status { color: var(--fail); }
+  .pipe-step.risk .pipe-status { color: var(--risk); }
+  .pipe-step.pending .pipe-status { color: var(--text-muted); }
+  .pipe-step.active .pipe-status { color: var(--active); }
+  .pipe-step .pipe-meta { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
+
+  /* divider between origin and destination gates */
+  .pipe-divider {
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding: 0 14px; min-width: 130px; position: relative;
+  }
+  .pipe-divider::before, .pipe-divider::after {
+    content: ''; position: absolute; top: 22px;
+    height: 0; border-top: 2px dashed #c8ccd4;
+  }
+  .pipe-divider::before { left: 0; right: 50%; margin-right: 8px; }
+  .pipe-divider::after  { right: 0; left: 50%;  margin-left: 8px; }
+  .pipe-divider .pdlabel {
+    margin-top: 14px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+    color: var(--text-light); background: #fff; padding: 4px 10px;
+    border: 1px solid var(--line); border-radius: 100px;
+    position: relative; z-index: 1; white-space: nowrap;
+  }
+  .pipe-divider .pdline { display: none; } /* using ::before/::after */
+
+  /* ---------- alerts (suggested fixes) ---------- */
+  .fix-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;
+  }
+  .fix-row:has(> :only-child) { grid-template-columns: 1fr; }
+  .fix {
+    background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--fail);
+    border-radius: 6px; padding: 18px 22px;
+    display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: flex-start;
+  }
+  .fix.risk { border-left-color: var(--risk); }
+  .fix-ico {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--fail-bg); color: var(--fail);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .fix.risk .fix-ico { background: var(--risk-bg); color: var(--risk); }
+  .fix-body .fix-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px;
+  }
+  .fix-body .fix-title .gate-no {
+    font-size: 10px; padding: 2px 6px; background: var(--bg-light); color: var(--text-light);
+    border-radius: 3px; font-weight: 700; letter-spacing: 0.5px;
+  }
+  .fix-body .fix-detail { font-size: 12px; color: var(--text-light); margin-bottom: 10px; line-height: 1.55; }
+  .fix-body .suggested {
+    background: linear-gradient(180deg, rgba(37,99,235,0.04), transparent);
+    border: 1px solid rgba(37,99,235,0.15); border-radius: 4px;
+    padding: 10px 12px; margin-top: 8px;
+    font-size: 12px; color: var(--text); line-height: 1.6;
+  }
+  .fix-body .suggested .sug-lbl {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 4px;
+  }
+  .fix-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  .btn-sm {
+    padding: 7px 14px; font-size: 11px; font-weight: 700; letter-spacing: 0.6px;
+    text-transform: uppercase; cursor: pointer; font-family: inherit; border-radius: 3px;
+    white-space: nowrap; transition: all 0.15s;
+  }
+  .btn-sm.solid { background: var(--accent); color: #fff; border: 1px solid var(--accent); }
+  .btn-sm.solid:hover { background: var(--accent-hover); }
+  .btn-sm.ghost { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .btn-sm.ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .empty-state {
+    background: #fff; border: 1px dashed var(--line); border-radius: 6px;
+    padding: 18px 22px; color: var(--text-light); font-size: 13px;
+    text-align: center;
+  }
+
+  /* ---------- services marketplace ---------- */
+  .services-card {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 24px 28px 28px; margin-bottom: 24px;
+  }
+  .services-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 16px; gap: 16px;
+  }
+  .services-head h2 {
+    font-size: 15px; font-weight: 600; color: var(--ink);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .services-head .region-chip {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+    background: rgba(37,99,235,0.08); color: var(--accent);
+    padding: 3px 9px; border-radius: 100px;
+  }
+  .services-head .lede { font-size: 12px; color: var(--text-light); max-width: 420px; }
+
+  .services-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .svc {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 16px 18px 18px; position: relative;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: all 0.15s;
+  }
+  .svc:hover { border-color: rgba(37,99,235,0.35); }
+  .svc.recommended {
+    border-color: var(--active); box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+    background: linear-gradient(180deg, rgba(37,99,235,0.025), #fff 60%);
+  }
+  .svc-rec {
+    position: absolute; top: -10px; left: 14px;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.8px;
+    background: var(--accent); color: #fff;
+    padding: 3px 9px; border-radius: 100px;
+  }
+  .svc-head { display: flex; gap: 12px; align-items: center; }
+  .svc-logo {
+    width: 40px; height: 40px; border-radius: 6px; flex-shrink: 0;
+    color: #fff; font-weight: 700; font-size: 13px; letter-spacing: -0.3px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .svc-titles { min-width: 0; }
+  .svc-vendor { font-size: 13px; font-weight: 600; color: var(--ink); letter-spacing: -0.1px; }
+  .svc-service { font-size: 11.5px; color: var(--text-light); line-height: 1.35; margin-top: 1px; }
+  .svc-blurb { font-size: 12px; color: var(--text-light); line-height: 1.55; }
+  .svc-meta {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px;
+    padding: 10px 0; border-top: 1px dashed var(--line); border-bottom: 1px dashed var(--line);
+  }
+  .svc-meta-cell { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .svc-meta-cell .k {
+    font-size: 9.5px; color: var(--text-muted); letter-spacing: 0.6px;
+    text-transform: uppercase; font-weight: 600;
+  }
+  .svc-meta-cell .v {
+    font-size: 12px; color: var(--ink); font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .svc-meta-cell .v.unlocks { color: var(--accent); font-weight: 600; }
+  .svc-actions { display: flex; gap: 6px; }
+  .svc-actions .btn-sm { flex: 1; text-align: center; }
+
+  /* ---------- gate detail grid ---------- */
+  .gates-section { margin-bottom: 24px; }
+  .gates-section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 14px; gap: 16px;
+  }
+  .gates-section-head h2 {
+    font-size: 15px; font-weight: 600; color: var(--ink);
+  }
+  .gates-section-head .blurb {
+    font-size: 12px; color: var(--text-light); max-width: 500px;
+  }
+  .gates-section + .gates-section { margin-top: 8px; }
+  .gates-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .gates-grid-dest { grid-template-columns: repeat(3, 1fr); }
+
+  .gate {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 20px; transition: all 0.15s;
+    position: relative; display: flex; flex-direction: column;
+    scroll-margin-top: 80px;
+  }
+  .gate:target {
+    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  }
+  .gate-head {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .gate-no-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .gate .num {
+    font-family: 'Fraunces', serif; font-size: 12px; font-weight: 700;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--bg-light); color: var(--text-light);
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .gate.pass .num { background: var(--pass); color: #fff; }
+  .gate.fail .num { background: var(--fail); color: #fff; }
+  .gate.risk .num { background: var(--risk); color: #fff; }
+  .gate.active .num { background: var(--active); color: #fff; }
+  .gate-title {
+    font-size: 14px; font-weight: 600; color: var(--ink); letter-spacing: -0.1px;
+  }
+  .dest-chip {
+    font-size: 11px; padding: 1px 6px; border-radius: 3px;
+    background: var(--bg-light);
+  }
+  .gate-pill {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 3px;
+    display: inline-flex; align-items: center; gap: 4px;
+    white-space: nowrap;
+  }
+  .gate-pill.pass    { background: var(--pass-bg);    color: var(--pass); }
+  .gate-pill.fail    { background: var(--fail-bg);    color: var(--fail); }
+  .gate-pill.risk    { background: var(--risk-bg);    color: var(--risk); }
+  .gate-pill.active  { background: var(--active-bg);  color: var(--active); }
+  .gate-pill.pending { background: var(--pending-bg); color: var(--pending); }
+  .gate-desc {
+    font-size: 12px; color: var(--text-light); line-height: 1.55; margin-bottom: 14px;
+  }
+  .gate-evid {
+    border-top: 1px dashed var(--line); padding-top: 12px;
+    display: grid; gap: 7px;
+  }
+  .ev-row {
+    display: flex; justify-content: space-between; gap: 12px;
+    font-size: 11.5px; color: var(--text); line-height: 1.35;
+  }
+  .ev-row .k { color: var(--text-muted); letter-spacing: 0.3px; flex-shrink: 0; }
+  .ev-row .v { color: var(--ink); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+  .ev-row .v.warn  { color: var(--fail); }
+  .ev-row .v.amber { color: var(--risk); }
+  .ev-row .v.ok    { color: var(--pass); }
+  .gate-foot {
+    margin-top: auto; padding-top: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; color: var(--text-muted);
+  }
+  .gate-foot a {
+    color: var(--accent); text-decoration: none; font-weight: 600; font-size: 11px;
+  }
+  .gate-foot a:hover { text-decoration: underline; }
+
+  /* ---------- audit log ---------- */
+  .audit {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 22px 28px;
+  }
+  .audit h3 {
+    font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .audit h3 .ct { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .audit-list { display: flex; flex-direction: column; gap: 0; }
+  .audit-item {
+    display: grid; grid-template-columns: 70px 18px 1fr auto; gap: 14px;
+    padding: 10px 0; border-bottom: 1px solid var(--border-light);
+    align-items: flex-start; font-size: 12.5px;
+  }
+  .audit-item:last-child { border-bottom: none; }
+  .audit-item .t { color: var(--text-muted); font-variant-numeric: tabular-nums; font-size: 11.5px; }
+  .audit-item .marker {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--bg-light); margin-top: 4px; flex-shrink: 0;
+    border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line);
+  }
+  .audit-item.pass .marker   { background: var(--pass);   box-shadow: 0 0 0 1px var(--pass); }
+  .audit-item.fail .marker   { background: var(--fail);   box-shadow: 0 0 0 1px var(--fail); }
+  .audit-item.risk .marker   { background: var(--risk);   box-shadow: 0 0 0 1px var(--risk); }
+  .audit-item.active .marker {
+    background: var(--active); box-shadow: 0 0 0 1px var(--active);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .audit-item .msg { color: var(--text); line-height: 1.5; }
+  .audit-item .msg b { color: var(--ink); font-weight: 600; }
+  .audit-item .who { color: var(--text-muted); font-size: 11.5px; white-space: nowrap; }
+  .audit-item.just-landed {
+    animation: just-landed 1.4s ease;
+  }
+  @keyframes just-landed {
+    0%   { background: rgba(37,99,235,0.18); }
+    100% { background: transparent; }
+  }
+
+  /* ---------- COMPLIANCE COPILOT (FAB + panel) ---------- */
+  .cop-fab {
+    position: fixed; bottom: 28px; right: 28px; z-index: 200;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--ink); color: #fff; border: none;
+    box-shadow: 0 8px 24px rgba(15,23,41,0.25);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .cop-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,41,0.3); }
+  .cop-fab svg { width: 26px; height: 26px; }
+  .cop-fab .nudge {
+    position: absolute; top: -4px; right: -4px;
+    width: 16px; height: 16px; border-radius: 50%; background: var(--fail);
+    color: #fff; font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #fff;
+  }
+
+  .cop {
+    position: fixed; bottom: 28px; right: 28px; z-index: 201;
+    width: 440px; max-width: calc(100vw - 56px); height: 660px; max-height: calc(100vh - 56px);
+    background: #fff; border-radius: 10px;
+    box-shadow: 0 24px 60px rgba(15,23,41,0.25);
+    display: none; flex-direction: column;
+    overflow: hidden;
+  }
+  .cop.show { display: flex; animation: cop-in 0.2s ease-out; }
+  @keyframes cop-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .cop-head {
+    background: var(--ink); color: #fff; padding: 16px 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .cop-head .av {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #4a90d9, #00c8c8);
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .cop-head .info { flex: 1; min-width: 0; }
+  .cop-head .nm { font-size: 14px; font-weight: 600; letter-spacing: -0.1px; }
+  .cop-head .st {
+    font-size: 11px; color: rgba(255,255,255,0.6);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .cop-head .st::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: #4ade80; animation: pulse 1.6s ease-in-out infinite;
+  }
+  .cop-head .x {
+    background: rgba(255,255,255,0.1); border: none; color: #fff;
+    width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+    font-size: 18px; line-height: 1;
+  }
+  .cop-head .x:hover { background: rgba(255,255,255,0.2); }
+
+  .cop-context {
+    padding: 10px 20px; background: rgba(37,99,235,0.06);
+    font-size: 11px; color: var(--accent);
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    border-bottom: 1px solid rgba(37,99,235,0.1);
+  }
+  .cop-context strong { color: var(--ink); font-weight: 600; }
+  .cop-context svg { width: 12px; flex-shrink: 0; }
+
+  .cop-body {
+    flex: 1; overflow-y: auto; padding: 18px 20px;
+    display: flex; flex-direction: column; gap: 14px;
+    background: #fafbfc;
+  }
+  .cop-msg { display: flex; gap: 10px; }
+  .cop-msg.user { justify-content: flex-end; }
+  .cop-msg .bub {
+    max-width: 88%; padding: 11px 14px; border-radius: 14px;
+    font-size: 13px; line-height: 1.55; color: var(--text);
+    background: #fff; border: 1px solid var(--line);
+  }
+  .cop-msg.user .bub {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+    border-bottom-right-radius: 4px;
+  }
+  .cop-msg.bot .bub { border-bottom-left-radius: 4px; }
+  .cop-msg .bub .cite {
+    display: inline-block; min-width: 18px; height: 18px; padding: 0 5px;
+    background: rgba(37,99,235,0.1); color: var(--accent);
+    border-radius: 4px; font-size: 10px; font-weight: 700;
+    text-align: center; line-height: 18px; vertical-align: 1px;
+    margin: 0 1px; cursor: pointer; text-decoration: none;
+  }
+  .cop-msg .bub .cite:hover { background: var(--accent); color: #fff; }
+
+  .cop-services {
+    margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .cop-services-lbl {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 2px;
+  }
+  .cop-service {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; background: #fafbfc; border: 1px solid var(--line);
+    border-radius: 6px; cursor: pointer; transition: all 0.15s;
+  }
+  .cop-service:hover { border-color: rgba(37,99,235,0.4); background: #fff; }
+  .cop-service-logo {
+    width: 26px; height: 26px; border-radius: 4px; flex-shrink: 0;
+    color: #fff; font-weight: 700; font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cop-service-body { flex: 1; min-width: 0; }
+  .cop-service-vendor { font-size: 12px; font-weight: 600; color: var(--ink); line-height: 1.2; }
+  .cop-service-line { font-size: 10.5px; color: var(--text-light); line-height: 1.3; }
+  .cop-service-cta {
+    font-size: 11px; font-weight: 700; color: var(--accent); white-space: nowrap;
+  }
+
+  .cop-sources {
+    margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .cop-source {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 9px 12px; background: #fff; border: 1px solid var(--line);
+    border-radius: 6px; font-size: 12px; color: var(--text);
+    cursor: pointer; transition: all 0.15s; text-decoration: none;
+  }
+  .cop-source:hover { border-color: rgba(37,99,235,0.4); }
+  .cop-source .num {
+    flex-shrink: 0;
+    min-width: 18px; height: 18px; background: rgba(37,99,235,0.1); color: var(--accent);
+    border-radius: 4px; font-size: 10px; font-weight: 700;
+    text-align: center; line-height: 18px; padding: 0 4px;
+  }
+  .cop-source .src-body { flex: 1; min-width: 0; }
+  .cop-source .src-title { font-weight: 600; color: var(--ink); font-size: 12px; line-height: 1.35; }
+  .cop-source .src-meta {
+    font-size: 10.5px; color: var(--text-muted); margin-top: 2px;
+    display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap;
+  }
+  .cop-source .tag-pill {
+    display: inline-block; padding: 1px 5px; background: rgba(245,158,11,0.12); color: var(--risk);
+    border-radius: 2px; font-weight: 700; font-size: 9.5px; letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .cop-source .region-pill {
+    display: inline-block; padding: 1px 5px; background: var(--bg-light); color: var(--text-light);
+    border-radius: 2px; font-weight: 700; font-size: 9.5px; letter-spacing: 0.5px;
+  }
+
+  .cop-thinking { display: flex; gap: 4px; padding: 6px 0; }
+  .cop-thinking .d {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted);
+    animation: cop-bounce 1.2s ease-in-out infinite;
+  }
+  .cop-thinking .d:nth-child(2) { animation-delay: 0.15s; }
+  .cop-thinking .d:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes cop-bounce { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; transform: translateY(-3px); } }
+
+  .cop-suggest {
+    padding: 8px 18px 12px; display: flex; flex-wrap: wrap; gap: 6px;
+    background: #fafbfc; border-top: 1px solid var(--line);
+  }
+  .cop-suggest .chip-q {
+    padding: 6px 11px; font-size: 11.5px; color: var(--text-light);
+    background: #fff; border: 1px solid var(--line); border-radius: 100px;
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
+    text-align: left;
+  }
+  .cop-suggest .chip-q:hover { border-color: var(--accent); color: var(--accent); }
+
+  .cop-input {
+    padding: 12px 16px 14px; border-top: 1px solid var(--line);
+    display: flex; gap: 8px; background: #fff;
+  }
+  .cop-input input {
+    flex: 1; border: 1px solid var(--line); border-radius: 100px;
+    padding: 10px 16px; font-family: inherit; font-size: 13px;
+    outline: none; color: var(--text);
+  }
+  .cop-input input:focus { border-color: var(--accent); }
+  .cop-input button {
+    background: var(--accent); color: #fff; border: none; border-radius: 50%;
+    width: 38px; height: 38px; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cop-input button:disabled { opacity: 0.5; cursor: wait; }
+  .cop-input button svg { width: 16px; height: 16px; }
+
+  @media (max-width: 1100px) {
+    .ship-strip { grid-template-columns: repeat(2, 1fr); }
+    .ship-hero { grid-template-columns: 1fr 1fr; gap: 20px; }
+    .pipeline {
+      flex-wrap: wrap; row-gap: 32px;
+      justify-content: flex-start;
+    }
+    .pipe-step { flex: 0 0 calc(33.333% - 8px); }
+    .pipe-divider { flex: 1 0 100%; min-width: 0; padding: 8px 0; }
+    .pipe-divider::before, .pipe-divider::after { display: none; }
+    .pipe-divider .pdlabel { margin-top: 0; }
+    .gates-grid { grid-template-columns: repeat(2, 1fr); }
+    .services-grid { grid-template-columns: repeat(2, 1fr); }
+    .fix-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .ship-strip { grid-template-columns: 1fr; }
+    .ship-hero { grid-template-columns: 1fr; }
+    .pipe-step { flex: 0 0 calc(50% - 6px); }
+    .gates-grid, .services-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- sticky pipeline ---------- */
+  .pipeline-card {
+    position: sticky;
+    top: 56px;
+    z-index: 40;
+  }
+
+  /* ---------- booking drawer ---------- */
+  .booking-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .booking-bg.show { opacity: 1; pointer-events: auto; }
+  .booking-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 480px; max-width: 95vw;
+    background: #fff; z-index: 301; transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    overflow-y: auto; display: flex; flex-direction: column;
+    box-shadow: -8px 0 32px rgba(0,0,0,0.14);
+  }
+  .booking-drawer.show { transform: translateX(0); }
+  .booking-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 24px 28px 20px; border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; background: #fff; z-index: 1;
+  }
+  .booking-head .x { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted); line-height: 1; padding: 0; }
+  .booking-ttl { font-size: 17px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+  .booking-step-lbl { font-size: 12px; color: var(--accent); font-weight: 600; }
+  .booking-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; }
+  .booking-svc-mini {
+    background: var(--bg-light); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+  }
+  .booking-svc-logo { width: 40px; height: 40px; border-radius: 6px; flex-shrink: 0; color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .booking-svc-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .booking-svc-line { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+  .booking-label { display: block; font-size: 10.5px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px; }
+  .booking-input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; font-family: inherit; font-size: 13px; color: var(--ink); outline: none; background: #fff; }
+  .booking-input:focus { border-color: var(--accent); }
+  .booking-options { display: flex; flex-direction: column; gap: 8px; }
+  .booking-option {
+    display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px;
+    border: 1.5px solid var(--line); border-radius: 5px; cursor: pointer; transition: all 0.15s;
+  }
+  .booking-option:hover { border-color: rgba(37,99,235,0.4); }
+  .booking-option.selected { border-color: var(--accent); background: rgba(37,99,235,0.04); }
+  .booking-option input[type=radio] { accent-color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+  .booking-opt-label { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .booking-opt-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .booking-confirm-card { background: var(--bg-light); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .booking-confirm-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 11px 16px; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .booking-confirm-row:last-child { border-bottom: none; }
+  .booking-confirm-row .k { color: var(--text-muted); white-space: nowrap; }
+  .booking-confirm-row .v { font-weight: 600; color: var(--ink); text-align: right; }
+  .booking-note { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.25); border-radius: 4px; padding: 14px 16px; font-size: 12px; color: #92400e; line-height: 1.6; }
+  .booking-actions { display: flex; gap: 10px; padding-top: 4px; }
+  .booking-actions .btn-sm { flex: 1; text-align: center; padding: 12px; font-size: 12px; }
+  .booking-success { text-align: center; padding: 48px 20px; }
+  .booking-success-ico { width: 64px; height: 64px; border-radius: 50%; background: var(--pass-bg); color: var(--pass); font-size: 26px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+  .booking-success-ttl { font-size: 20px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+  .booking-success-sub { font-size: 13px; color: var(--text-light); line-height: 1.65; max-width: 320px; margin: 0 auto 24px; }
+
+  /* ---------- print styles ---------- */
+  @media print {
+    .demo-banner, .gnav, .cop-fab, .cop, .cp-head-actions button,
+    .services-card, .fix-row, .pipeline-card { display: none !important; }
+    .cp-wrap { padding: 0 !important; max-width: 100% !important; }
+    body { background: white !important; font-size: 11px; }
+    .ship-strip { grid-template-columns: repeat(2,1fr) !important; break-inside: avoid; }
+    .gates-grid { grid-template-columns: repeat(2,1fr) !important; }
+    .gate, .audit { break-inside: avoid; }
+    .gate, .audit, .ship-hero { box-shadow: none !important; border: 1px solid #ccc !important; }
+    .ship-hero { grid-template-columns: repeat(4,1fr) !important; }
+  }
+</style>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script src="security.js"></script>
+</head>
+<body>
+<script src="demo-banner.js"></script>
+
+
+
+<!-- Top nav (matches buyer dashboard) -->
+<nav class="gnav">
+  <a href="index.html" class="gnav-logo">AgriMarket</a>
+  <div class="gnav-links">
+    <a href="buyer.html" class="gnav-link" style="text-decoration:none;">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6"><circle cx="8" cy="8" r="5"/><line x1="12" y1="12" x2="16" y2="16"/></svg>
+      <span>Browse</span>
+    </a>
+    <a href="buyer.html" class="gnav-link" style="text-decoration:none;">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6"><rect x="3" y="2" width="12" height="14" rx="1"/><line x1="6" y1="6" x2="12" y2="6"/><line x1="6" y1="9" x2="12" y2="9"/><line x1="6" y1="12" x2="10" y2="12"/></svg>
+      <span>My Contracts</span>
+    </a>
+    <a href="#" class="gnav-link active" style="text-decoration:none;">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6"><path d="M9 1l6 3v5c0 4-3 7-6 8-3-1-6-4-6-8V4z"/><path d="M6 9l2 2 4-4"/></svg>
+      <span>Compliance Passport</span>
+    </a>
+    <a href="buyer.html" class="gnav-link" style="text-decoration:none;">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6"><path d="M2 3h14v10H6l-4 3z"/></svg>
+      <span>Messages</span>
+      <span class="badge">6</span>
+    </a>
+    <a href="buyer.html" class="gnav-link" style="text-decoration:none;">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6"><circle cx="9" cy="6" r="3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+      <span>Profile</span>
+    </a>
+  </div>
+  <div class="gnav-right">
+    <button class="gnav-btn-outline" data-i18n="passport_new_shipment">+ New Shipment</button>
+    <span data-lang-widget="dark"></span>
+  </div>
+</nav>
+
+<!-- =================== PASSPORT VIEW =================== -->
+<div class="cp-wrap">
+
+  <div class="cp-bread">
+    <a href="buyer.html">Dashboard</a><span class="sep">›</span>
+    <a href="buyer.html">My Contracts</a><span class="sep">›</span>
+    <span>Compliance Passport</span>
+  </div>
+
+  <div class="cp-head">
+    <div>
+      <h1 data-i18n="passport_title">Compliance Passport</h1>
+      <div class="sub" data-i18n="passport_sub">Origin gates (Argentina) + destination overlays for EU, US and China. One source of truth, updated live.</div>
+    </div>
+    <div class="cp-head-actions">
+      <select>
+        <option>All shipments (12)</option>
+        <option>Open issues (4)</option>
+        <option>Cleared (6)</option>
+        <option>This week</option>
+      </select>
+      <button class="btn-outline" onclick="exportAuditPDF()" data-i18n="passport_export">Export audit PDF</button>
+    </div>
+  </div>
+
+  <!-- shipment strip (rendered) -->
+  <div class="ship-strip" id="ship-strip"></div>
+
+  <!-- selected shipment hero (rendered) -->
+  <section class="ship-hero" id="ship-hero"></section>
+
+  <!-- live pipeline (rendered) -->
+  <section class="pipeline-card">
+    <div class="pipeline-head">
+      <h2>Compliance pipeline — origin + destination <span class="live-pill">LIVE</span></h2>
+      <div class="summary" id="pipeline-summary"></div>
+    </div>
+    <div class="pipeline" id="pipeline"></div>
+  </section>
+
+  <!-- suggested fixes (rendered) -->
+  <div class="fix-row" id="fix-row"></div>
+
+  <!-- services marketplace (rendered) -->
+  <section class="services-card">
+    <div class="services-head">
+      <div>
+        <h2>Certifiers &amp; services <span class="region-chip" id="services-region">EU</span></h2>
+        <div class="lede" data-i18n="passport_services_lede">Curated, accredited inspectors and labs. Book inline — results flow straight into the right gate's evidence file.</div>
+      </div>
+      <a href="#" class="sec-link" style="font-size:12px; color: var(--accent); text-decoration: none; font-weight: 600;">Browse full catalog →</a>
+    </div>
+    <div class="services-grid" id="services-grid"></div>
+  </section>
+
+  <!-- origin gate cards (rendered) -->
+  <section class="gates-section">
+    <div class="gates-section-head">
+      <h2>Origin compliance — Argentina · 6 gates</h2>
+      <div class="blurb">AFIP, SENASA and ROE Verde. Filed at origin, before B/L.</div>
+    </div>
+    <div class="gates-grid" id="gates-grid"></div>
+  </section>
+
+  <!-- destination gate cards (rendered) -->
+  <section class="gates-section">
+    <div class="gates-section-head">
+      <h2 id="gates-grid-dest-label">Destination compliance</h2>
+      <div class="blurb" id="gates-grid-dest-blurb"></div>
+    </div>
+    <div class="gates-grid gates-grid-dest" id="gates-grid-dest"></div>
+  </section>
+
+  <!-- audit log (rendered) -->
+  <section class="audit">
+    <h3><span data-i18n="passport_audit_title">Live audit log</span> <span class="ct">· <span data-i18n="passport_audit_sub">auto-syncs from AFIP, SENASA, terminal, carrier &amp; destination customs</span></span></h3>
+    <div class="audit-list" id="audit-list"></div>
+  </section>
+
+</div>
+
+<!-- =================== COMPLIANCE COPILOT =================== -->
+<button class="cop-fab" id="copFab" onclick="Copilot.toggle()" aria-label="Open Compliance Copilot">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+    <path d="M12 2L4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/>
+    <path d="M9 12l2 2 4-4"/>
+  </svg>
+  <span class="nudge">2</span>
+</button>
+
+<aside class="cop" id="copPanel">
+  <header class="cop-head">
+    <div class="av">✨</div>
+    <div class="info">
+      <div class="nm">Compliance Copilot</div>
+      <div class="st">Connected · live regulation feed</div>
+    </div>
+    <button class="x" onclick="Copilot.toggle()">×</button>
+  </header>
+  <div class="cop-context" id="copContext"></div>
+  <div class="cop-body" id="copBody">
+    <div class="cop-msg bot">
+      <div class="bub">
+        Hi — I'm the Compliance Copilot. I read from this shipment's passport <em>and</em> AgriMarket's compliance desk posts. Ask me about a regulation, a gate, or which certifier on the marketplace can unblock you.
+      </div>
+    </div>
+  </div>
+  <div class="cop-suggest" id="copSuggest"></div>
+  <form class="cop-input" onsubmit="Copilot.onAsk(event)">
+    <input id="copInput" type="text" placeholder="Ask about a regulation, a gate, or a fix…" autocomplete="off">
+    <button type="submit" id="copSend" aria-label="Send">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12L21 4l-4 18-4-8-10-2z"/></svg>
+    </button>
+  </form>
+</aside>
+
+<script src="passport-data.js"></script>
+<script src="passport-render.js"></script>
+<script src="passport-copilot.js"></script>
+
+<!-- =================== SERVICE BOOKING DRAWER =================== -->
+<div class="booking-bg" id="bookingBg" onclick="closeBooking()"></div>
+<aside class="booking-drawer" id="bookingDrawer">
+  <header class="booking-head">
+    <div>
+      <div class="booking-ttl" id="bk-title">Book service</div>
+      <div class="booking-step-lbl" id="bk-step">Step 1 of 2 — Select date &amp; scope</div>
+    </div>
+    <button class="x" onclick="closeBooking()">×</button>
+  </header>
+
+  <!-- Step 1 -->
+  <div id="bk-s1" class="booking-body">
+    <div class="booking-svc-mini" id="bk-svc-card"></div>
+    <div>
+      <label class="booking-label">Preferred start date</label>
+      <input type="date" id="bk-date" class="booking-input">
+    </div>
+    <div>
+      <label class="booking-label">Scope of work</label>
+      <div class="booking-options" id="bk-options"></div>
+    </div>
+    <div>
+      <label class="booking-label">Shipment reference</label>
+      <input type="text" id="bk-ref" class="booking-input" readonly>
+    </div>
+    <div>
+      <label class="booking-label">Notes (optional)</label>
+      <textarea id="bk-notes" class="booking-input" rows="3" placeholder="Any specific requirements…"></textarea>
+    </div>
+    <div class="booking-actions">
+      <button class="btn-sm ghost" onclick="closeBooking()">Cancel</button>
+      <button class="btn-sm solid" onclick="bkNext()">Review booking →</button>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div id="bk-s2" class="booking-body" style="display:none;">
+    <div class="booking-confirm-card" id="bk-confirm"></div>
+    <div class="booking-note">📋 On confirmation, a booking request is logged in the audit trail and the certifier will contact you within 24 hours.</div>
+    <div class="booking-actions">
+      <button class="btn-sm ghost" onclick="bkBack()">← Back</button>
+      <button class="btn-sm solid" onclick="bkConfirm()">✓ Confirm booking</button>
+    </div>
+  </div>
+
+  <!-- Done -->
+  <div id="bk-done" class="booking-body" style="display:none;">
+    <div class="booking-success">
+      <div class="booking-success-ico">✓</div>
+      <div class="booking-success-ttl">Booking confirmed!</div>
+      <div class="booking-success-sub">The request has been logged in the audit trail. The certifier will contact you within 24 hours to align on scope and sampling schedule.</div>
+      <button class="btn-sm solid" onclick="closeBooking()" style="width:100%;padding:13px;font-size:13px;">Close</button>
+    </div>
+  </div>
+</aside>
+
+<script>
+/* =================== BOOKING DRAWER =================== */
+let _bkSvc = null, _bkOpt = 0;
+
+function _esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function openBookingByVendor(v) {
+  const svc = (typeof SERVICES !== 'undefined') ? SERVICES.find(s => s.vendor === v) : null;
+  if (!svc) return;
+  _bkSvc = svc; _bkOpt = 0;
+  document.getElementById('bk-title').textContent = 'Book: ' + svc.vendor;
+  document.getElementById('bk-step').textContent = 'Step 1 of 2 — Select date & scope';
+  document.getElementById('bk-svc-card').innerHTML =
+    `<div class="booking-svc-logo" style="background:${svc.color}">${_esc(svc.short)}</div>
+     <div><div class="booking-svc-name">${_esc(svc.vendor)}</div>
+     <div class="booking-svc-line">${_esc(svc.service)} · ${_esc(svc.leadTime)} · ${_esc(svc.price)}</div></div>`;
+  const scopes = [
+    { label:'Full inspection + certification', meta: svc.leadTime + ' · ' + svc.price },
+    { label:'Pre-shipment inspection only',   meta: '2–3 days · Quote on request' },
+    { label:'Document review only',           meta: '1 day · $150 flat' }
+  ];
+  document.getElementById('bk-options').innerHTML = scopes.map((o,i) => `
+    <label class="booking-option${i===0?' selected':''}" onclick="bkSelectOpt(this,${i})">
+      <input type="radio" name="bk-scope" ${i===0?'checked':''}><div>
+      <div class="booking-opt-label">${_esc(o.label)}</div>
+      <div class="booking-opt-meta">${_esc(o.meta)}</div></div>
+    </label>`).join('');
+  const cur = (window.Passport && window.Passport.getCurrent) ? window.Passport.getCurrent() : null;
+  document.getElementById('bk-ref').value = cur ? cur.id + ' · ' + cur.product.short : '';
+  const tom = new Date(); tom.setDate(tom.getDate()+1);
+  document.getElementById('bk-date').value = tom.toISOString().split('T')[0];
+  document.getElementById('bk-notes').value = '';
+  document.getElementById('bk-s1').style.display='flex';
+  document.getElementById('bk-s2').style.display='none';
+  document.getElementById('bk-done').style.display='none';
+  document.getElementById('bookingBg').classList.add('show');
+  document.getElementById('bookingDrawer').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+
+function bkSelectOpt(lbl,i){ _bkOpt=i; document.querySelectorAll('.booking-option').forEach((el,j)=>el.classList.toggle('selected',j===i)); }
+
+function bkNext() {
+  const date = document.getElementById('bk-date').value;
+  if (!date) { document.getElementById('bk-date').focus(); return; }
+  const scopes = ['Full inspection + certification','Pre-shipment inspection only','Document review only'];
+  const prices = [_bkSvc.price,'Quote on request','$150 flat'];
+  const rows = [
+    ['Vendor',    _bkSvc.vendor],
+    ['Service',   _bkSvc.service],
+    ['Scope',     scopes[_bkOpt]],
+    ['Start date',date],
+    ['Shipment',  document.getElementById('bk-ref').value],
+    ['Est. price',prices[_bkOpt]],
+  ];
+  const notes = document.getElementById('bk-notes').value.trim();
+  if (notes) rows.push(['Notes', notes]);
+  document.getElementById('bk-confirm').innerHTML = rows.map(([k,v])=>
+    `<div class="booking-confirm-row"><span class="k">${_esc(k)}</span><span class="v">${_esc(v)}</span></div>`).join('');
+  document.getElementById('bk-step').textContent = 'Step 2 of 2 — Review & confirm';
+  document.getElementById('bk-s1').style.display='none';
+  document.getElementById('bk-s2').style.display='flex';
+}
+
+function bkBack() {
+  document.getElementById('bk-step').textContent = 'Step 1 of 2 — Select date & scope';
+  document.getElementById('bk-s2').style.display='none';
+  document.getElementById('bk-s1').style.display='flex';
+}
+
+function bkConfirm() {
+  const date = document.getElementById('bk-date').value;
+  const list = document.getElementById('audit-list');
+  if (list) {
+    const now = new Date();
+    const t = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    list.insertAdjacentHTML('afterbegin',
+      `<div class="audit-item active just-landed">
+         <span class="t">${t}</span><span class="marker"></span>
+         <span class="msg"><b>Booking confirmed:</b> ${_esc(_bkSvc.vendor)} · ${_esc(_bkSvc.service)} · starts ${_esc(date)}</span>
+         <span class="who">You</span>
+       </div>`);
+  }
+  document.getElementById('bk-s2').style.display='none';
+  document.getElementById('bk-done').style.display='flex';
+}
+
+function closeBooking() {
+  document.getElementById('bookingBg').classList.remove('show');
+  document.getElementById('bookingDrawer').classList.remove('show');
+  document.body.style.overflow='';
+}
+
+/* =================== EXPORT PDF =================== */
+function exportAuditPDF() { window.print(); }
+
+/* =================== URL PARAM → pre-select shipment =================== */
+document.addEventListener('DOMContentLoaded', () => {
+  const p = new URLSearchParams(window.location.search);
+  const sid = p.get('shipment');
+  if (sid && typeof SHIPMENTS !== 'undefined' && window.Passport) {
+    const found = SHIPMENTS.find(s => s.id === sid || s.code === sid);
+    if (found) setTimeout(() => window.Passport.switchTo(found.code), 120);
+  }
+});
+</script>
+<script src="ui-micro.js"></script>
+</body>
+</html>

@@ -1,0 +1,492 @@
+/* ================================================================
+   AgriMarket — UI Polish Layer v1.0
+   Smooth buttons · press states · focus rings · micro-animations
+   Load AFTER shared.css and alt-dash.css on every page
+   ================================================================ */
+
+/* ——— tap highlight kill ——— */
+*, *::before, *::after { -webkit-tap-highlight-color: transparent; }
+
+/* ——— selection ——— */
+::selection { background: rgba(37,99,235,0.14); }
+
+/* ——— scrollbar ——— */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cdd4de; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a0aab8; }
+
+/* ——— smooth scroll ——— */
+html { scroll-behavior: smooth; }
+
+/* =================================================================
+   FOCUS RINGS (keyboard nav / accessibility)
+   ================================================================= */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* =================================================================
+   BTN-PRIMARY  — lift + press
+   ================================================================= */
+.btn-primary {
+  box-shadow: 0 1px 3px rgba(37,99,235,0.18), 0 3px 10px rgba(37,99,235,0.12);
+  transition: background 0.18s, transform 0.14s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.18s;
+  will-change: transform;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover, #1d4ed8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.28), 0 2px 6px rgba(37,99,235,0.18);
+}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 1px 4px rgba(37,99,235,0.12);
+  transition-duration: 0.08s;
+}
+.btn-primary:disabled {
+  opacity: 0.45; cursor: not-allowed;
+  box-shadow: none; transform: none;
+}
+
+/* =================================================================
+   BTN-OUTLINE  — lift + press
+   ================================================================= */
+.btn-outline {
+  transition: background 0.18s, color 0.18s, border-color 0.18s,
+              transform 0.14s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s;
+  will-change: transform;
+}
+.btn-outline:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(37,99,235,0.15);
+}
+.btn-outline:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+  box-shadow: none;
+  transition-duration: 0.08s;
+}
+.btn-outline:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* =================================================================
+   BTN-SM  (passport · booking drawer · dashboard row actions)
+   ================================================================= */
+.btn-sm {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 8px 16px; font-size: 11px; font-weight: 700; letter-spacing: 0.7px;
+  text-transform: uppercase; cursor: pointer; border-radius: 4px;
+  font-family: inherit; border: 1.5px solid transparent;
+  transition: background 0.16s, border-color 0.16s, color 0.16s,
+              transform 0.13s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.16s;
+  will-change: transform;
+}
+.btn-sm.solid {
+  background: var(--accent, #2563EB); color: #fff;
+  border-color: var(--accent, #2563EB);
+  box-shadow: 0 1px 4px rgba(37,99,235,0.2);
+}
+.btn-sm.solid:hover {
+  background: var(--blue-dark, #1d4ed8); border-color: var(--blue-dark, #1d4ed8);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 16px rgba(37,99,235,0.28);
+}
+.btn-sm.solid:active { transform: scale(0.97); box-shadow: none; transition-duration: 0.07s; }
+.btn-sm.ghost {
+  background: #fff; color: var(--text-light, #5a6478);
+  border-color: var(--border, #e8edf2);
+}
+.btn-sm.ghost:hover {
+  border-color: var(--accent, #2563EB); color: var(--accent, #2563EB);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(37,99,235,0.1);
+}
+.btn-sm.ghost:active { transform: scale(0.97); box-shadow: none; transition-duration: 0.07s; }
+.btn-sm:disabled { opacity: 0.42; cursor: not-allowed; transform: none !important; box-shadow: none !important; pointer-events: none; }
+
+/* =================================================================
+   BTN LOADING STATE  — spinner overlay
+   ================================================================= */
+.btn-loading {
+  pointer-events: none !important;
+  color: transparent !important;
+  position: relative;
+}
+.btn-loading::after {
+  content: '';
+  position: absolute; inset: 0; margin: auto;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: _btnSpin 0.55s linear infinite;
+}
+.btn-outline.btn-loading::after,
+.btn-sm.ghost.btn-loading::after {
+  border-color: rgba(37,99,235,0.25);
+  border-top-color: var(--accent, #2563EB);
+}
+@keyframes _btnSpin { to { transform: rotate(360deg); } }
+
+/* =================================================================
+   RIPPLE — JS adds .ripple spans on click
+   ================================================================= */
+.btn-primary, .btn-outline, .btn-sm {
+  position: relative; overflow: hidden;
+}
+.ripple {
+  position: absolute; border-radius: 50%;
+  transform: scale(0); pointer-events: none;
+  animation: _ripple 0.48s linear forwards;
+  background: rgba(255,255,255,0.22);
+}
+.btn-outline .ripple,
+.btn-sm.ghost .ripple { background: rgba(37,99,235,0.1); }
+@keyframes _ripple { to { transform: scale(4); opacity: 0; } }
+
+/* =================================================================
+   FORM INPUTS  — smooth focus glow
+   ================================================================= */
+input:not([type=checkbox]):not([type=radio]),
+select, textarea {
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+input:not([type=checkbox]):not([type=radio]):focus,
+select:focus, textarea:focus {
+  border-color: var(--accent, #2563EB) !important;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.11) !important;
+  outline: none !important;
+}
+input::placeholder { transition: opacity 0.2s; }
+input:focus::placeholder { opacity: 0.55; }
+
+/* =================================================================
+   CHIP FILTER BUTTONS
+   ================================================================= */
+.chip {
+  transition: background 0.15s, border-color 0.15s, color 0.15s,
+              transform 0.12s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.15s;
+  will-change: transform;
+}
+.chip:hover { transform: translateY(-1px); }
+.chip:active { transform: scale(0.95) !important; transition-duration: 0.07s; }
+.chip.active {
+  box-shadow: 0 2px 8px rgba(15,23,41,0.16);
+}
+
+/* =================================================================
+   LISTING CARDS (index.html)
+   ================================================================= */
+.listing {
+  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+  will-change: transform;
+}
+.listing:active { transform: scale(0.985) !important; transition-duration: 0.08s; }
+
+/* heart button pop */
+.listing-fav {
+  transition: background 0.14s, transform 0.14s cubic-bezier(0.34,1.56,0.64,1);
+}
+.listing-fav:active { transform: scale(0.8) !important; }
+.listing-fav.saved svg { animation: _heartPop 0.32s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes _heartPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+/* =================================================================
+   OPPORTUNITY CARDS (buyer.html stream)
+   ================================================================= */
+.opp {
+  transition: border-color 0.15s, box-shadow 0.2s,
+              transform 0.16s cubic-bezier(0.34,1.56,0.64,1);
+  will-change: transform;
+}
+.opp:hover { transform: translateY(-2px); }
+.opp:active { transform: translateY(0) scale(0.99); transition-duration: 0.08s; }
+.opp-actions .contact,
+.opp-actions .save {
+  transition: background 0.15s, border-color 0.15s, color 0.15s,
+              transform 0.12s cubic-bezier(0.34,1.56,0.64,1);
+}
+.opp-actions .contact:hover { transform: translateY(-1px); }
+.opp-actions .contact:active { transform: scale(0.96); }
+.opp-actions .save:hover { transform: translateY(-1px); }
+.opp-actions .save:active { transform: scale(0.96); }
+
+/* =================================================================
+   ORIGIN REGION CARDS
+   ================================================================= */
+.origin-card {
+  transition: border-color 0.18s, transform 0.18s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.18s;
+  will-change: transform;
+}
+.origin-card:hover { transform: translateY(-3px); }
+.origin-card:active { transform: scale(0.96) !important; transition-duration: 0.08s; }
+
+/* =================================================================
+   ADMIN TILES
+   ================================================================= */
+.adm-tile {
+  transition: border-color 0.15s, background 0.15s,
+              box-shadow 0.15s, transform 0.12s cubic-bezier(0.34,1.56,0.64,1);
+  will-change: transform;
+}
+.adm-tile:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(15,23,41,0.07); }
+.adm-tile:active { transform: scale(0.97); transition-duration: 0.07s; }
+
+/* admin action buttons */
+.qrow .qacts button {
+  transition: border-color 0.14s, color 0.14s, background 0.14s, transform 0.12s;
+}
+.qrow .qacts button:active { transform: scale(0.9); }
+
+/* =================================================================
+   SELLER LISTING ROWS
+   ================================================================= */
+.lrow {
+  transition: border-color 0.15s, box-shadow 0.18s;
+}
+.lrow-acts button {
+  transition: border-color 0.14s, color 0.14s, background 0.14s,
+              transform 0.12s cubic-bezier(0.34,1.56,0.64,1);
+}
+.lrow-acts button:hover { transform: translateY(-1px); }
+.lrow-acts button:active { transform: scale(0.95); }
+.lrow-acts .boost:active { transform: scale(0.95); }
+
+/* =================================================================
+   PASSPORT — gate cards + service cards
+   ================================================================= */
+.gate {
+  transition: box-shadow 0.18s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+  will-change: transform;
+}
+.gate:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(15,23,41,0.09); }
+.gate:active { transform: translateY(0) scale(0.99); transition-duration: 0.08s; }
+
+.svc-card {
+  transition: border-color 0.15s, box-shadow 0.18s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+  will-change: transform;
+}
+.svc-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(15,23,41,0.08); }
+
+/* pipeline step press */
+.pipe-step {
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+}
+.pipe-step:hover { transform: translateY(-1px); }
+
+/* =================================================================
+   AUDIT LOG — slide in new entries
+   ================================================================= */
+.audit-item.just-landed {
+  animation: _auditIn 0.42s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes _auditIn {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* =================================================================
+   BOOKING DRAWER — step options
+   ================================================================= */
+.booking-option {
+  transition: border-color 0.14s, background 0.14s, transform 0.1s;
+}
+.booking-option:hover { transform: translateX(2px); }
+.booking-option:active { transform: scale(0.99); }
+
+/* =================================================================
+   INSIGHT CARDS (market intelligence)
+   ================================================================= */
+.insight {
+  transition: border-color 0.18s, box-shadow 0.2s,
+              transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  will-change: transform;
+}
+.insight:hover { transform: translateY(-3px); }
+.insight:active { transform: translateY(0) scale(0.99); transition-duration: 0.08s; }
+
+/* =================================================================
+   PRODUCT CARDS (search results)
+   ================================================================= */
+.product-card {
+  transition: box-shadow 0.18s, transform 0.16s cubic-bezier(0.34,1.56,0.64,1);
+  will-change: transform;
+}
+.product-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.1); }
+.product-card:active { transform: scale(0.98); transition-duration: 0.08s; }
+
+/* =================================================================
+   STREAM TABS
+   ================================================================= */
+.stream-tab {
+  transition: background 0.14s, color 0.14s, transform 0.1s;
+}
+.stream-tab:hover:not(.active) { background: var(--soft, #f7f9fc); color: var(--text, #1e293b); }
+.stream-tab:active { transform: scale(0.95); }
+.stream-tab.active { box-shadow: 0 2px 8px rgba(15,23,41,0.14); }
+
+/* =================================================================
+   NAV LINKS
+   ================================================================= */
+.gnav-link {
+  transition: opacity 0.18s, background 0.18s;
+  border-radius: 4px 4px 0 0;
+}
+.lnav-link {
+  transition: color 0.16s;
+  padding: 4px 6px; border-radius: 4px;
+}
+.admin-side-item {
+  transition: background 0.14s, color 0.14s, border-left-color 0.14s;
+}
+
+/* =================================================================
+   SAVED ITEM (buyer saved searches)
+   ================================================================= */
+.saved-item {
+  transition: border-color 0.14s, box-shadow 0.15s, transform 0.12s;
+}
+.saved-item:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(37,99,235,0.09);
+}
+
+/* =================================================================
+   CHAT SEND BUTTON
+   ================================================================= */
+.chat-input .send {
+  transition: background 0.16s, transform 0.12s cubic-bezier(0.34,1.56,0.64,1);
+  border-radius: 4px;
+}
+.chat-input .send:hover { background: var(--blue-dark, #1d4ed8); transform: translateY(-1px); }
+.chat-input .send:active { transform: scale(0.96); }
+
+/* =================================================================
+   DRAWER / MODAL — snappier open
+   ================================================================= */
+.drawer, .pd-drawer, .booking-drawer {
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.drawer-bg, .pd-drawer-bg, .booking-bg {
+  transition: opacity 0.2s ease !important;
+}
+
+/* auth modal submit */
+#auth-submit {
+  transition: background 0.16s, transform 0.13s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.16s !important;
+  border-radius: 4px !important;
+}
+#auth-submit:hover {
+  background: #1d4ed8 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(37,99,235,0.28) !important;
+}
+#auth-submit:active {
+  transform: scale(0.97) !important;
+  box-shadow: none !important;
+}
+
+/* role buttons */
+.role-btn {
+  transition: border-color 0.15s, color 0.15s, transform 0.12s, box-shadow 0.15s !important;
+}
+.role-btn:hover { transform: translateY(-1px) !important; box-shadow: 0 3px 10px rgba(37,99,235,0.12) !important; }
+.role-btn:active { transform: scale(0.97) !important; }
+
+/* =================================================================
+   PAGE LOAD — subtle fade-up
+   ================================================================= */
+@keyframes _pageIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.alt-wrap, .page-content, .container {
+  animation: _pageIn 0.32s ease both;
+}
+
+/* =================================================================
+   GNAV / LNAV BUTTON
+   ================================================================= */
+.gnav-btn-outline {
+  transition: background 0.16s, transform 0.12s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+.gnav-btn-outline:hover { transform: translateY(-1px) !important; }
+.gnav-btn-outline:active { transform: scale(0.97) !important; }
+
+/* =================================================================
+   CTA BAND BUTTONS (index)
+   ================================================================= */
+.btn-white {
+  transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s !important;
+}
+.btn-white:hover { transform: translateY(-3px) !important; box-shadow: 0 10px 24px rgba(0,0,0,0.22) !important; }
+.btn-white:active { transform: scale(0.97) !important; }
+.btn-ghost {
+  transition: background 0.16s, border-color 0.16s, transform 0.14s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+.btn-ghost:hover { transform: translateY(-2px) !important; }
+.btn-ghost:active { transform: scale(0.97) !important; }
+
+/* =================================================================
+   KPI CARDS — subtle hover
+   ================================================================= */
+.kpi {
+  transition: box-shadow 0.18s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+}
+.kpi:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15,23,41,0.08); }
+
+/* =================================================================
+   FILTER CHIP (search results)
+   ================================================================= */
+.filter-chip {
+  transition: border-color 0.14s, background 0.14s;
+}
+.filter-chip:hover { background: rgba(37,99,235,0.03); }
+
+/* =================================================================
+   RAIL RESET
+   ================================================================= */
+.rail-reset {
+  transition: color 0.15s, border-color 0.15s, transform 0.12s;
+}
+.rail-reset:hover { transform: translateY(-1px); }
+.rail-reset:active { transform: scale(0.97); }
+
+/* =================================================================
+   TABLE ROWS
+   ================================================================= */
+table.data tbody tr { transition: background 0.1s; }
+
+/* =================================================================
+   COPILOT SEND BUTTON
+   ================================================================= */
+.cop-send {
+  transition: background 0.15s, transform 0.12s cubic-bezier(0.34,1.56,0.64,1), opacity 0.15s;
+}
+.cop-send:hover { transform: scale(1.06); }
+.cop-send:active { transform: scale(0.94); }
+
+/* =================================================================
+   SEC-LINK ARROWS
+   ================================================================= */
+.sec-link {
+  transition: color 0.15s, gap 0.15s;
+}
+.sec-link svg {
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+.sec-link:hover svg { transform: translateX(4px) !important; }
+
+/* =================================================================
+   TOAST REFINEMENT (used by seller + admin JS)
+   ================================================================= */
+/* JS-injected toasts already have transition — add easing */

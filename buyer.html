@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriMarket — Buyer Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="alt-dash.css">
+<script src="i18n.js"></script>
+<script src="lang-widget.js"></script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="ui-polish.css">
+  <script src="security.js"></script>
+</head>
+<body>
+<script src="demo-banner.js"></script>
+
+
+
+<!-- Top Nav -->
+<nav class="gnav">
+  <a href="index.html" class="gnav-logo">AgriMarket</a>
+  <div class="gnav-links">
+    <div class="gnav-link active" onclick="showView('browse', event)">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6">
+        <circle cx="8" cy="8" r="5"/>
+        <line x1="12" y1="12" x2="16" y2="16"/>
+      </svg>
+      <span data-i18n="dash_browse">Browse</span>
+    </div>
+    <div class="gnav-link" onclick="showView('contracts', event)">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6">
+        <rect x="3" y="2" width="12" height="14" rx="1"/>
+        <line x1="6" y1="6" x2="12" y2="6"/>
+        <line x1="6" y1="9" x2="12" y2="9"/>
+        <line x1="6" y1="12" x2="10" y2="12"/>
+      </svg>
+      <span data-i18n="dash_my_contracts">My Contracts</span>
+    </div>
+    <a href="compliance-passport.html" class="gnav-link" style="text-decoration:none;">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6">
+        <path d="M9 1l6 3v5c0 4-3 7-6 8-3-1-6-4-6-8V4z"/>
+        <path d="M6 9l2 2 4-4"/>
+      </svg>
+      <span>Compliance</span>
+    </a>
+    <div class="gnav-link" onclick="showView('messages', event)">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6">
+        <path d="M2 3h14v10H6l-4 3z"/>
+      </svg>
+      <span data-i18n="dash_messages">Messages</span>
+      <span class="badge">6</span>
+    </div>
+    <div class="gnav-link" onclick="showView('saved', event)">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6">
+        <path d="M4 2h10v14l-5-3-5 3z"/>
+      </svg>
+      <span data-i18n="dash_saved">Saved</span>
+    </div>
+    <div class="gnav-link" onclick="showView('profile', event)">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6">
+        <circle cx="9" cy="6" r="3"/>
+        <path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/>
+      </svg>
+      <span data-i18n="dash_profile">Profile</span>
+    </div>
+    <div class="gnav-link">
+      <span data-i18n="nav_ask">Ask manager</span>
+      <svg class="caret" viewBox="0 0 8 8"><path d="M1 2l3 3 3-3" fill="none" stroke="white" stroke-width="1.5"/></svg>
+    </div>
+  </div>
+  <div class="gnav-right">
+    <button class="gnav-btn-outline" data-i18n="dash_post_buy">+ Post Buy Request</button>
+    <span data-lang-widget="dark"></span>
+  </div>
+</nav>
+
+<!-- =================== BROWSE VIEW (alternative layout) =================== -->
+<div id="view-browse" class="view">
+  <div class="alt-shell">
+    <div class="alt-wrap">
+
+      <!-- LIVE MINI TICKER -->
+      <div class="alt-ticker" id="buyerTicker">
+        <span class="live">Live</span>
+        <div class="alt-ticker-track">
+          <span class="alt-ticker-item"><span class="sym">WHEAT FOB</span><span class="px">$186</span><span class="d up">+1.2%</span></span>
+          <span class="alt-ticker-item"><span class="sym">CORN CBOT</span><span class="px">$184</span><span class="d down">-0.4%</span></span>
+          <span class="alt-ticker-item"><span class="sym">SOY CBOT</span><span class="px">$432</span><span class="d up">+2.1%</span></span>
+          <span class="alt-ticker-item"><span class="sym">RICE 5%</span><span class="px">$498</span><span class="d up">+0.6%</span></span>
+          <span class="alt-ticker-item"><span class="sym">SUNFLOWER OIL</span><span class="px">$985</span><span class="d up">+0.9%</span></span>
+          <span class="alt-ticker-item"><span class="sym">BARLEY FR</span><span class="px">$208</span><span class="d up">+0.3%</span></span>
+        </div>
+      </div>
+
+      <!-- PAGE HEAD -->
+      <div class="alt-page-head">
+        <div>
+          <h1 class="alt-h1">Wheat opportunities</h1>
+          <div class="sub">274 active offers across 12 countries · matched to your trading profile</div>
+        </div>
+        <div class="alt-head-actions">
+          <button class="btn-outline" style="padding: 8px 16px;">Save search</button>
+          <button class="btn-primary" data-i18n="dash_post_buy">+ Post Buy Request</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="lbl">New matches today</div>
+          <div class="val">14</div>
+          <div class="delta up">▲ 4 vs. yesterday</div>
+          <svg class="spark spark-area" viewBox="0 0 60 24" preserveAspectRatio="none">
+            <path class="area" d="M0,18 L8,14 L16,16 L24,10 L32,12 L40,8 L48,9 L56,4 L60,5 L60,24 L0,24 Z"/>
+            <path d="M0,18 L8,14 L16,16 L24,10 L32,12 L40,8 L48,9 L56,4 L60,5"/>
+          </svg>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Best price (FOB)</div>
+          <div class="val">$178<span style="font-size:14px;color:var(--text-muted);font-weight:500;"> /MT</span></div>
+          <div class="delta down">▼ -$3 vs. 7d avg</div>
+          <svg class="spark spark-area down" viewBox="0 0 60 24" preserveAspectRatio="none">
+            <path class="area" d="M0,4 L8,8 L16,6 L24,10 L32,8 L40,12 L48,14 L56,15 L60,18 L60,24 L0,24 Z"/>
+            <path d="M0,4 L8,8 L16,6 L24,10 L32,8 L40,12 L48,14 L56,15 L60,18"/>
+          </svg>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Saved searches</div>
+          <div class="val">8</div>
+          <div class="delta neutral">3 with new results</div>
+          <svg class="spark spark-area flat" viewBox="0 0 60 24" preserveAspectRatio="none">
+            <path class="area" d="M0,12 L8,10 L16,14 L24,11 L32,13 L40,10 L48,12 L56,11 L60,12 L60,24 L0,24 Z"/>
+            <path d="M0,12 L8,10 L16,14 L24,11 L32,13 L40,10 L48,12 L56,11 L60,12"/>
+          </svg>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Active contracts</div>
+          <div class="val">5</div>
+          <div class="delta up">3 awaiting signature</div>
+          <svg class="spark spark-area" viewBox="0 0 60 24" preserveAspectRatio="none">
+            <path class="area" d="M0,16 L8,14 L16,15 L24,12 L32,10 L40,11 L48,8 L56,9 L60,6 L60,24 L0,24 Z"/>
+            <path d="M0,16 L8,14 L16,15 L24,12 L32,10 L40,11 L48,8 L56,9 L60,6"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- TWO COL: filter rail + stream -->
+      <div class="alt-split">
+
+        <!-- LEFT RAIL -->
+        <aside class="alt-rail">
+          <button class="rail-reset">Reset filters · 3</button>
+
+          <div class="rail-section">
+            <div class="rail-head"><span data-i18n="browse_origin">Origin</span>
+              <svg viewBox="0 0 10 6"><path d="M1 4l4-3 4 3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="check-list">
+              <label class="check-row"><input type="checkbox" checked><span>🇺🇸 United States</span><span class="count">42</span></label>
+              <label class="check-row"><input type="checkbox" checked><span>🇨🇦 Canada</span><span class="count">28</span></label>
+              <label class="check-row"><input type="checkbox"><span>🇺🇦 Ukraine</span><span class="count">56</span></label>
+              <label class="check-row"><input type="checkbox"><span>🇧🇷 Brazil</span><span class="count">34</span></label>
+              <label class="check-row"><input type="checkbox"><span>🇦🇷 Argentina</span><span class="count">22</span></label>
+            </div>
+          </div>
+
+          <div class="rail-section">
+            <div class="rail-head"><span data-i18n="browse_price">Price range (USD/MT)</span>
+              <svg viewBox="0 0 10 6"><path d="M1 4l4-3 4 3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="range-mini">
+              <div class="range-bar"><span class="range-end"></span></div>
+              <div class="range-val"><span>$150</span><span>$300</span></div>
+            </div>
+          </div>
+
+          <div class="rail-section">
+            <div class="rail-head"><span data-i18n="browse_basis">Incoterms</span>
+              <svg viewBox="0 0 10 6"><path d="M1 4l4-3 4 3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="check-list">
+              <label class="check-row"><input type="checkbox"><span>EXW</span><span class="count">12</span></label>
+              <label class="check-row"><input type="checkbox" checked><span>FOB</span><span class="count">86</span></label>
+              <label class="check-row"><input type="checkbox"><span>FAS</span><span class="count">14</span></label>
+              <label class="check-row"><input type="checkbox" checked><span>CIF</span><span class="count">68</span></label>
+              <label class="check-row"><input type="checkbox"><span>CFR</span><span class="count">31</span></label>
+            </div>
+          </div>
+
+          <div class="rail-section">
+            <div class="rail-head"><span data-i18n="browse_volume">Volume (MT)</span>
+              <svg viewBox="0 0 10 6"><path d="M1 4l4-3 4 3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="range-mini">
+              <div class="range-bar"><span class="range-end"></span></div>
+              <div class="range-val"><span>400</span><span>10,000</span></div>
+            </div>
+          </div>
+
+          <div class="alt-savedbox">
+            <div class="ttl">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 1h6v10l-3-2-3 2z"/></svg>
+              Saved searches
+            </div>
+            <div class="saved-list">
+              <div class="saved-item"><span>Wheat · FOB · USA</span><span class="bnum">4</span></div>
+              <div class="saved-item"><span>Corn · CIF · &lt;$190</span><span class="bnum">2</span></div>
+              <div class="saved-item"><span>Sorghum · any</span><span>—</span></div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- STREAM -->
+        <main>
+          <div class="stream-toolbar">
+            <div class="stream-tabs">
+              <button class="stream-tab active">All matches<span class="num">5</span></button>
+              <button class="stream-tab">New today<span class="num">2</span></button>
+              <button class="stream-tab">Best price</button>
+              <button class="stream-tab">Closest delivery</button>
+            </div>
+            <div class="stream-meta">
+              <span>Updated 4 min ago</span>
+              <select>
+                <option>Sort: Best match</option>
+                <option>Sort: Price low → high</option>
+                <option>Sort: Price high → low</option>
+                <option>Sort: Newest first</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="stream" id="opp-stream"><!-- injected --></div>
+
+          <div style="display:flex;justify-content:center;padding:24px 0 8px;">
+            <button class="btn-outline" style="padding: 10px 28px;">Load 5 more · 269 remaining</button>
+          </div>
+        </main>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- =================== MY CONTRACTS VIEW =================== -->
+<div id="view-contracts" class="view" style="display: none;">
+  <div class="page-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+      <h1 class="page-title" data-i18n="dash_my_contracts">My Contracts</h1>
+      <button class="btn-outline">Export CSV</button>
+    </div>
+
+    <div style="display: flex; gap: 24px; margin-bottom: 20px; border-bottom: 1px solid var(--border);">
+      <div class="tab-btn active" style="border-bottom: 2px solid var(--accent); color: var(--accent); padding: 12px 0;">All (6)</div>
+      <div class="tab-btn" style="padding: 12px 0;">New (1)</div>
+      <div class="tab-btn" style="padding: 12px 0;">In Progress (2)</div>
+      <div class="tab-btn" style="padding: 12px 0;">Signed (2)</div>
+      <div class="tab-btn" style="padding: 12px 0;">Terminated (1)</div>
+    </div>
+
+    <div class="table-wrap" style="border: 1px solid var(--border);">
+      <table class="data">
+        <thead>
+          <tr>
+            <th data-i18n="th_id">ID</th>
+            <th data-i18n="th_product">Product</th>
+            <th data-i18n="th_volume">Volume, MT <span class="sort">⇅</span></th>
+            <th data-i18n="th_price">Price, MT <span class="sort">⇅</span></th>
+            <th data-i18n="th_status">Status <span class="sort">⇅</span></th>
+            <th data-i18n="th_partner">Partner</th>
+            <th data-i18n="th_period">Period <span class="sort">⇅</span></th>
+            <th data-i18n="th_destination">Shipment Destination</th>
+            <th data-i18n="th_basis">Basis</th>
+            <th data-i18n="th_country">Country</th>
+            <th data-i18n="th_passport">Passport</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>256</td>
+            <td class="cell-product cell-link">Wheat <small>Updated: 20.03.2026</small></td>
+            <td>1200</td>
+            <td>185 USD</td>
+            <td><span class="status status-progress">In Progress</span></td>
+            <td class="cell-link">Australian Grain Co.</td>
+            <td>01/04/2026 – 01/05/2026</td>
+            <td>Port Saint Joe, FL, USA</td>
+            <td>FOB (Bulk)</td>
+            <td>United States</td>
+          
+            <td><a href="compliance-passport.html?shipment=S001" style="color:var(--accent);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;" title="View Compliance Passport">🛂 Track</a></td>
+          </tr>
+          <tr>
+            <td>253</td>
+            <td class="cell-product cell-link">Wheat <small>Updated: 12.03.2026</small></td>
+            <td>1200</td>
+            <td>183 USD</td>
+            <td><span class="status status-signed">Signed</span></td>
+            <td class="cell-link">Adecoagro S.A.</td>
+            <td>06/04/2026</td>
+            <td>Port Saint Joe, FL, USA</td>
+            <td>FOB (Container)</td>
+            <td>United States</td>
+          
+            <td><a href="compliance-passport.html?shipment=S002" style="color:var(--accent);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;" title="View Compliance Passport">🛂 Track</a></td>
+          </tr>
+          <tr>
+            <td>251</td>
+            <td class="cell-product cell-link">Corn <small>Updated: 08.03.2026</small></td>
+            <td>4000</td>
+            <td>186 USD</td>
+            <td><span class="status status-progress">In Progress</span></td>
+            <td class="cell-link">Golden Harvest Trading</td>
+            <td>05/04/2026</td>
+            <td>Port St. Lucie, FL, USA</td>
+            <td>FOB (Container)</td>
+            <td>United States</td>
+          
+            <td><a href="compliance-passport.html?shipment=S003" style="color:var(--accent);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;" title="View Compliance Passport">🛂 Track</a></td>
+          </tr>
+          <tr>
+            <td>248</td>
+            <td class="cell-product cell-link">Barley <small>Updated: 08.03.2026</small></td>
+            <td>1000</td>
+            <td>168 USD</td>
+            <td><span class="status status-terminated">Terminated</span></td>
+            <td class="cell-link">Adecoagro S.A.</td>
+            <td>20/03/2026</td>
+            <td>Port Saint Joe, FL, USA</td>
+            <td>FAS (Container)</td>
+            <td>United States</td>
+          </tr>
+          <tr>
+            <td>247</td>
+            <td class="cell-product cell-link">Sorghum <small>Updated: 08.03.2026</small></td>
+            <td>1000</td>
+            <td>133 USD</td>
+            <td><span class="status status-new">New</span></td>
+            <td class="cell-link">Impex Express SA</td>
+            <td>27/03/2026</td>
+            <td>Port O'Connor, TX, USA</td>
+            <td>FOB (Container)</td>
+            <td>United States</td>
+          
+            <td><a href="compliance-passport.html?shipment=S004" style="color:var(--accent);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;" title="View Compliance Passport">🛂 Track</a></td>
+          </tr>
+          <tr>
+            <td>243</td>
+            <td class="cell-product cell-link">Wheat <small>Updated: 06.03.2026</small></td>
+            <td>2200</td>
+            <td>199 USD</td>
+            <td><span class="status status-signed">Signed</span></td>
+            <td class="cell-link">Oleocampo S.C.A</td>
+            <td>09/04/2026</td>
+            <td>Port of Spain, Trinidad and …</td>
+            <td>CPT (Container)</td>
+            <td>United States</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =================== MESSAGES VIEW =================== -->
+<div id="view-messages" class="view" style="display: none;">
+  <div class="chat-layout">
+    <aside class="chat-sidebar">
+      <div class="chat-tabs">
+        <div class="chat-tab" onclick="switchChatTab(this,0)">Messages</div>
+        <div class="chat-tab active" onclick="switchChatTab(this,1)">Clients</div>
+      </div>
+
+      <div class="chat-client-card">
+        <div class="avatar" style="background: #5b6f8c;">AD</div>
+        <div class="name">Adecoagro S.A.</div>
+        <svg class="caret" width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="#777" stroke-width="1.5"/></svg>
+      </div>
+
+      <div class="chat-conversation-head">
+        <span>Conversations</span>
+        <svg width="10" height="6" viewBox="0 0 10 6"><path d="M1 4l4-3 4 3" fill="none" stroke="#555" stroke-width="1.5"/></svg>
+      </div>
+      <div class="chat-conv-item">
+        <div>
+          <div>General</div>
+          <div class="conv-meta">Updated contract status, please confirm.</div>
+        </div>
+        <div class="time">22:56</div>
+      </div>
+      <div class="chat-conv-item" style="background: #f5f7fa;">
+        <div>
+          <div>Contract ID: 253 <span class="badge-sm badge-signed">SIGNED</span></div>
+          <div class="conv-meta">Selling Wheat 1200 MT, $183/MT</div>
+        </div>
+        <div class="time">12.03.2026</div>
+      </div>
+      <div class="chat-conv-item">
+        <div>
+          <div>Contract ID: 248 <span class="badge-sm badge-terminated">TERMINATED</span></div>
+          <div class="conv-meta">Selling Barley 1000 MT, $168/MT</div>
+        </div>
+        <div class="time">08.03.2026</div>
+      </div>
+
+      <div class="chat-conversation-head" style="margin-top: 8px;">
+        <span>Other clients</span>
+        <svg width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="#555" stroke-width="1.5"/></svg>
+      </div>
+      <div class="chat-conv-item">
+        <div>
+          <div>Anderson Grain Group</div>
+          <div class="conv-meta">Wheat 2000 MT inquiry</div>
+        </div>
+        <div class="time">15:30</div>
+      </div>
+      <div class="chat-conv-item">
+        <div>
+          <div>Australian Grain Co.</div>
+          <div class="conv-meta">Contract 256 — In Progress</div>
+        </div>
+        <div class="time">14:12</div>
+      </div>
+    </aside>
+
+    <div class="chat-main">
+      <div class="chat-header">
+        <div class="avatar" style="background: #5b6f8c;">JO</div>
+        <div class="who">
+          <div class="who-name">Juan Ortega, Adecoagro S.A</div>
+          <div class="who-company">Sales Director · Argentina</div>
+        </div>
+        <div class="actions">
+          <button class="btn-outline">Contract Details</button>
+          <button class="btn-outline">View Files</button>
+        </div>
+      </div>
+
+      <div class="chat-body">
+        <div class="chat-date">MAR 12, 2026</div>
+
+        <div class="chat-msg">
+          <div class="avatar" style="background: #c5d4ed; color: var(--accent);">JO</div>
+          <div class="bubble-wrap">
+            <div class="author">Juan Ortega</div>
+            <div class="bubble">
+              Product volume is available, please review product specifications sheet.
+              <br><span class="file">📎 wheat-specs.pdf</span>
+            </div>
+            <div class="time">14:03</div>
+          </div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="avatar" style="background: #c5d4ed; color: var(--accent);">JO</div>
+          <div class="bubble-wrap">
+            <div class="author">Juan Ortega</div>
+            <div class="bubble">Ok specifications look good.</div>
+            <div class="time">14:44</div>
+          </div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="avatar" style="background: #c5d4ed; color: var(--accent);">JO</div>
+          <div class="bubble-wrap">
+            <div class="author">Juan Ortega</div>
+            <div class="bubble">Will check with management regarding delivery and get back to you.</div>
+            <div class="time">14:45</div>
+          </div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="avatar" style="background: #c5d4ed; color: var(--accent);">JO</div>
+          <div class="bubble-wrap">
+            <div class="author">Juan Ortega</div>
+            <div class="bubble">Delivery Apr 6 works. However, price is too high – please review counter offer.</div>
+            <div class="time">14:46</div>
+          </div>
+        </div>
+
+        <div class="chat-msg system">
+          <div class="system-pill">Juan Ortega changed the contract. <a>View Details</a></div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="avatar">DE</div>
+          <div class="bubble-wrap">
+            <div class="author">David Ellis</div>
+            <div class="bubble">Hello, ok we can do $184 at 1200 MT volume delivery by Apr 6. Please review final counter offer.</div>
+            <div class="time">14:57</div>
+          </div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="avatar">DE</div>
+          <div class="bubble-wrap">
+            <div class="author">David Ellis</div>
+            <div class="bubble">
+              Please review Contract draft
+              <br><span class="file">📎 Contract 213WheatDRAFT.pdf</span>
+            </div>
+            <div class="time">14:57</div>
+          </div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="avatar" style="background: #c5d4ed; color: var(--accent);">JO</div>
+          <div class="bubble-wrap">
+            <div class="author">Juan Ortega</div>
+            <div class="bubble">
+              Okay agree to price, provided signed copy of contract. Please review.
+              <br><span class="file">📎 Contract 213WheatSIGNED.pdf</span>
+            </div>
+            <div class="time">15:16</div>
+          </div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="avatar" style="background: #c5d4ed; color: var(--accent);">JO</div>
+          <div class="bubble-wrap">
+            <div class="author">Juan Ortega</div>
+            <div class="bubble">Updated contract status on AgriMarket, please confirm.</div>
+            <div class="time">15:16</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input">
+        <input type="text" placeholder="Type message here...">
+        <span class="attach">📎</span>
+        <button class="send">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== SAVED VIEW =================== -->
+<div id="view-saved" class="view" style="display: none;">
+  <div class="page-content">
+    <h1 class="page-title" data-i18n="dash_saved">Saved listings</h1>
+    <div class="products-grid-5">
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&q=80" alt="Wheat">
+        <div class="product-card-body"><h3>Wheat<br>(Sell)</h3></div>
+        <div class="meta-row country">📍 UNITED STATES OF AM…</div>
+        <div class="price">$180 – $188 <small>/ MT</small></div>
+      </div>
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&q=80&sat=-30" alt="Corn" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="placeholder-img" style="display:none;"><svg viewBox="0 0 40 40" fill="currentColor"><path d="M20 4l4 8 8 1-6 6 2 9-8-4-8 4 2-9-6-6 8-1z"/></svg></div>
+        <div class="product-card-body"><h3>Corn<br>(Sell)</h3></div>
+        <div class="meta-row country">📍 UNITED STATES OF AM…</div>
+        <div class="price">$178 – $187 <small>/ MT</small></div>
+      </div>
+      <div class="product-card">
+        <div class="placeholder-img"><svg viewBox="0 0 40 40" fill="currentColor"><path d="M20 4 L8 16 L16 16 L16 36 L24 36 L24 16 L32 16 Z"/></svg></div>
+        <div class="product-card-body"><h3>Wheat Flour<br>(Sell)</h3></div>
+        <div class="meta-row country">📍 UKRAINE</div>
+        <div class="price">$200 – $300 <small>/ MT</small></div>
+      </div>
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1587049633312-d628ae50a8ae?w=400&q=80" alt="Chickpeas">
+        <div class="product-card-body"><h3>Chickpeas<br>(Sell)</h3></div>
+        <div class="meta-row country">📍 CANADA</div>
+        <div class="price">$550 – $720 <small>/ MT</small></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== PROFILE VIEW =================== -->
+<div id="view-profile" class="view" style="display: none;">
+  <div class="page-content" style="max-width: 960px;">
+    <h1 class="page-title" data-i18n="dash_profile">Profile</h1>
+
+    <div class="profile-card">
+      <div class="profile-row">
+        <div class="profile-avatar">JO</div>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+            <div>
+              <h2 style="font-size: 22px; font-weight: 500;">Juan Ortega</h2>
+              <p style="color: var(--text-light); font-size: 14px; margin-top: 4px;">Sales Director · Adecoagro S.A.</p>
+            </div>
+            <span class="verif verif-yes">✓ Verified Buyer</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 12px;">Member since January 2025 · KYC complete · 14 contracts</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <h3 style="font-size: 16px; font-weight: 500; margin-bottom: 20px;">Personal Information</h3>
+      <div class="profile-form">
+        <div class="form-field"><label>First name</label><input value="Juan"></div>
+        <div class="form-field"><label>Last name</label><input value="Ortega"></div>
+        <div class="form-field"><label>Email</label><input value="j.ortega@adecoagro.com"></div>
+        <div class="form-field"><label>Phone</label><input value="+54 11 4128 4900"></div>
+        <div class="form-field"><label>Position</label><input value="Sales Director"></div>
+        <div class="form-field"><label>Language</label><select><option>English</option><option>Spanish</option><option>Russian</option></select></div>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <h3 style="font-size: 16px; font-weight: 500; margin-bottom: 20px;">Buying Preferences</h3>
+      <div class="profile-form">
+        <div class="form-field"><label>Primary commodity</label><select><option>Wheat</option><option>Corn</option><option>Barley</option><option>Soy</option></select></div>
+        <div class="form-field"><label>Typical volume (MT/month)</label><input value="1000 - 5000"></div>
+        <div class="form-field"><label>Preferred origin</label><input value="USA & Canada"></div>
+        <div class="form-field"><label>Preferred incoterms</label><input value="FOB, CIF"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== PRODUCT DETAIL DRAWER =================== -->
+<div class="drawer-bg" id="drawerBg" onclick="closeDrawer()"></div>
+<div class="drawer" id="productDrawer">
+  <div class="drawer-head">
+    <h2 id="d-title">Product</h2>
+    <button class="close" onclick="closeDrawer()">&times;</button>
+  </div>
+  <div class="drawer-body">
+    <div class="detail-hero">
+      <span class="type-pill" id="d-type">Sell offer</span>
+      <h1 id="d-name">Product name</h1>
+      <div class="sub" id="d-sub">Origin - Updated</div>
+      <div class="price-tag">
+        <div class="price" id="d-price">$0 <small>/ MT</small></div>
+      </div>
+    </div>
+
+    <div class="detail-meta-row">
+      <span>Listing ID: <strong id="d-id">-</strong></span>
+      <span>Posted <strong>5 days ago</strong></span>
+      <span style="margin-left: auto; color: var(--green); font-weight: 600;">Active</span>
+    </div>
+
+    <div class="detail-specs">
+      <div class="detail-spec"><div class="label">Volume range</div><div class="value" id="d-volume">-</div></div>
+      <div class="detail-spec"><div class="label">Basis</div><div class="value" id="d-delivery">-</div></div>
+      <div class="detail-spec"><div class="label">Origin</div><div class="value" id="d-country">-</div></div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Delivery</h3>
+      <div class="spec-grid">
+        <div class="spec-row"><span class="k">Delivery window</span><span class="v" id="d-period">01/04 - 31/05/2026</span></div>
+        <div class="spec-row"><span class="k">Destination port</span><span class="v" id="d-dest">Port Lavaca, USA</span></div>
+        <div class="spec-row"><span class="k">Shipment type</span><span class="v">Bulk / Container</span></div>
+        <div class="spec-row"><span class="k">Payment terms</span><span class="v">L/C at sight</span></div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Product specifications</h3>
+      <div class="spec-grid">
+        <div class="spec-row"><span class="k">Protein content</span><span class="v">12.5% min</span></div>
+        <div class="spec-row"><span class="k">Moisture</span><span class="v">14% max</span></div>
+        <div class="spec-row"><span class="k">Foreign matter</span><span class="v">2% max</span></div>
+        <div class="spec-row"><span class="k">Broken kernels</span><span class="v">5% max</span></div>
+        <div class="spec-row"><span class="k">Test weight</span><span class="v">78 kg/hl</span></div>
+        <div class="spec-row"><span class="k">Falling number</span><span class="v">250 sec min</span></div>
+        <div class="spec-row"><span class="k">Packaging</span><span class="v">Bulk / 50 kg bags</span></div>
+        <div class="spec-row"><span class="k">Crop year</span><span class="v">2025-2026</span></div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Description</h3>
+      <p>Premium-grade commodity sourced from certified farms. Quality-controlled at origin and shipped under standard international Incoterms. Phytosanitary, weight, and quality certificates issued by accredited third-party inspection at loading.</p>
+    </div>
+
+    <div class="detail-section">
+      <h3>Seller</h3>
+      <div class="seller-card">
+        <div class="avatar" id="d-seller-avatar">AG</div>
+        <div class="info">
+          <div class="name" id="d-seller-name">Anderson Grain Group <span class="verif verif-yes" style="margin-left:6px;">Verified</span></div>
+          <div class="meta">24 successful trades - Member since 2024</div>
+        </div>
+      </div>
+      <div style="margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; font-size: 13px; color: var(--text-light);">
+        <div><strong style="color:#333;display:block;font-size:18px;">98%</strong>On-time delivery</div>
+        <div><strong style="color:#333;display:block;font-size:18px;">4.8/5</strong>Avg. rating</div>
+        <div><strong style="color:#333;display:block;font-size:18px;">24</strong>Completed trades</div>
+      </div>
+    </div>
+
+    <div class="detail-actions">
+      <button class="btn-outline" onclick="closeDrawer()">Save</button>
+      <button class="btn-outline" onclick="alert('Negotiation thread opened in Messages')">Send inquiry</button>
+      <button class="btn-primary">Request quote</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showView(name, ev) {
+  document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+  document.getElementById('view-' + name).style.display = 'block';
+  document.querySelectorAll('.gnav-link').forEach(l => l.classList.remove('active'));
+  ev && ev.currentTarget && ev.currentTarget.classList.add('active');
+  window.scrollTo(0, 0);
+}
+function switchChatTab(el, idx) {
+  el.parentElement.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// Full seller company names (since table truncates them visually)
+const fullSellerNames = {
+  'Anderson Gra': 'Anderson Grain Group',
+  'Anderson Grai': 'Anderson Grain Group',
+  'Minerva Globa': 'Minerva Global Limited',
+  'Adecoagro': 'Adecoagro S.A.',
+  'Australian Gra': 'Australian Grain Co.',
+  'Golden Harvest': 'Golden Harvest Trading',
+  'Impex Express': 'Impex Express SA',
+  'Oleocampo': 'Oleocampo S.C.A',
+  'Andrott Overse': 'Andrott Overseas Ltd.'
+};
+function fullSeller(truncated) {
+  const t = (truncated || '').replace(/…/g, '').trim();
+  for (const key in fullSellerNames) {
+    if (t.startsWith(key.substring(0, 8))) return fullSellerNames[key];
+  }
+  return t || 'Verified seller';
+}
+
+function openProduct(opts) {
+  const d = opts || {};
+  document.getElementById('d-title').textContent = d.name || 'Product';
+  document.getElementById('d-type').textContent = d.type || 'Sell offer';
+  document.getElementById('d-name').textContent = d.name || '—';
+  document.getElementById('d-sub').textContent = d.sub || '';
+  document.getElementById('d-price').innerHTML = (d.price || '—') + ' <small>/ MT</small>';
+  document.getElementById('d-volume').textContent = d.volume || '—';
+  document.getElementById('d-delivery').textContent = d.delivery || '—';
+  document.getElementById('d-country').textContent = d.country || '—';
+  document.getElementById('d-id').textContent = d.id || '—';
+  if (d.period) document.getElementById('d-period').textContent = d.period;
+  if (d.dest) document.getElementById('d-dest').textContent = d.dest;
+  if (d.seller) {
+    document.getElementById('d-seller-name').innerHTML = d.seller + ' <span class="verif verif-yes" style="margin-left:6px;">checkmark Verified</span>';
+    document.getElementById('d-seller-avatar').textContent = d.seller.split(' ').map(s => s[0]).slice(0,2).join('');
+  }
+  document.getElementById('drawerBg').classList.add('show');
+  document.getElementById('productDrawer').classList.add('show');
+}
+function closeDrawer() {
+  document.getElementById('drawerBg').classList.remove('show');
+  document.getElementById('productDrawer').classList.remove('show');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('#view-browse table.data tbody tr').forEach((row, i) => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length < 8) return;
+    row.style.cursor = 'pointer';
+    cells[0].addEventListener('click', () => {
+      openProduct({
+        type: 'Sell offer',
+        name: 'Wheat',
+        sub: cells[2].textContent + ' - Updated 20.03.2026',
+        price: cells[6].textContent.trim(),
+        volume: cells[1].textContent + ' MT',
+        delivery: cells[4].textContent,
+        country: cells[2].textContent,
+        period: cells[3].textContent,
+        dest: cells[5].textContent,
+        seller: fullSeller(cells[7].textContent),
+        id: 'WHE-' + (1200 + i)
+      });
+    });
+  });
+
+  document.querySelectorAll('.product-card').forEach((card, i) => {
+    card.addEventListener('click', () => {
+      const name = (card.querySelector('h3') || {}).textContent || 'Product';
+      const country = (card.querySelector('.country') || {}).textContent || '';
+      const price = ((card.querySelector('.price') || {}).firstChild || {}).textContent || '';
+      openProduct({
+        type: 'Sell offer',
+        name: name.replace(/\(.*\)/, '').trim(),
+        sub: country.trim() + ' - Updated this week',
+        price: price.trim(),
+        volume: '400 - 10000 MT',
+        delivery: 'FOB, CIF',
+        country: country.trim().replace(/[^A-Z ]/g, ''),
+        seller: 'Anderson Grain Group',
+        id: 'LST-' + (3000 + i)
+      });
+    });
+  });
+
+  document.querySelectorAll('#view-contracts table.data tbody tr').forEach(row => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length < 7) return;
+    cells[1].style.cursor = 'pointer';
+    cells[1].addEventListener('click', () => {
+      const link = cells[1].querySelector('.cell-link');
+      const name = link ? link.firstChild.textContent.trim() : cells[1].textContent.trim();
+      openProduct({
+        type: 'Contract #' + cells[0].textContent,
+        name: name,
+        sub: 'Partner: ' + cells[5].textContent + ' - ' + cells[6].textContent,
+        price: cells[3].textContent,
+        volume: cells[2].textContent + ' MT',
+        delivery: cells[8].textContent,
+        country: cells[9].textContent,
+        period: cells[6].textContent,
+        dest: cells[7].textContent,
+        seller: cells[5].textContent,
+        id: cells[0].textContent
+      });
+    });
+  });
+});
+
+/* ---- ALT BROWSE: opportunity stream renderer ---- */
+(function(){
+  const opps = [
+    { title:'Hard Red Winter Wheat',  grade:'12.5% protein, 2025/26', flag:'🇺🇸', country:'USA · Port Lavaca, TX',     basis:'FOB', vol:'400 – 10,000 MT', period:'01/04 – 31/05', price:'$180', spark:'M0,16 L10,14 L20,15 L30,12 L40,10 L50,8 L60,9 L70,6 L80,5', dir:'up', seller:'Anderson Grain Group', sav:'AG', badge:'NEW', match:true,  img:'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&q=80' },
+    { title:'Soft White Wheat',       grade:'11% protein, 2025/26',  flag:'🇺🇸', country:'USA · Portland, OR',         basis:'FOB', vol:'500 – 8,000 MT',  period:'15/04 – 30/06', price:'$187', spark:'M0,12 L10,14 L20,11 L30,12 L40,9 L50,11 L60,8 L70,9 L80,7',  dir:'up', seller:'Anderson Grain Group', sav:'AG', badge:'VERIFIED',         img:'https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=400&q=80' },
+    { title:'Durum Wheat',            grade:'Semolina grade',         flag:'🇨🇦', country:'Canada · Vancouver',        basis:'FAS', vol:'300 – 5,000 MT',  period:'05/05 – 20/06', price:'$185', spark:'M0,10 L10,12 L20,13 L30,11 L40,14 L50,12 L60,15 L70,14 L80,16', dir:'down', seller:'Saskatchewan Pulse Co.', sav:'SP', badge:'VERIFIED', img:'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&q=80' },
+    { title:'Spring Wheat',           grade:'13.5% protein, milling', flag:'🇺🇸', country:'USA · Port St Joe, FL',     basis:'FOB', vol:'600 – 12,000 MT', period:'01/04 – 31/05', price:'$188', spark:'M0,18 L10,15 L20,12 L30,14 L40,10 L50,8 L60,6 L70,7 L80,4',  dir:'up', seller:'Anderson Grain Group', sav:'AG', badge:'NEW', match:true,  img:'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&q=80&sat=-10' },
+    { title:'Feed Wheat',             grade:'Animal feed grade',      flag:'🇨🇦', country:'Canada · Vancouver',        basis:'CIF', vol:'1,000 – 10,000 MT', period:'10/05 – 25/06', price:'$165', spark:'M0,10 L10,11 L20,9 L30,12 L40,11 L50,13 L60,10 L70,11 L80,9', dir:'up', seller:'Saskatchewan Pulse Co.', sav:'SP', badge:'VERIFIED', img:'https://images.unsplash.com/photo-1599751449128-eb7249c3d6b1?w=400&q=80' }
+  ];
+  const el = document.getElementById('opp-stream');
+  if (!el) return;
+  el.innerHTML = opps.map((o,i) => `
+    <article class="opp" data-idx="${i}">
+      <div class="opp-thumb" style="background-image:url('${o.img}')">
+        <span class="badge-mini ${o.badge==='NEW'?'new':''}">${o.badge}</span>
+      </div>
+      <div class="opp-body">
+        <div class="opp-row1">
+          <span class="opp-title">${o.title}</span>
+          ${o.match ? '<span class="opp-tag match">★ Best match</span>' : ''}
+          <span style="font-size:11px;color:var(--text-muted);">${o.grade}</span>
+        </div>
+        <div class="opp-row2">
+          <span class="kv"><span class="k">Origin</span><span class="v">${o.flag} ${o.country}</span></span>
+          <span class="kv"><span class="k">Basis</span><span class="v">${o.basis}</span></span>
+          <span class="kv"><span class="k">Volume</span><span class="v">${o.vol}</span></span>
+          <span class="kv"><span class="k">Period</span><span class="v">${o.period}</span></span>
+        </div>
+        <div class="opp-row3">
+          <span class="seller"><span class="av">${o.sav}</span>${o.seller}</span>
+          <span class="dot"></span>
+          <span class="verified">✓ KYC verified</span>
+          <span class="dot"></span>
+          <span>24 trades · 4.8★</span>
+        </div>
+      </div>
+      <div class="opp-right">
+        <div class="opp-price">
+          <span class="px">${o.price}</span>
+          <span class="unit">USD / MT</span>
+        </div>
+        <svg class="opp-spark" viewBox="0 0 80 20" preserveAspectRatio="none">
+          <path d="${o.spark}" fill="none" stroke="${o.dir==='up'?'#1eb980':'#ef4444'}" stroke-width="1.5"/>
+        </svg>
+        <div class="opp-actions">
+          <button class="save" onclick="event.stopPropagation(); this.classList.toggle('saved');">♡</button>
+          <button class="contact">Contact</button>
+        </div>
+      </div>
+    </article>
+  `).join('');
+})();
+
+</script>
+
+<script src="ui-micro.js"></script>
+</body>
+</html>
